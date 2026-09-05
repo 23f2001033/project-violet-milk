@@ -9,7 +9,7 @@
  *                                   contract - the contract is authoritative.
  */
 
-export const USE_MOCKS = true
+export const USE_MOCKS = false
 
 import graphMock from './mocks/graph.json'
 import caseMock from './mocks/case.json'

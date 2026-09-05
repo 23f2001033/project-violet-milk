@@ -189,8 +189,8 @@ Our output is the annexure that justifies that order.
 | P1 | Contract freeze, data model, dataset, mocks | ✅ |
 | P2 | Backend engines | ✅ |
 | P3 | Frontend organs | ✅ |
-| P4 | Integration | ⬜ next |
-| P5 | Sec 63 BSA dossier + AI layer | ⬜ |
+| P4 | Integration | ✅ |
+| P5 | Sec 63 BSA dossier + AI layer | ⬜ next |
 | P6 | Live mainnet mode | ⬜ |
 | P7 | Harden, correct the deck, rehearse | ⬜ |
 
@@ -200,7 +200,7 @@ Our output is the annexure that justifies that order.
 
 | # | Question | Blocks |
 |---|---|---|
-| 1 | **Which LLM provider and model exactly?** Set `LLM_BASE_URL` / `LLM_MODEL`; confirm the free tier with one real test call. | P5 |
+| 1 | **LLM provider** — Groq, `openai/gpt-oss-120b`. Key verified against the live `/models` endpoint. | ✅ resolved |
 | 2 | **Confirm ₹90.38/USDT** as the locked rate. | ✅ applied |
 | 3 | **Which three real addresses** get pre-tested for live mode? Must be publicly documented as illicit — never a private individual's wallet. | P6 |
 | 4 | **Whose laptop presents,** and has it been tested on an external projector? | P7 |

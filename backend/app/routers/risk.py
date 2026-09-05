@@ -4,8 +4,7 @@ from fastapi import APIRouter, HTTPException
 
 from ..db import cursor
 from ..engines.pipeline import get_analysis
-from ..models import AuditAction, DilutionResult, RiskAssessment
-from ..services import audit
+from ..models import DilutionResult, RiskAssessment
 
 router = APIRouter(prefix="/api/cases", tags=["risk"])
 
@@ -33,11 +32,9 @@ def get_risk(case_id: str, node_id: str):
 @router.post("/{case_id}/dilution", response_model=DilutionResult,
              summary="Proportional haircut across the traced graph")
 def compute_dilution(case_id: str):
-    a = get_analysis(case_id, _seed_for(case_id))
-    flagged = sum(1 for s in a.dilution.steps if s.flagged)
-    audit.record(
-        case_id, AuditAction.DILUTION_COMPUTED, case_id,
-        details={"steps": len(a.dilution.steps), "flagged": flagged,
-                 "threshold": a.dilution.threshold},
-    )
-    return a.dilution
+    # Deliberately writes NO audit row. Dilution is a pure derived computation
+    # that the dashboard recomputes on every render, so auditing it buried the
+    # real custody events under one DILUTION_COMPUTED entry per page load.
+    # The chain of custody records investigator ACTIONS on evidence - case
+    # creation, ingestion, tracing, export - not incidental recalculation.
+    return get_analysis(case_id, _seed_for(case_id)).dilution

@@ -169,3 +169,18 @@ def test_audit_log_records_the_trace():
 def test_report_is_declared_but_not_yet_implemented():
     """Phase 5. The contract exists so FE2 can wire the Export button now."""
     assert client.post(f"/api/cases/{CASE}/report").status_code == 501
+
+
+def test_reading_the_dashboard_does_not_pollute_the_custody_log():
+    """Regression: /dilution used to write an audit row, so every page load
+    appended a DILUTION_COMPUTED entry and buried the real custody events.
+    The chain of custody records investigator actions on evidence, not
+    incidental recomputation."""
+    before = len(client.get(f"/api/cases/{CASE}/audit").json())
+    for _ in range(3):
+        client.get(f"/api/cases/{CASE}/graph")
+        client.post(f"/api/cases/{CASE}/dilution")
+        client.get(f"/api/cases/{CASE}/timeline")
+    after = client.get(f"/api/cases/{CASE}/audit").json()
+    assert len(after) == before
+    assert not any(a["action"] == "DILUTION_COMPUTED" for a in after)
