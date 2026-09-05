@@ -188,8 +188,8 @@ Our output is the annexure that justifies that order.
 | P0 | Foundations | ✅ |
 | P1 | Contract freeze, data model, dataset, mocks | ✅ |
 | P2 | Backend engines | ✅ |
-| P3 | Frontend organs | ⬜ |
-| P4 | Integration | ⬜ |
+| P3 | Frontend organs | ✅ |
+| P4 | Integration | ⬜ next |
 | P5 | Sec 63 BSA dossier + AI layer | ⬜ |
 | P6 | Live mainnet mode | ⬜ |
 | P7 | Harden, correct the deck, rehearse | ⬜ |

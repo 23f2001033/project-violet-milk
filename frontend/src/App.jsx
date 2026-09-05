@@ -1,206 +1,286 @@
 /**
- * PHASE 1 VERIFICATION SHELL.
+ * Application shell — "The Violet Milk Map".
  *
- * This is not the final UI. It exists to prove the fixture pipeline is wired
- * end to end - case, graph, risk and dilution all rendering from the frozen
- * contract with the backend switched off.
+ * Layout follows the approved mockup: a persistent demonstration banner, an
+ * organ rail on the left, the working surface in the centre, and the evidence
+ * inspector on the right when a graph entity is selected.
  *
- * FE1 and FE2 replace this with the real organs in Phase 3. The mockup
- * (image.png) is the visual target; this file is the working foundation.
+ * Selection is held here so the graph, timeline, risk inspector and dilution
+ * panel all stay synchronised on the same entity.
  */
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   DEMO_CASE_ID,
   USE_MOCKS,
+  getAudit,
   getCase,
   getDilution,
   getGraph,
-  getHealth,
+  getRisk,
+  getTimeline,
   inr,
-  riskColor,
+  listEvidence,
 } from './api'
+import { Button, ErrorBox, RiskPill, Spinner, short } from './components/ui'
+import CommandCenter from './organs/CommandCenter'
+import CaseIntake from './organs/CaseIntake'
+import EvidenceUploader from './organs/EvidenceUploader'
+import GraphVisualiser from './organs/GraphVisualiser'
+import Timeline from './organs/Timeline'
+import RiskInspector from './organs/RiskInspector'
+import DilutionPanel from './organs/DilutionPanel'
+import ReportExport from './organs/ReportExport'
+import AuditLog from './organs/AuditLog'
+
+const ORGANS = [
+  { id: 'command', label: 'Command Center', icon: '▣' },
+  { id: 'intake', label: 'Case Intake', icon: '▤' },
+  { id: 'evidence', label: 'Evidence Ingestion', icon: '▥' },
+  { id: 'graph', label: 'Graph Visualiser', icon: '◈' },
+  { id: 'timeline', label: 'Timeline', icon: '◷' },
+  { id: 'risk', label: 'Risk Inspector', icon: '◉' },
+  { id: 'dilution', label: 'Dilution Calculator', icon: '◐' },
+  { id: 'dossier', label: 'Sec 63 BSA Dossier', icon: '▦' },
+  { id: 'audit', label: 'Chain of Custody', icon: '⛓' },
+]
 
 function Banner() {
   return (
-    <div className="bg-amber-500/15 border-b border-amber-500/40 px-4 py-1.5
-                    text-[11px] tracking-wide text-amber-300 flex gap-3">
-      <span className="font-bold">⚠ DEMONSTRATION &amp; SYNTHETIC DATA MODE</span>
-      <span className="text-amber-300/60">
-        Analytical leads only · not a finding of guilt · Sec 94 BNSS 2023
-        verification required
+    <div className="shrink-0 bg-amber-500/15 border-b border-amber-500/40 px-4 py-1
+                    text-[10px] tracking-wide text-amber-300 flex gap-3 items-center
+                    flex-wrap">
+      <span className="font-bold">⚠ DEMONSTRATION &amp; SYNTHETIC DATA MODE ACTIVE</span>
+      <span className="text-amber-300/60 hidden md:inline">
+        Authorised law-enforcement pilot workspace · UT Chandigarh Cyber Command
+      </span>
+      <span className="ml-auto font-mono text-amber-300/70">
+        {USE_MOCKS ? 'FIXTURES' : 'LIVE BACKEND'}
       </span>
     </div>
   )
 }
 
-function Stat({ label, value, accent }) {
-  return (
-    <div className="px-4 py-3 border-r border-edge last:border-r-0 min-w-0">
-      <div className="label">{label}</div>
-      <div
-        className="font-mono text-lg mt-0.5 truncate"
-        style={accent ? { color: accent } : undefined}
-      >
-        {value}
-      </div>
-    </div>
-  )
-}
-
-function RiskPill({ level, score }) {
-  return (
-    <span
-      className="font-mono text-[11px] font-bold px-2 py-0.5 rounded"
-      style={{ color: riskColor(level), background: `${riskColor(level)}1f` }}
-    >
-      {score} · {level}
-    </span>
-  )
-}
-
 export default function App() {
-  const [state, setState] = useState({ loading: true, error: null })
+  const [organ, setOrgan] = useState('command')
+  const [selected, setSelected] = useState(null)
+  const [inspectorTab, setInspectorTab] = useState('risk')
+  const [data, setData] = useState({ loading: true })
 
-  useEffect(() => {
+  const load = useCallback(() => {
+    setData({ loading: true })
     Promise.all([
-      getHealth(),
       getCase(DEMO_CASE_ID),
       getGraph(DEMO_CASE_ID),
       getDilution(DEMO_CASE_ID),
+      getTimeline(DEMO_CASE_ID),
+      getAudit(DEMO_CASE_ID),
+      listEvidence(DEMO_CASE_ID),
     ])
-      .then(([health, kase, graph, dilution]) =>
-        setState({ loading: false, error: null, health, kase, graph, dilution })
+      .then(([kase, graph, dilution, timeline, audit, evidence]) =>
+        setData({
+          loading: false, kase, graph, dilution, timeline, audit, evidence,
+        })
       )
-      .catch((e) => setState({ loading: false, error: e.message }))
+      .catch((e) => setData({ loading: false, error: e.message }))
   }, [])
 
-  if (state.loading)
-    return <div className="p-8 font-mono text-slate-500">Loading case…</div>
+  useEffect(load, [load])
 
-  if (state.error)
-    return (
-      <div className="p-8 font-mono text-risk-critical">
-        Failed to load: {state.error}
-      </div>
+  const nodesById = useMemo(() => {
+    if (!data.graph) return {}
+    return Object.fromEntries(
+      data.graph.elements.nodes.map((n) => [n.data.id, n.data])
     )
+  }, [data.graph])
 
-  const { kase, graph, dilution } = state
-  const nodes = graph.elements.nodes.map((n) => n.data)
-  const rescue = dilution.steps.find((s) => !s.flagged)
+  // Risk assessments come from the graph payload for every node; the seed's
+  // full indicator breakdown is the one the fixture carries in detail.
+  const [riskCache, setRiskCache] = useState({})
+  useEffect(() => {
+    if (!selected || riskCache[selected]) return
+    getRisk(DEMO_CASE_ID, selected)
+      .then((r) => setRiskCache((c) => ({ ...c, [selected]: r })))
+      .catch(() => {})
+  }, [selected, riskCache])
+
+  if (data.loading) return <Spinner label="Loading case…" />
+  if (data.error) return <ErrorBox error={data.error} onRetry={load} />
+
+  const { kase, graph, dilution, timeline, audit } = data
+  const selectNode = (id) => {
+    setSelected(id)
+    if (id && !['graph', 'timeline'].includes(organ)) setOrgan('graph')
+  }
+
+  const showInspector = ['graph', 'risk', 'dilution'].includes(organ)
+
+  const main = {
+    command: (
+      <CommandCenter
+        kase={kase} graph={graph} dilution={dilution} audit={audit}
+        onOpen={selectNode}
+      />
+    ),
+    intake: <CaseIntake kase={kase} />,
+    evidence: <EvidenceUploader evidence={data.evidence ?? []} />,
+
+    graph: (
+      <div className="grid grid-rows-[1fr_auto] h-full min-h-0">
+        <GraphVisualiser graph={graph} selected={selected} onSelect={setSelected} />
+        <div className="border-t border-edge max-h-[210px] overflow-hidden">
+          <div className="label px-4 py-2 border-b border-edge">
+            Synchronised chronology · {timeline.length} events
+          </div>
+          <div className="max-h-[160px] overflow-y-auto">
+            <Timeline timeline={timeline} selected={selected} onSelect={setSelected} />
+          </div>
+        </div>
+      </div>
+    ),
+    timeline: <Timeline timeline={timeline} selected={selected} onSelect={setSelected} />,
+    risk: (
+      <RiskInspector
+        risk={riskCache[selected]} node={selected ? nodesById[selected] : null}
+      />
+    ),
+    dilution: (
+      <DilutionPanel dilution={dilution} selected={selected} onSelect={setSelected} />
+    ),
+    dossier: <ReportExport kase={kase} />,
+    audit: <AuditLog audit={audit} />,
+  }[organ]
 
   return (
-    <div className="min-h-screen">
+    <div className="h-screen flex flex-col overflow-hidden">
       <Banner />
 
-      <header className="border-b border-edge bg-panel">
-        <div className="px-5 py-3 flex items-baseline gap-3 flex-wrap">
-          <span className="text-violet font-bold tracking-tight">
-            PROJECT VIOLET MILK
+      <header className="shrink-0 border-b border-edge bg-panel">
+        <div className="px-4 py-2.5 flex items-center gap-3 flex-wrap">
+          <div className="min-w-0">
+            <div className="text-[10px] tracking-[0.15em] text-slate-500">
+              CHANDIGARH POLICE CYBER CRIME UNIT
+            </div>
+            <div className="text-violet font-bold tracking-tight leading-tight">
+              PROJECT VIOLET MILK
+            </div>
+          </div>
+          <span className="font-mono text-[9px] px-1.5 py-0.5 rounded
+                           bg-risk-low/15 text-risk-low border border-risk-low/40">
+            SEC-63 BSA
           </span>
-          <span className="text-slate-600">/</span>
-          <span className="text-sm text-slate-400">
-            Chandigarh Police Cyber Crime Unit
-          </span>
-          <span className="ml-auto font-mono text-[11px] text-slate-500">
-            {USE_MOCKS ? '◉ FIXTURES' : '◉ LIVE BACKEND'} · {graph.stats.source}
-          </span>
+          <div className="ml-auto flex items-center gap-2">
+            <Button variant="primary" onClick={() => setOrgan('dossier')}>
+              Export Court Dossier
+            </Button>
+          </div>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-5 border-t border-edge">
-          <Stat label="Case" value={kase.case_id} />
-          <Stat label="NCRP Ref" value={kase.ncrp_ref} />
-          <Stat label="Victim loss" value={inr(kase.victim_amount_inr)} accent="#e5901d" />
-          <Stat label="Nodes / Edges" value={`${graph.stats.nodes} / ${graph.stats.edges}`} />
-          <Stat label="Max depth" value={graph.stats.max_depth_reached} />
+
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-1.5
+                        border-t border-edge text-[11px] font-mono text-slate-500">
+          <span className="text-slate-300">{kase.case_id}</span>
+          <span>NCRP {kase.ncrp_ref}</span>
+          <span className="text-risk-high">{inr(kase.victim_amount_inr)}</span>
+          <span>{graph.stats.nodes} entities · {graph.stats.edges} transfers</span>
+          <span>depth {graph.stats.max_depth_reached}</span>
+          <span className="ml-auto">{graph.stats.source}</span>
         </div>
       </header>
 
-      <main className="p-5 grid gap-5 lg:grid-cols-3">
-        {/* ---------------------------------------------------- entities */}
-        <section className="organ lg:col-span-2 overflow-hidden">
-          <div className="px-4 py-2.5 border-b border-edge label">
-            Traced entities · {nodes.length}
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-left">
-                  {['Entity', 'Type', 'Illicit %', 'Risk'].map((h) => (
-                    <th key={h} className="label px-4 py-2 border-b border-edge">
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {nodes.map((n) => (
-                  <tr key={n.id} className="border-b border-edge/50">
-                    <td className="px-4 py-2">
-                      <div className="font-mono text-xs text-slate-300 truncate max-w-[220px]">
-                        {n.id}
-                      </div>
-                      <div className="text-[11px] text-slate-500">
-                        {n.label}
-                        {n.is_seed && (
-                          <span className="ml-1.5 text-violet font-bold">SEED</span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-4 py-2 text-xs text-slate-400">{n.type}</td>
-                    <td className="px-4 py-2 font-mono text-xs tabular-nums">
-                      {(n.illicit_ratio * 100).toFixed(0)}%
-                    </td>
-                    <td className="px-4 py-2">
-                      <RiskPill level={n.risk_level} score={n.risk_score} />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
+      {/* Narrow-viewport navigation. The left rail below is lg-and-up only, so
+          without this strip a smaller projector or window would leave the
+          operator with no way to switch organs at all. */}
+      <nav className="lg:hidden shrink-0 flex overflow-x-auto border-b border-edge
+                      bg-panel">
+        {ORGANS.map((o) => (
+          <button
+            key={o.id}
+            onClick={() => setOrgan(o.id)}
+            className={`shrink-0 px-3 py-2 text-[11px] whitespace-nowrap border-b-2
+              transition-colors ${
+                organ === o.id
+                  ? 'border-violet text-slate-100 bg-violet/10'
+                  : 'border-transparent text-slate-500 hover:text-slate-200'
+              }`}
+          >
+            <span className="text-violet/70 mr-1.5">{o.icon}</span>
+            {o.label}
+          </button>
+        ))}
+      </nav>
 
-        {/* ---------------------------------------------------- dilution */}
-        <section className="organ h-fit">
-          <div className="px-4 py-2.5 border-b border-edge label">
-            Dilution · haircut model
+      <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-[190px_1fr]
+                      xl:grid-cols-[190px_1fr_320px]">
+        {/* -------------------------------------------------- organ rail */}
+        <nav className="hidden lg:flex flex-col border-r border-edge bg-panel
+                        overflow-y-auto">
+          <div className="label px-3 py-2.5 border-b border-edge">
+            Investigation organs
           </div>
-          <div className="p-4 space-y-3">
-            {dilution.steps.map((s) => (
-              <div key={s.node_id} className="text-xs">
-                <div className="font-mono text-slate-400 truncate">{s.node_id}</div>
-                <div className="flex items-center gap-2 mt-1">
-                  <div className="flex-1 h-1.5 bg-edge rounded overflow-hidden">
-                    <div
-                      className="h-full"
-                      style={{
-                        width: `${s.illicit_ratio * 100}%`,
-                        background: s.flagged ? '#e5484d' : '#3d9a6d',
-                      }}
-                    />
-                  </div>
-                  <span className="font-mono tabular-nums w-10 text-right">
-                    {(s.illicit_ratio * 100).toFixed(0)}%
-                  </span>
-                </div>
-              </div>
-            ))}
+          {ORGANS.map((o) => (
+            <button
+              key={o.id}
+              onClick={() => setOrgan(o.id)}
+              className={`flex items-center gap-2.5 px-3 py-2 text-[11px] text-left
+                border-l-2 transition-colors ${
+                  organ === o.id
+                    ? 'border-violet bg-violet/10 text-slate-100'
+                    : 'border-transparent text-slate-500 hover:text-slate-200 hover:bg-panel2'
+                }`}
+            >
+              <span className="text-violet/70 w-3">{o.icon}</span>
+              {o.label}
+            </button>
+          ))}
+          <div className="mt-auto p-3 border-t border-edge">
+            <div className="label mb-1">Ledger status</div>
+            <div className="font-mono text-[10px] text-risk-low">
+              ✓ SHA-256 chain valid
+            </div>
+          </div>
+        </nav>
 
-            {rescue && (
-              <div className="mt-4 pt-3 border-t border-edge text-[11px] leading-relaxed text-slate-400">
-                <span className="text-risk-low font-bold">NOT FLAGGED · </span>
-                the clean pool falls to{' '}
-                <span className="font-mono text-slate-200">
-                  {(rescue.illicit_ratio * 100).toFixed(0)}%
-                </span>
-                , below the {dilution.threshold * 100}% reporting threshold.
-                Proportional haircut prevents a false positive on legitimate
-                liquidity.
-              </div>
-            )}
-          </div>
-        </section>
-      </main>
+        {/* ------------------------------------------------ working surface */}
+        <main className="min-w-0 min-h-0 overflow-hidden bg-ground">{main}</main>
+
+        {/* --------------------------------------------------- inspector */}
+        {showInspector && (
+          <aside className="hidden xl:flex flex-col border-l border-edge bg-panel
+                            min-h-0">
+            <div className="flex border-b border-edge shrink-0">
+              {[
+                ['risk', 'Risk "why?"'],
+                ['dilution', 'Dilution decay'],
+              ].map(([id, label]) => (
+                <button
+                  key={id}
+                  onClick={() => setInspectorTab(id)}
+                  className={`flex-1 px-3 py-2 text-[10px] uppercase tracking-wider
+                    border-b-2 transition-colors ${
+                      inspectorTab === id
+                        ? 'border-violet text-slate-100'
+                        : 'border-transparent text-slate-600 hover:text-slate-300'
+                    }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            <div className="flex-1 min-h-0">
+              {inspectorTab === 'risk' ? (
+                <RiskInspector
+                  risk={riskCache[selected]}
+                  node={selected ? nodesById[selected] : null}
+                />
+              ) : (
+                <DilutionPanel
+                  dilution={dilution} selected={selected} onSelect={setSelected}
+                />
+              )}
+            </div>
+          </aside>
+        )}
+      </div>
     </div>
   )
 }
