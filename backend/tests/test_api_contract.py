@@ -1,0 +1,171 @@
+"""
+API contract tests - Phase 1 acceptance gate.
+
+Proves every endpoint in SPEC section 08 exists and returns the frozen shape.
+These run against the fixture stubs today and must keep passing unchanged after
+Phase 2 swaps in the real engines. If one of these breaks during Phase 2, the
+engine is wrong - not the test.
+"""
+
+import pytest
+from fastapi.testclient import TestClient
+
+from backend.app.main import app
+
+CASE = "CP-CYBER-2026-001"
+SEED = "0xa7f39c1d8e4b2a5f7c3d9e0a1b8c6d4e5f2a67e9"
+RESCUE = "0xd90f42a17c58e03b96d1f47a20c85e39b7f481ab"
+
+client = TestClient(app)
+
+
+# ------------------------------------------------------------------ system
+
+def test_health():
+    r = client.get("/api/health")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["status"] in {"ok", "degraded"}
+    assert set(body["components"]) == {
+        "database", "graph_engine", "report_engine",
+        "llm_configured", "etherscan_configured",
+    }
+
+
+def test_openapi_exposes_every_specified_endpoint():
+    paths = client.get("/openapi.json").json()["paths"]
+    expected = [
+        "/api/health",
+        "/api/cases",
+        "/api/cases/{case_id}",
+        "/api/cases/{case_id}/evidence",
+        "/api/cases/{case_id}/trace",
+        "/api/cases/{case_id}/graph",
+        "/api/cases/{case_id}/timeline",
+        "/api/cases/{case_id}/nodes/{node_id}/risk",
+        "/api/cases/{case_id}/dilution",
+        "/api/cases/{case_id}/audit",
+        "/api/cases/{case_id}/report",
+        "/api/labels/{address}",
+    ]
+    for p in expected:
+        assert p in paths, f"missing endpoint: {p}"
+
+
+# ------------------------------------------------------------------- cases
+
+def test_list_and_get_case():
+    assert client.get("/api/cases").status_code == 200
+    body = client.get(f"/api/cases/{CASE}").json()
+    assert body["case_id"] == CASE
+    assert body["victim_amount_inr"] == 470000.0
+    assert body["seed_wallet"] == SEED
+
+
+def test_unknown_case_is_404():
+    assert client.get("/api/cases/NOPE-123").status_code == 404
+
+
+# ------------------------------------------------------------------- graph
+
+def test_graph_is_cytoscape_ready():
+    body = client.get(f"/api/cases/{CASE}/graph").json()
+    assert body["stats"]["nodes"] == 14
+    assert body["stats"]["edges"] == 17
+    nodes = body["elements"]["nodes"]
+    edges = body["elements"]["edges"]
+    assert all("data" in n and "id" in n["data"] for n in nodes)
+    assert all({"source", "target"} <= set(e["data"]) for e in edges)
+
+
+def test_seed_node_scores_sixty_five():
+    """Locked against the published UI mockup."""
+    body = client.get(f"/api/cases/{CASE}/graph").json()
+    seed = next(n["data"] for n in body["elements"]["nodes"] if n["data"]["is_seed"])
+    assert seed["risk_score"] == 65
+    assert seed["risk_level"] == "HIGH"
+
+
+def test_graph_contains_one_inferred_edge():
+    body = client.get(f"/api/cases/{CASE}/graph").json()
+    inferred = [
+        e for e in body["elements"]["edges"]
+        if e["data"]["evidence_type"] == "inferred_correlation"
+    ]
+    assert len(inferred) == 1, "the confirmed/inferred distinction must be visible"
+
+
+def test_trace_rejects_depth_beyond_the_ceiling():
+    r = client.post(f"/api/cases/{CASE}/trace",
+                    json={"seed": SEED, "max_depth": 99})
+    assert r.status_code == 400
+
+
+def test_trace_returns_ids():
+    r = client.post(f"/api/cases/{CASE}/trace",
+                    json={"seed": SEED, "max_depth": 3})
+    assert r.status_code == 200
+    body = r.json()
+    assert len(body["node_ids"]) == 14
+    assert len(body["edge_ids"]) == 17
+
+
+# -------------------------------------------------------------------- risk
+
+def test_seed_risk_indicators_are_all_evidenced():
+    body = client.get(f"/api/cases/{CASE}/nodes/{SEED}/risk").json()
+    assert body["score"] == 65
+    assert sum(i["points"] for i in body["indicators"]) == 65
+    for ind in body["indicators"]:
+        assert ind["evidence"].strip(), "an indicator with no evidence is invalid"
+
+
+def test_risk_resolves_for_a_non_seed_node():
+    r = client.get(f"/api/cases/{CASE}/nodes/{RESCUE}/risk")
+    assert r.status_code == 200
+    assert r.json()["illicit_ratio"] == 0.12
+
+
+def test_unknown_node_is_404():
+    r = client.get(f"/api/cases/{CASE}/nodes/0xdeadbeef/risk")
+    assert r.status_code == 404
+
+
+# ---------------------------------------------------------------- dilution
+
+def test_dilution_shows_the_rescue():
+    body = client.post(f"/api/cases/{CASE}/dilution").json()
+    pool = next(s for s in body["steps"] if s["node_id"] == RESCUE)
+    assert pool["illicit_ratio"] == 0.12
+    assert pool["flagged"] is False
+    assert body["threshold"] == 0.30
+
+
+# --------------------------------------------------- timeline / evidence / audit
+
+def test_timeline_is_sorted_with_deltas():
+    body = client.get(f"/api/cases/{CASE}/timeline").json()
+    assert len(body) == 17
+    assert [e["timestamp"] for e in body] == sorted(e["timestamp"] for e in body)
+    assert body[0]["delta_seconds_prev"] == 0
+    assert body[1]["delta_seconds_prev"] == 13   # the +13s UPI->exchange gap
+
+
+def test_evidence_hashes_match():
+    body = client.get(f"/api/cases/{CASE}/evidence").json()
+    for ev in body:
+        assert ev["sha256_client"] == ev["sha256_server"]
+        assert ev["hash_match"] is True
+
+
+def test_audit_log_records_the_trace():
+    actions = [a["action"] for a in client.get(f"/api/cases/{CASE}/audit").json()]
+    assert "CASE_CREATED" in actions
+    assert "TRACE_RUN" in actions
+
+
+# ------------------------------------------------------------------ report
+
+def test_report_is_declared_but_not_yet_implemented():
+    """Phase 5. The contract exists so FE2 can wire the Export button now."""
+    assert client.post(f"/api/cases/{CASE}/report").status_code == 501

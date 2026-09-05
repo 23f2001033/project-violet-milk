@@ -1,0 +1,39 @@
+{
+  "node_id": "0xa7f39c1d8e4b2a5f7c3d9e0a1b8c6d4e5f2a67e9",
+  "case_id": "CP-CYBER-2026-001",
+  "score": 65,
+  "level": "HIGH",
+  "illicit_ratio": 1.0,
+  "engine_version": "risk-1.0",
+  "computed_at": "2026-09-08T10:35:18+05:30",
+  "indicators": [
+    {
+      "rule_id": "R1",
+      "name": "Proximity to known scam cluster",
+      "points": 20,
+      "evidence": "hop_depth=0 (case seed address)",
+      "confidence": "confirmed"
+    },
+    {
+      "rule_id": "R2",
+      "name": "Rapid automated dispersal",
+      "points": 15,
+      "evidence": "received 10:32:02, first outbound 10:35:02 (+3m00s)",
+      "confidence": "confirmed"
+    },
+    {
+      "rule_id": "R3",
+      "name": "Mixer contract interaction",
+      "points": 15,
+      "evidence": "E04 -> 0x8589...0b6f, 1,500 USDT",
+      "confidence": "confirmed"
+    },
+    {
+      "rule_id": "R4",
+      "name": "Cross-chain bridge exposure",
+      "points": 15,
+      "evidence": "bridge 0xbb17...c530 reached within 2 hops",
+      "confidence": "inferred"
+    }
+  ]
+}

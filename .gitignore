@@ -1,0 +1,30 @@
+# --- secrets: NEVER commit ---
+.env
+
+# --- python ---
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+*.db
+*.sqlite3
+
+# --- node ---
+node_modules/
+dist/
+.vite/
+npm-debug.log*
+
+# --- generated artefacts ---
+backend/app/data/live_cache/*.json
+backend/generated_reports/
+*.pdf.tmp
+
+# --- os / editor ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp

@@ -1,0 +1,38 @@
+{
+  "case_id": "CP-CYBER-2026-001",
+  "threshold": 0.3,
+  "version": "haircut-1.0",
+  "computed_at": "2026-09-08T10:35:18+05:30",
+  "steps": [
+    {
+      "node_id": "0xa7f39c1d8e4b2a5f7c3d9e0a1b8c6d4e5f2a67e9",
+      "prior_balance": 0.0,
+      "incoming_amount": 5200.0,
+      "incoming_ratio": 1.0,
+      "dirty_received": 5200.0,
+      "total_after": 5200.0,
+      "illicit_ratio": 1.0,
+      "flagged": true
+    },
+    {
+      "node_id": "0x2d81b6f09c3a7e54d21b8f60a93c7e15d40b7f43",
+      "prior_balance": 1200.0,
+      "incoming_amount": 1800.0,
+      "incoming_ratio": 1.0,
+      "dirty_received": 1800.0,
+      "total_after": 3000.0,
+      "illicit_ratio": 0.6,
+      "flagged": true
+    },
+    {
+      "node_id": "0xd90f42a17c58e03b96d1f47a20c85e39b7f481ab",
+      "prior_balance": 8000.0,
+      "incoming_amount": 2000.0,
+      "incoming_ratio": 0.6,
+      "dirty_received": 1200.0,
+      "total_after": 10000.0,
+      "illicit_ratio": 0.12,
+      "flagged": false
+    }
+  ]
+}

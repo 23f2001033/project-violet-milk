@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+  body {
+    @apply bg-ground text-slate-200 antialiased;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    margin: 0;
+  }
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-violet;
+  }
+}
+
+@layer components {
+  .organ {
+    @apply bg-panel border border-edge rounded;
+  }
+  .label {
+    @apply text-[10px] uppercase tracking-[0.14em] text-slate-500 font-semibold;
+  }
+}

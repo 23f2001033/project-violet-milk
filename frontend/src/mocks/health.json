@@ -1,0 +1,12 @@
+{
+  "status": "ok",
+  "data_mode": "synthetic",
+  "version": "0.1.0",
+  "components": {
+    "database": true,
+    "graph_engine": true,
+    "report_engine": true,
+    "llm_configured": false,
+    "etherscan_configured": false
+  }
+}

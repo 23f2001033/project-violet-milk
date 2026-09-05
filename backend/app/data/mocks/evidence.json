@@ -1,0 +1,22 @@
+[
+  {
+    "evidence_id": "EV-8f3a2c17",
+    "case_id": "CP-CYBER-2026-001",
+    "filename": "Bank_Stmt_SBI.csv",
+    "file_type": "csv",
+    "size_bytes": 1258291,
+    "sha256_client": "9f8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d2e1f0a9b8c7d6e5f4a3b2c1d0e9f8a",
+    "sha256_server": "9f8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d2e1f0a9b8c7d6e5f4a3b2c1d0e9f8a",
+    "hash_match": true,
+    "is_synthetic": true,
+    "row_count": 17,
+    "column_mapping": {
+      "UTR": "utr",
+      "Txn Date": "timestamp",
+      "Withdrawal Amt.": "amount",
+      "Bank": "bank"
+    },
+    "uploaded_at": "2026-09-08T10:30:45+05:30",
+    "uploaded_by": "IO_SHARMA"
+  }
+]

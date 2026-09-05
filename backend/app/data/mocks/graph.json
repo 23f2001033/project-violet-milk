@@ -1,0 +1,452 @@
+{
+  "case_id": "CP-CYBER-2026-001",
+  "data_mode": "synthetic",
+  "stats": {
+    "nodes": 14,
+    "edges": 17,
+    "max_depth_reached": 3,
+    "traced_at": "2026-09-08T10:35:18+05:30",
+    "source": "SyntheticSource",
+    "truncated": false
+  },
+  "elements": {
+    "nodes": [
+      {
+        "data": {
+          "id": "VICTIM_4471",
+          "label": "Complainant (synthetic)",
+          "type": "victim",
+          "chain": "bank_inr",
+          "risk_score": 0,
+          "risk_level": "LOW",
+          "illicit_ratio": 0.0,
+          "balance": 0.0,
+          "is_seed": false,
+          "label_confidence": "confirmed"
+        }
+      },
+      {
+        "data": {
+          "id": "SBI_XXXXXXXX8891",
+          "label": "Mule Account - SBI (synthetic)",
+          "type": "bank_account",
+          "chain": "bank_inr",
+          "risk_score": 35,
+          "risk_level": "MEDIUM",
+          "illicit_ratio": 1.0,
+          "balance": 0.0,
+          "is_seed": false,
+          "label_confidence": "confirmed"
+        }
+      },
+      {
+        "data": {
+          "id": "0x3f1a7d92c04e8b56af10d3e7b829c45d6e0a71bc",
+          "label": "CEX Deposit Address (synthetic)",
+          "type": "exchange",
+          "chain": "ethereum",
+          "risk_score": 35,
+          "risk_level": "MEDIUM",
+          "illicit_ratio": 1.0,
+          "balance": 0.0,
+          "is_seed": false,
+          "label_confidence": "inferred"
+        }
+      },
+      {
+        "data": {
+          "id": "0xa7f39c1d8e4b2a5f7c3d9e0a1b8c6d4e5f2a67e9",
+          "label": "Target Seed Wallet",
+          "type": "wallet",
+          "chain": "ethereum",
+          "risk_score": 65,
+          "risk_level": "HIGH",
+          "illicit_ratio": 1.0,
+          "balance": 0.0,
+          "is_seed": true,
+          "label_confidence": "confirmed"
+        }
+      },
+      {
+        "data": {
+          "id": "0x8589f2c47b1d0a63e95482f7ca1b3d6e0f4a0b6f",
+          "label": "Mixer Contract (synthetic)",
+          "type": "mixer",
+          "chain": "ethereum",
+          "risk_score": 35,
+          "risk_level": "MEDIUM",
+          "illicit_ratio": 1.0,
+          "balance": 1900.0,
+          "is_seed": false,
+          "label_confidence": "confirmed"
+        }
+      },
+      {
+        "data": {
+          "id": "0x9c04a7e3b21d5f86c0a94e7d2b83f150c6ead21e",
+          "label": "Dispersal Wallet 1",
+          "type": "wallet",
+          "chain": "ethereum",
+          "risk_score": 75,
+          "risk_level": "CRITICAL",
+          "illicit_ratio": 1.0,
+          "balance": 0.0,
+          "is_seed": false,
+          "label_confidence": "unknown"
+        }
+      },
+      {
+        "data": {
+          "id": "0x2d81b6f09c3a7e54d21b8f60a93c7e15d40b7f43",
+          "label": "Dispersal Wallet 2",
+          "type": "wallet",
+          "chain": "ethereum",
+          "risk_score": 20,
+          "risk_level": "LOW",
+          "illicit_ratio": 0.6,
+          "balance": 1000.0,
+          "is_seed": false,
+          "label_confidence": "unknown"
+        }
+      },
+      {
+        "data": {
+          "id": "0x5e77c1a03d9b62f48e07c5a1b3d92f60e84ca908",
+          "label": "Dispersal Wallet 3",
+          "type": "wallet",
+          "chain": "ethereum",
+          "risk_score": 35,
+          "risk_level": "MEDIUM",
+          "illicit_ratio": 1.0,
+          "balance": 0.0,
+          "is_seed": false,
+          "label_confidence": "unknown"
+        }
+      },
+      {
+        "data": {
+          "id": "0x1b93d5f27a08c6e41d3b90f52a7c68e04b1d4c67",
+          "label": "Dispersal Wallet 4",
+          "type": "wallet",
+          "chain": "ethereum",
+          "risk_score": 20,
+          "risk_level": "LOW",
+          "illicit_ratio": 1.0,
+          "balance": 400.0,
+          "is_seed": false,
+          "label_confidence": "unknown"
+        }
+      },
+      {
+        "data": {
+          "id": "0x7a2fe80c14d3b96a05e72f18c4d60b39a7e2b115",
+          "label": "Dispersal Wallet 5",
+          "type": "wallet",
+          "chain": "ethereum",
+          "risk_score": 15,
+          "risk_level": "LOW",
+          "illicit_ratio": 1.0,
+          "balance": 0.0,
+          "is_seed": false,
+          "label_confidence": "unknown"
+        }
+      },
+      {
+        "data": {
+          "id": "0x4c60a2d19f38b75e0c2a6d491f83b70e5c2ae882",
+          "label": "Dispersal Wallet 6",
+          "type": "wallet",
+          "chain": "ethereum",
+          "risk_score": 0,
+          "risk_level": "LOW",
+          "illicit_ratio": 1.0,
+          "balance": 250.0,
+          "is_seed": false,
+          "label_confidence": "unknown"
+        }
+      },
+      {
+        "data": {
+          "id": "0xe38b17d02c95a4f61b83d07e29c5a4f18b6039da",
+          "label": "Dispersal Wallet 7",
+          "type": "wallet",
+          "chain": "ethereum",
+          "risk_score": 0,
+          "risk_level": "LOW",
+          "illicit_ratio": 1.0,
+          "balance": 200.0,
+          "is_seed": false,
+          "label_confidence": "unknown"
+        }
+      },
+      {
+        "data": {
+          "id": "0xbb17d4a09e26c35f81b0d7a94e13c68f05b2c530",
+          "label": "Cross-Chain Bridge (synthetic)",
+          "type": "bridge",
+          "chain": "ethereum",
+          "risk_score": 15,
+          "risk_level": "LOW",
+          "illicit_ratio": 1.0,
+          "balance": 650.0,
+          "is_seed": false,
+          "label_confidence": "inferred"
+        }
+      },
+      {
+        "data": {
+          "id": "0xd90f42a17c58e03b96d1f47a20c85e39b7f481ab",
+          "label": "High-Liquidity Pool (clean)",
+          "type": "wallet",
+          "chain": "ethereum",
+          "risk_score": 0,
+          "risk_level": "LOW",
+          "illicit_ratio": 0.12,
+          "balance": 10000.0,
+          "is_seed": false,
+          "label_confidence": "inferred"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "data": {
+          "id": "E01",
+          "source": "VICTIM_4471",
+          "target": "SBI_XXXXXXXX8891",
+          "amount": 470000.0,
+          "asset": "INR",
+          "timestamp": "2026-09-08T10:31:04+05:30",
+          "evidence_type": "confirmed_bank",
+          "tx_hash": null,
+          "block_number": null,
+          "hop_depth": 2
+        }
+      },
+      {
+        "data": {
+          "id": "E02",
+          "source": "SBI_XXXXXXXX8891",
+          "target": "0x3f1a7d92c04e8b56af10d3e7b829c45d6e0a71bc",
+          "amount": 470000.0,
+          "asset": "INR",
+          "timestamp": "2026-09-08T10:31:17+05:30",
+          "evidence_type": "inferred_correlation",
+          "tx_hash": null,
+          "block_number": null,
+          "hop_depth": 1
+        }
+      },
+      {
+        "data": {
+          "id": "E03",
+          "source": "0x3f1a7d92c04e8b56af10d3e7b829c45d6e0a71bc",
+          "target": "0xa7f39c1d8e4b2a5f7c3d9e0a1b8c6d4e5f2a67e9",
+          "amount": 5200.0,
+          "asset": "USDT",
+          "timestamp": "2026-09-08T10:32:02+05:30",
+          "evidence_type": "confirmed_onchain",
+          "tx_hash": "0xb8e067a8a09abeee82876fffc79315b580a4ddba010c0c86184e660efb7b9e1f",
+          "block_number": 19204512,
+          "hop_depth": 0
+        }
+      },
+      {
+        "data": {
+          "id": "E04",
+          "source": "0xa7f39c1d8e4b2a5f7c3d9e0a1b8c6d4e5f2a67e9",
+          "target": "0x8589f2c47b1d0a63e95482f7ca1b3d6e0f4a0b6f",
+          "amount": 1500.0,
+          "asset": "USDT",
+          "timestamp": "2026-09-08T10:35:02+05:30",
+          "evidence_type": "confirmed_onchain",
+          "tx_hash": "0xd76f7bf208573409b06989abb188603cfb4cc370579abae618d7f48a0d128cc0",
+          "block_number": 19204527,
+          "hop_depth": 1
+        }
+      },
+      {
+        "data": {
+          "id": "E05",
+          "source": "0xa7f39c1d8e4b2a5f7c3d9e0a1b8c6d4e5f2a67e9",
+          "target": "0x9c04a7e3b21d5f86c0a94e7d2b83f150c6ead21e",
+          "amount": 1200.0,
+          "asset": "USDT",
+          "timestamp": "2026-09-08T10:35:20+05:30",
+          "evidence_type": "confirmed_onchain",
+          "tx_hash": "0x9f749aef70b779b9850e404d3841461068486c3670b55568ad1f5bbdaa252b43",
+          "block_number": 19204529,
+          "hop_depth": 1
+        }
+      },
+      {
+        "data": {
+          "id": "E06",
+          "source": "0xa7f39c1d8e4b2a5f7c3d9e0a1b8c6d4e5f2a67e9",
+          "target": "0x2d81b6f09c3a7e54d21b8f60a93c7e15d40b7f43",
+          "amount": 1800.0,
+          "asset": "USDT",
+          "timestamp": "2026-09-08T10:35:44+05:30",
+          "evidence_type": "confirmed_onchain",
+          "tx_hash": "0xd928891c3545329267d969e80f66c4609eebd538330a180403e762a824b93bed",
+          "block_number": 19204531,
+          "hop_depth": 1
+        }
+      },
+      {
+        "data": {
+          "id": "E07",
+          "source": "0xa7f39c1d8e4b2a5f7c3d9e0a1b8c6d4e5f2a67e9",
+          "target": "0x5e77c1a03d9b62f48e07c5a1b3d92f60e84ca908",
+          "amount": 400.0,
+          "asset": "USDT",
+          "timestamp": "2026-09-08T10:36:10+05:30",
+          "evidence_type": "confirmed_onchain",
+          "tx_hash": "0xde135c6aff6d5eb54c5123441b45720090cd1211edf03e65d94faea0115879ff",
+          "block_number": 19204534,
+          "hop_depth": 1
+        }
+      },
+      {
+        "data": {
+          "id": "E08",
+          "source": "0xa7f39c1d8e4b2a5f7c3d9e0a1b8c6d4e5f2a67e9",
+          "target": "0x1b93d5f27a08c6e41d3b90f52a7c68e04b1d4c67",
+          "amount": 300.0,
+          "asset": "USDT",
+          "timestamp": "2026-09-08T10:36:33+05:30",
+          "evidence_type": "confirmed_onchain",
+          "tx_hash": "0xc0dbdcda9d91431c816977e2c402115d453c964dfe739ce704a96d035ee741db",
+          "block_number": 19204536,
+          "hop_depth": 1
+        }
+      },
+      {
+        "data": {
+          "id": "E09",
+          "source": "0x9c04a7e3b21d5f86c0a94e7d2b83f150c6ead21e",
+          "target": "0x7a2fe80c14d3b96a05e72f18c4d60b39a7e2b115",
+          "amount": 300.0,
+          "asset": "USDT",
+          "timestamp": "2026-09-08T10:38:02+05:30",
+          "evidence_type": "confirmed_onchain",
+          "tx_hash": "0x323342b64e5e2f16059e64119a1387b55d9af9e7f1c30087d69a3f16c7fb21ae",
+          "block_number": 19204543,
+          "hop_depth": 2
+        }
+      },
+      {
+        "data": {
+          "id": "E10",
+          "source": "0x9c04a7e3b21d5f86c0a94e7d2b83f150c6ead21e",
+          "target": "0x4c60a2d19f38b75e0c2a6d491f83b70e5c2ae882",
+          "amount": 250.0,
+          "asset": "USDT",
+          "timestamp": "2026-09-08T10:38:20+05:30",
+          "evidence_type": "confirmed_onchain",
+          "tx_hash": "0x7efdb9ede17f3593e55fb5e43476363c7bf83d45c1c1bd076c0f08465eb1f4f9",
+          "block_number": 19204545,
+          "hop_depth": 2
+        }
+      },
+      {
+        "data": {
+          "id": "E11",
+          "source": "0x9c04a7e3b21d5f86c0a94e7d2b83f150c6ead21e",
+          "target": "0xe38b17d02c95a4f61b83d07e29c5a4f18b6039da",
+          "amount": 200.0,
+          "asset": "USDT",
+          "timestamp": "2026-09-08T10:38:41+05:30",
+          "evidence_type": "confirmed_onchain",
+          "tx_hash": "0x20ac89512b4716720f3c5097411248f7c639b58ebbd357fd6d70f233d1426bf7",
+          "block_number": 19204547,
+          "hop_depth": 2
+        }
+      },
+      {
+        "data": {
+          "id": "E12",
+          "source": "0x9c04a7e3b21d5f86c0a94e7d2b83f150c6ead21e",
+          "target": "0xbb17d4a09e26c35f81b0d7a94e13c68f05b2c530",
+          "amount": 250.0,
+          "asset": "USDT",
+          "timestamp": "2026-09-08T10:39:05+05:30",
+          "evidence_type": "confirmed_onchain",
+          "tx_hash": "0x87f5fc2eb8acbd3519e92cc459af8776d818643ff7946f934d2f1be209b8a226",
+          "block_number": 19204549,
+          "hop_depth": 2
+        }
+      },
+      {
+        "data": {
+          "id": "E13",
+          "source": "0x9c04a7e3b21d5f86c0a94e7d2b83f150c6ead21e",
+          "target": "0x8589f2c47b1d0a63e95482f7ca1b3d6e0f4a0b6f",
+          "amount": 100.0,
+          "asset": "USDT",
+          "timestamp": "2026-09-08T10:39:28+05:30",
+          "evidence_type": "confirmed_onchain",
+          "tx_hash": "0x4eaa0e7922bed33289ed960b843c4f2df8c0a16c0939951d89dd36a809464457",
+          "block_number": 19204551,
+          "hop_depth": 1
+        }
+      },
+      {
+        "data": {
+          "id": "E14",
+          "source": "0x9c04a7e3b21d5f86c0a94e7d2b83f150c6ead21e",
+          "target": "0x1b93d5f27a08c6e41d3b90f52a7c68e04b1d4c67",
+          "amount": 100.0,
+          "asset": "USDT",
+          "timestamp": "2026-09-08T10:39:50+05:30",
+          "evidence_type": "confirmed_onchain",
+          "tx_hash": "0x9bbc29aa744ecd323c24310450206f9712bcdcbf3d2a9f7aa238270b27405e0a",
+          "block_number": 19204553,
+          "hop_depth": 1
+        }
+      },
+      {
+        "data": {
+          "id": "E15",
+          "source": "0x2d81b6f09c3a7e54d21b8f60a93c7e15d40b7f43",
+          "target": "0xd90f42a17c58e03b96d1f47a20c85e39b7f481ab",
+          "amount": 2000.0,
+          "asset": "USDT",
+          "timestamp": "2026-09-08T10:41:12+05:30",
+          "evidence_type": "confirmed_onchain",
+          "tx_hash": "0x2dbe01e08c579517e4e92d0f33b5af53474a7561d617918dae453fb6aa71e73c",
+          "block_number": 19204560,
+          "hop_depth": 2
+        }
+      },
+      {
+        "data": {
+          "id": "E16",
+          "source": "0x5e77c1a03d9b62f48e07c5a1b3d92f60e84ca908",
+          "target": "0xbb17d4a09e26c35f81b0d7a94e13c68f05b2c530",
+          "amount": 400.0,
+          "asset": "USDT",
+          "timestamp": "2026-09-08T10:42:03+05:30",
+          "evidence_type": "confirmed_onchain",
+          "tx_hash": "0x8a044776d5e04567e7165a6e691c0efeee22d8b7a114a1cd0f408cd1746bda04",
+          "block_number": 19204565,
+          "hop_depth": 2
+        }
+      },
+      {
+        "data": {
+          "id": "E17",
+          "source": "0x7a2fe80c14d3b96a05e72f18c4d60b39a7e2b115",
+          "target": "0x8589f2c47b1d0a63e95482f7ca1b3d6e0f4a0b6f",
+          "amount": 300.0,
+          "asset": "USDT",
+          "timestamp": "2026-09-08T10:44:19+05:30",
+          "evidence_type": "confirmed_onchain",
+          "tx_hash": "0x009613245a75fa4670b2ae1bdf050a0d9c016181b91c0a10b649016e7794aa4f",
+          "block_number": 19204576,
+          "hop_depth": 1
+        }
+      }
+    ]
+  }
+}

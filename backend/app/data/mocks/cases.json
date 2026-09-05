@@ -1,0 +1,18 @@
+[
+  {
+    "case_id": "CP-CYBER-2026-001",
+    "fir_ref": "FIR-2026-CHD-4471",
+    "ncrp_ref": "1930-NCRP-2026-98124",
+    "victim_name": "Complainant (synthetic)",
+    "victim_amount_inr": 470000.0,
+    "incident_datetime": "2026-09-08T10:31:04+05:30",
+    "seed_wallet": "0xa7f39c1d8e4b2a5f7c3d9e0a1b8c6d4e5f2a67e9",
+    "seed_utr": "420192830192",
+    "io_name": "IO_SHARMA",
+    "notes": "Victim received funds via UPI prior to USDT conversion.",
+    "status": "active",
+    "data_mode": "synthetic",
+    "created_at": "2026-09-08T10:30:12+05:30",
+    "updated_at": "2026-09-08T10:35:18+05:30"
+  }
+]

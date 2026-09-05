@@ -1,0 +1,15 @@
+node_id,node_type,label,chain,prior_balance,balance,is_seed,label_source,label_confidence
+VICTIM_4471,victim,Complainant (synthetic),bank_inr,470000.00,0.00,false,curated,confirmed
+SBI_XXXXXXXX8891,bank_account,Mule Account - SBI (synthetic),bank_inr,0.00,0.00,false,curated,confirmed
+0x3f1a7d92c04e8b56af10d3e7b829c45d6e0a71bc,exchange,CEX Deposit Address (synthetic),ethereum,0.00,0.00,false,curated,inferred
+0xa7f39c1d8e4b2a5f7c3d9e0a1b8c6d4e5f2a67e9,wallet,Target Seed Wallet,ethereum,0.00,0.00,true,curated,confirmed
+0x8589f2c47b1d0a63e95482f7ca1b3d6e0f4a0b6f,mixer,Mixer Contract (synthetic),ethereum,0.00,1900.00,false,curated,confirmed
+0x9c04a7e3b21d5f86c0a94e7d2b83f150c6ead21e,wallet,Dispersal Wallet 1,ethereum,0.00,0.00,false,none,unknown
+0x2d81b6f09c3a7e54d21b8f60a93c7e15d40b7f43,wallet,Dispersal Wallet 2,ethereum,1200.00,1000.00,false,none,unknown
+0x5e77c1a03d9b62f48e07c5a1b3d92f60e84ca908,wallet,Dispersal Wallet 3,ethereum,0.00,0.00,false,none,unknown
+0x1b93d5f27a08c6e41d3b90f52a7c68e04b1d4c67,wallet,Dispersal Wallet 4,ethereum,0.00,400.00,false,none,unknown
+0x7a2fe80c14d3b96a05e72f18c4d60b39a7e2b115,wallet,Dispersal Wallet 5,ethereum,0.00,0.00,false,none,unknown
+0x4c60a2d19f38b75e0c2a6d491f83b70e5c2ae882,wallet,Dispersal Wallet 6,ethereum,0.00,250.00,false,none,unknown
+0xe38b17d02c95a4f61b83d07e29c5a4f18b6039da,wallet,Dispersal Wallet 7,ethereum,0.00,200.00,false,none,unknown
+0xbb17d4a09e26c35f81b0d7a94e13c68f05b2c530,bridge,Cross-Chain Bridge (synthetic),ethereum,0.00,650.00,false,curated,inferred
+0xd90f42a17c58e03b96d1f47a20c85e39b7f481ab,wallet,High-Liquidity Pool (clean),ethereum,8000.00,10000.00,false,curated,inferred
