@@ -1,16 +1,27 @@
-"""Graph Engine  ·  owner: BE1  ·  Phase 1 = fixture stubs.
-
-Phase 2 replaces the fixture with SyntheticSource + bounded BFS. The response
-shape is frozen and Cytoscape-ready: the frontend performs no transformation.
-"""
+"""Graph Engine router  ·  owner: BE1  ·  Phase 2: real bounded traversal."""
 
 from fastapi import APIRouter, HTTPException
 
 from ..config import MAX_EDGES_PER_NODE, MAX_TRACE_DEPTH
-from ..models import GraphResponse, Label, TraceRequest, TraceResult
-from ..stubs import load
+from ..db import cursor
+from ..engines.pipeline import get_analysis
+from ..models import (
+    AuditAction, GraphResponse, Label, TraceRequest, TraceResult,
+)
+from ..services import audit
+from ..sources.synthetic import SyntheticSource
 
 router = APIRouter(prefix="/api", tags=["graph"])
+
+
+def _seed_for(case_id: str) -> str:
+    with cursor() as conn:
+        row = conn.execute(
+            "SELECT seed_wallet FROM cases WHERE case_id = ?", (case_id,)
+        ).fetchone()
+    if not row or not row["seed_wallet"]:
+        raise HTTPException(404, f"Case {case_id} has no seed wallet on record")
+    return row["seed_wallet"]
 
 
 @router.post("/cases/{case_id}/trace", response_model=TraceResult,
@@ -28,24 +39,43 @@ def run_trace(case_id: str, payload: TraceRequest):
             400, f"max_edges_per_node exceeds the ceiling of {MAX_EDGES_PER_NODE}."
         )
 
-    graph = load("graph.json")
+    a = get_analysis(
+        case_id, payload.seed,
+        max_depth=payload.max_depth,
+        min_amount=payload.min_amount,
+        max_edges_per_node=payload.max_edges_per_node,
+        time_window_hours=payload.time_window_hours,
+    )
+    if not a.nodes:
+        raise HTTPException(404, f"Seed {payload.seed} not present in this dataset")
+
+    audit.record(
+        case_id, AuditAction.TRACE_RUN, payload.seed,
+        details={"max_depth": payload.max_depth, "nodes": len(a.nodes),
+                 "edges": len(a.edges), "source": a.source_name,
+                 "truncated": a.truncated},
+    )
+
     return TraceResult(
         case_id=case_id,
         seed=payload.seed,
-        stats=graph["stats"],
-        node_ids=[n["data"]["id"] for n in graph["elements"]["nodes"]],
-        edge_ids=[e["data"]["id"] for e in graph["elements"]["edges"]],
+        stats=a.stats(),
+        node_ids=[n.node_id for n in a.nodes],
+        edge_ids=[e.edge_id for e in a.edges],
     )
 
 
 @router.get("/cases/{case_id}/graph", response_model=GraphResponse,
             summary="Cytoscape-ready node/edge elements")
 def get_graph(case_id: str):
-    return load("graph.json")
+    return get_analysis(case_id, _seed_for(case_id)).graph()
 
 
 @router.get("/labels/{address}", response_model=Label,
             summary="Resolve an address label")
 def get_label(address: str):
-    # BE1 Phase 2: curated known_addresses.json first, then the provider.
-    raise HTTPException(404, f"No label on record for {address}")
+    # Phase 6 adds the curated known_addresses.json lookup for live mode.
+    found = SyntheticSource("lookup").get_label(address)
+    if not found:
+        raise HTTPException(404, f"No label on record for {address}")
+    return found

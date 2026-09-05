@@ -1,13 +1,9 @@
-"""Audit Logger  ·  owner: BE3  ·  Phase 1 = fixture stubs.
-
-Append-only. There is no update or delete path, by design: the chain of custody
-must be reconstructible after the fact.
-"""
+"""Audit router  ·  owner: BE3  ·  Phase 2: real append-only log."""
 
 from fastapi import APIRouter
 
 from ..models import AuditLog
-from ..stubs import load
+from ..services import audit as audit_service
 
 router = APIRouter(prefix="/api/cases", tags=["audit"])
 
@@ -15,4 +11,4 @@ router = APIRouter(prefix="/api/cases", tags=["audit"])
 @router.get("/{case_id}/audit", response_model=list[AuditLog],
             summary="Chain-of-custody action log")
 def get_audit(case_id: str):
-    return load("audit.json")
+    return audit_service.for_case(case_id)

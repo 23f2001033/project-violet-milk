@@ -17,8 +17,8 @@ Built for the **Chandigarh Police Hackathon, 8 September 2026**.
 |-------|-------|-------|
 | **P0** | Foundations — repo, tree, env | ✅ done |
 | **P1** | Contract freeze, data model, demo dataset, mocks | ✅ done |
-| P2 | Backend engines (graph / risk / dilution / timeline) | ⬜ next |
-| P3 | Frontend organs | ⬜ |
+| **P2** | Backend engines (graph / risk / dilution / timeline) | ✅ done |
+| P3 | Frontend organs | ⬜ next |
 | P4 | Integration | ⬜ |
 | P5 | Sec 63 BSA dossier + AI layer | ⬜ |
 | P6 | Live mainnet mode | ⬜ |

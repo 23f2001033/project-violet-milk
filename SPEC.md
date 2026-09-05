@@ -187,7 +187,7 @@ Our output is the annexure that justifies that order.
 |---|---|---|
 | P0 | Foundations | ✅ |
 | P1 | Contract freeze, data model, dataset, mocks | ✅ |
-| P2 | Backend engines | ⬜ next |
+| P2 | Backend engines | ✅ |
 | P3 | Frontend organs | ⬜ |
 | P4 | Integration | ⬜ |
 | P5 | Sec 63 BSA dossier + AI layer | ⬜ |

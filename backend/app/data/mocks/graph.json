@@ -13,29 +13,15 @@
     "nodes": [
       {
         "data": {
-          "id": "VICTIM_4471",
-          "label": "Complainant (synthetic)",
-          "type": "victim",
-          "chain": "bank_inr",
-          "risk_score": 0,
-          "risk_level": "LOW",
-          "illicit_ratio": 0.0,
-          "balance": 0.0,
-          "is_seed": false,
-          "label_confidence": "confirmed"
-        }
-      },
-      {
-        "data": {
-          "id": "SBI_XXXXXXXX8891",
-          "label": "Mule Account - SBI (synthetic)",
-          "type": "bank_account",
-          "chain": "bank_inr",
-          "risk_score": 35,
-          "risk_level": "MEDIUM",
+          "id": "0xa7f39c1d8e4b2a5f7c3d9e0a1b8c6d4e5f2a67e9",
+          "label": "Target Seed Wallet",
+          "type": "wallet",
+          "chain": "ethereum",
+          "risk_score": 65,
+          "risk_level": "HIGH",
           "illicit_ratio": 1.0,
           "balance": 0.0,
-          "is_seed": false,
+          "is_seed": true,
           "label_confidence": "confirmed"
         }
       },
@@ -55,16 +41,16 @@
       },
       {
         "data": {
-          "id": "0xa7f39c1d8e4b2a5f7c3d9e0a1b8c6d4e5f2a67e9",
-          "label": "Target Seed Wallet",
+          "id": "0x2d81b6f09c3a7e54d21b8f60a93c7e15d40b7f43",
+          "label": "Dispersal Wallet 2",
           "type": "wallet",
           "chain": "ethereum",
-          "risk_score": 65,
-          "risk_level": "HIGH",
-          "illicit_ratio": 1.0,
-          "balance": 0.0,
-          "is_seed": true,
-          "label_confidence": "confirmed"
+          "risk_score": 20,
+          "risk_level": "LOW",
+          "illicit_ratio": 0.6,
+          "balance": 1000.0,
+          "is_seed": false,
+          "label_confidence": "unknown"
         }
       },
       {
@@ -91,20 +77,6 @@
           "risk_level": "CRITICAL",
           "illicit_ratio": 1.0,
           "balance": 0.0,
-          "is_seed": false,
-          "label_confidence": "unknown"
-        }
-      },
-      {
-        "data": {
-          "id": "0x2d81b6f09c3a7e54d21b8f60a93c7e15d40b7f43",
-          "label": "Dispersal Wallet 2",
-          "type": "wallet",
-          "chain": "ethereum",
-          "risk_score": 20,
-          "risk_level": "LOW",
-          "illicit_ratio": 0.6,
-          "balance": 1000.0,
           "is_seed": false,
           "label_confidence": "unknown"
         }
@@ -139,12 +111,40 @@
       },
       {
         "data": {
-          "id": "0x7a2fe80c14d3b96a05e72f18c4d60b39a7e2b115",
-          "label": "Dispersal Wallet 5",
+          "id": "SBI_XXXXXXXX8891",
+          "label": "Mule Account - SBI (synthetic)",
+          "type": "bank_account",
+          "chain": "bank_inr",
+          "risk_score": 15,
+          "risk_level": "LOW",
+          "illicit_ratio": 1.0,
+          "balance": 0.0,
+          "is_seed": false,
+          "label_confidence": "confirmed"
+        }
+      },
+      {
+        "data": {
+          "id": "0xd90f42a17c58e03b96d1f47a20c85e39b7f481ab",
+          "label": "High-Liquidity Pool (clean)",
           "type": "wallet",
           "chain": "ethereum",
           "risk_score": 15,
           "risk_level": "LOW",
+          "illicit_ratio": 0.12,
+          "balance": 10000.0,
+          "is_seed": false,
+          "label_confidence": "inferred"
+        }
+      },
+      {
+        "data": {
+          "id": "0x7a2fe80c14d3b96a05e72f18c4d60b39a7e2b115",
+          "label": "Dispersal Wallet 5",
+          "type": "wallet",
+          "chain": "ethereum",
+          "risk_score": 30,
+          "risk_level": "MEDIUM",
           "illicit_ratio": 1.0,
           "balance": 0.0,
           "is_seed": false,
@@ -157,24 +157,10 @@
           "label": "Dispersal Wallet 6",
           "type": "wallet",
           "chain": "ethereum",
-          "risk_score": 0,
+          "risk_score": 15,
           "risk_level": "LOW",
           "illicit_ratio": 1.0,
           "balance": 250.0,
-          "is_seed": false,
-          "label_confidence": "unknown"
-        }
-      },
-      {
-        "data": {
-          "id": "0xe38b17d02c95a4f61b83d07e29c5a4f18b6039da",
-          "label": "Dispersal Wallet 7",
-          "type": "wallet",
-          "chain": "ethereum",
-          "risk_score": 0,
-          "risk_level": "LOW",
-          "illicit_ratio": 1.0,
-          "balance": 200.0,
           "is_seed": false,
           "label_confidence": "unknown"
         }
@@ -185,8 +171,8 @@
           "label": "Cross-Chain Bridge (synthetic)",
           "type": "bridge",
           "chain": "ethereum",
-          "risk_score": 15,
-          "risk_level": "LOW",
+          "risk_score": 30,
+          "risk_level": "MEDIUM",
           "illicit_ratio": 1.0,
           "balance": 650.0,
           "is_seed": false,
@@ -195,16 +181,30 @@
       },
       {
         "data": {
-          "id": "0xd90f42a17c58e03b96d1f47a20c85e39b7f481ab",
-          "label": "High-Liquidity Pool (clean)",
+          "id": "0xe38b17d02c95a4f61b83d07e29c5a4f18b6039da",
+          "label": "Dispersal Wallet 7",
           "type": "wallet",
           "chain": "ethereum",
+          "risk_score": 15,
+          "risk_level": "LOW",
+          "illicit_ratio": 1.0,
+          "balance": 200.0,
+          "is_seed": false,
+          "label_confidence": "unknown"
+        }
+      },
+      {
+        "data": {
+          "id": "VICTIM_4471",
+          "label": "Complainant (synthetic)",
+          "type": "victim",
+          "chain": "bank_inr",
           "risk_score": 0,
           "risk_level": "LOW",
-          "illicit_ratio": 0.12,
-          "balance": 10000.0,
+          "illicit_ratio": 0.0,
+          "balance": 0.0,
           "is_seed": false,
-          "label_confidence": "inferred"
+          "label_confidence": "confirmed"
         }
       }
     ],

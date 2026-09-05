@@ -5,7 +5,7 @@
   "components": {
     "database": true,
     "graph_engine": true,
-    "report_engine": true,
+    "report_engine": false,
     "llm_configured": false,
     "etherscan_configured": false
   }

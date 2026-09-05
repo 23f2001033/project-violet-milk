@@ -11,9 +11,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 
-from . import config
+from . import config, db
 from .models import ComponentHealth, DataMode, HealthResponse
 from .routers import audit, cases, evidence, graph, report, risk, timeline
+from .seed import seed_demo_case
 
 app = FastAPI(
     title="Project Violet Milk",
@@ -41,6 +42,12 @@ app.add_middleware(
 for r in (cases, evidence, graph, risk, timeline, audit, report):
     app.include_router(r.router)
 
+# Initialise and seed at import rather than on a startup event. A startup hook
+# does not fire for a module-level TestClient, which silently left the schema
+# missing under pytest. This is idempotent and runs identically under uvicorn,
+# TestClient and any ad-hoc script.
+seed_demo_case()
+
 
 @app.get("/", include_in_schema=False)
 def root():
@@ -51,7 +58,7 @@ def root():
          summary="System status")
 def health():
     components = ComponentHealth(
-        database=True,          # BE3 Phase 2: real SQLite connectivity check
+        database=db.healthy(),
         graph_engine=True,
         report_engine=False,    # lands in Phase 5
         llm_configured=config.LLM_CONFIGURED,

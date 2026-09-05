@@ -1,0 +1,173 @@
+"""
+Analysis pipeline — the one place the engines are composed.
+
+Routers call `analyse()` and never orchestrate engines themselves, so trace,
+graph, risk, dilution and timeline can never disagree about the same case.
+
+Order matters: dilution must run before risk, because a node's illicit ratio is
+an input to its assessment.
+"""
+
+from dataclasses import dataclass
+from datetime import datetime, timezone
+from functools import lru_cache
+
+from ..models import (
+    CyEdge, CyEdgeData, CyElements, CyNode, CyNodeData, DataMode,
+    DilutionResult, Edge, GraphResponse, GraphStats, Node, NodeType,
+    RiskAssessment, TimelineEvent,
+)
+from ..sources.base import DataSource
+from ..sources.synthetic import SyntheticSource
+from .dilution import compute_dilution
+from .graph_engine import bounded_trace
+from .risk_engine import assess
+from .timeline import build_timeline
+
+
+@dataclass
+class CaseAnalysis:
+    case_id: str
+    seed: str
+    source_name: str
+    is_live: bool
+    nodes: list[Node]
+    edges: list[Edge]
+    hop_depth: dict[str, int]
+    truncated: bool
+    dilution: DilutionResult
+    illicit_ratio: dict[str, float]
+    risk: dict[str, RiskAssessment]
+    timeline: list[TimelineEvent]
+    traced_at: str
+
+    # ---------------------------------------------------------- projections
+
+    def stats(self) -> GraphStats:
+        return GraphStats(
+            nodes=len(self.nodes),
+            edges=len(self.edges),
+            max_depth_reached=max(self.hop_depth.values(), default=0),
+            traced_at=self.traced_at,
+            source=self.source_name,
+            truncated=self.truncated,
+        )
+
+    def graph(self) -> GraphResponse:
+        cy_nodes = [
+            CyNode(data=CyNodeData(
+                id=n.node_id,
+                label=n.label,
+                type=n.node_type,
+                chain=n.chain,
+                risk_score=self.risk[n.node_id].score,
+                risk_level=self.risk[n.node_id].level,
+                illicit_ratio=self.illicit_ratio.get(n.node_id, 0.0),
+                balance=n.balance,
+                is_seed=n.is_seed,
+                label_confidence=n.label_confidence,
+            ))
+            for n in self.nodes
+        ]
+        cy_edges = [
+            CyEdge(data=CyEdgeData(
+                id=e.edge_id,
+                source=e.from_node,
+                target=e.to_node,
+                amount=e.amount,
+                asset=e.asset,
+                timestamp=e.timestamp,
+                evidence_type=e.evidence_type,
+                tx_hash=e.tx_hash,
+                block_number=e.block_number,
+                hop_depth=e.hop_depth,
+            ))
+            for e in self.edges
+        ]
+        return GraphResponse(
+            case_id=self.case_id,
+            data_mode=DataMode.LIVE if self.is_live else DataMode.SYNTHETIC,
+            stats=self.stats(),
+            elements=CyElements(nodes=cy_nodes, edges=cy_edges),
+        )
+
+
+def analyse(
+    case_id: str,
+    seed: str,
+    source: DataSource | None = None,
+    max_depth: int = 3,
+    min_amount: float = 0.0,
+    max_edges_per_node: int = 20,
+    time_window_hours: int = 72,
+    incident_at: str | None = None,
+) -> CaseAnalysis:
+    src = source or SyntheticSource(case_id)
+
+    all_nodes = src.all_nodes() if hasattr(src, "all_nodes") else []
+    all_edges = src.all_edges() if hasattr(src, "all_edges") else \
+        src.get_transactions(seed, limit=500)
+
+    nodes, edges, hop, truncated = bounded_trace(
+        all_nodes, all_edges, seed,
+        max_depth=max_depth,
+        min_amount=min_amount,
+        max_edges_per_node=max_edges_per_node,
+        time_window_hours=time_window_hours,
+        incident_at=incident_at,
+    )
+
+    # Dilution BEFORE risk - the ratio is an input to the assessment.
+    dilution, ratios = compute_dilution(case_id, nodes, edges)
+
+    victim_debit = next(
+        (e.timestamp for e in sorted(edges, key=lambda x: x.timestamp)
+         if e.evidence_type.value == "confirmed_bank"),
+        None,
+    )
+
+    risk = {
+        n.node_id: assess(
+            case_id, n, nodes, edges, hop, ratios, victim_debit_at=victim_debit
+        )
+        for n in nodes
+    }
+
+    return CaseAnalysis(
+        case_id=case_id,
+        seed=seed,
+        source_name=src.source_name(),
+        is_live=src.is_live(),
+        nodes=nodes,
+        edges=edges,
+        hop_depth=hop,
+        truncated=truncated,
+        dilution=dilution,
+        illicit_ratio=ratios,
+        risk=risk,
+        timeline=build_timeline(case_id, nodes, edges),
+        traced_at=datetime.now(timezone.utc).isoformat(),
+    )
+
+
+@lru_cache(maxsize=16)
+def _cached(case_id: str, seed: str, depth: int, min_amount: float,
+            per_node: int, window: int) -> CaseAnalysis:
+    return analyse(
+        case_id, seed, max_depth=depth, min_amount=min_amount,
+        max_edges_per_node=per_node, time_window_hours=window,
+    )
+
+
+def get_analysis(
+    case_id: str, seed: str, max_depth: int = 3, min_amount: float = 0.0,
+    max_edges_per_node: int = 20, time_window_hours: int = 72,
+) -> CaseAnalysis:
+    """Cached entry point. Traces are pure functions of their bounds, so
+    repeating one within a demo costs nothing."""
+    return _cached(case_id, seed.lower(), max_depth, min_amount,
+                   max_edges_per_node, time_window_hours)
+
+
+def clear_cache() -> None:
+    _cached.cache_clear()
