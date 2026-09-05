@@ -28,6 +28,10 @@ export default function ReportExport({ kase }) {
     try {
       const r = await generateReport(kase.case_id)
       setState({ status: 'done', result: r })
+      // Open in a new tab rather than forcing a save: on stage the officer
+      // wants to SHOW the dossier, and a silent download to disk looks like
+      // nothing happened.
+      window.open(r.download_url, '_blank', 'noopener')
     } catch (e) {
       setState({ status: 'error', error: e.message })
     }
@@ -90,12 +94,37 @@ export default function ReportExport({ kase }) {
               {state.error}
             </span>
           )}
-          {state.status === 'done' && (
-            <span className="text-[11px] text-risk-low font-mono">
-              {state.result.filename} · {state.result.sha256?.slice(0, 16)}…
-            </span>
-          )}
         </div>
+
+        {state.status === 'done' && (
+          <div className="organ p-3 space-y-2">
+            <div className="text-[10px] font-bold uppercase tracking-wider text-risk-low">
+              ✓ Dossier generated · {state.result.page_count} pages
+            </div>
+            <div>
+              <div className="label mb-1">
+                Detached verification record · SHA-256
+              </div>
+              <code className="block font-mono text-[10px] text-slate-300 break-all
+                               bg-panel2 rounded px-2 py-1.5">
+                {state.result.sha256}
+              </code>
+              <p className="text-[10px] text-slate-600 mt-1 leading-relaxed">
+                A document cannot contain its own digest, so this hash is issued
+                separately and written to the chain-of-custody log. Verify by
+                computing SHA-256 of the downloaded PDF and comparing.
+              </p>
+            </div>
+            <a
+              href={state.result.download_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block text-[11px] text-violet hover:underline font-mono"
+            >
+              {state.result.filename} ↗
+            </a>
+          </div>
+        )}
 
         <p className="text-[10px] text-slate-600 leading-relaxed">
           The generated document records analytical findings and the integrity

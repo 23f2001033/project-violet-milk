@@ -1,0 +1,6 @@
+{
+  "content": "{\"timestamp\":\"Transaction Date\",\"description\":\"Transaction Remarks\",\"amount\":\"Withdrawal Amount (INR )\"}",
+  "meta": {
+    "model": "openai/gpt-oss-120b"
+  }
+}

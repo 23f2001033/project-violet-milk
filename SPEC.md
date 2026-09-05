@@ -190,8 +190,8 @@ Our output is the annexure that justifies that order.
 | P2 | Backend engines | ✅ |
 | P3 | Frontend organs | ✅ |
 | P4 | Integration | ✅ |
-| P5 | Sec 63 BSA dossier + AI layer | ⬜ next |
-| P6 | Live mainnet mode | ⬜ |
+| P5 | Sec 63 BSA dossier + AI layer | ✅ |
+| P6 | Live mainnet mode | ⬜ next |
 | P7 | Harden, correct the deck, rehearse | ⬜ |
 
 ---

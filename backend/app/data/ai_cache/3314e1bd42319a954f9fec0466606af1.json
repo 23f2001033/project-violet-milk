@@ -1,0 +1,6 @@
+{
+  "content": "{\"utr\":\"Chq/Ref Number\",\"timestamp\":\"Value Dt\",\"bank\":\"Bank Name\",\"description\":\"Narration\",\"amount\":\"Withdrawal Amt.\"}",
+  "meta": {
+    "model": "openai/gpt-oss-120b"
+  }
+}

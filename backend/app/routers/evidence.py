@@ -17,7 +17,7 @@ from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 
 from ..db import cursor, row_to_evidence
 from ..models import AuditAction, Evidence
-from ..services import audit, hashing
+from ..services import audit, column_mapper, hashing
 
 router = APIRouter(prefix="/api/cases", tags=["evidence"])
 
@@ -70,12 +70,22 @@ async def upload_evidence(
         )
 
     row_count = None
+    mapping = None
     if ext == "csv":
         try:
-            reader = csv.reader(io.StringIO(raw.decode("utf-8-sig")))
-            row_count = max(0, sum(1 for _ in reader) - 1)  # minus the header
+            text = raw.decode("utf-8-sig")
         except UnicodeDecodeError:
             raise HTTPException(422, "CSV is not valid UTF-8 text.")
+        reader = csv.reader(io.StringIO(text))
+        rows = list(reader)
+        row_count = max(0, len(rows) - 1)  # minus the header
+        if rows:
+            # AI feature 1: resolve this bank's column names onto the case
+            # schema. Heuristics run first and the model only fills gaps, so a
+            # failure here degrades the mapping - never the upload.
+            mapping, _prov = column_mapper.map_columns(
+                [h.strip() for h in rows[0] if h.strip()]
+            )
 
     record = Evidence(
         evidence_id=f"EV-{uuid.uuid4().hex[:8]}",
@@ -88,7 +98,7 @@ async def upload_evidence(
         hash_match=True,
         is_synthetic=is_synthetic,
         row_count=row_count,
-        column_mapping=None,   # Phase 5: the AI column mapper fills this in
+        column_mapping=mapping,
         uploaded_at=datetime.now(timezone.utc).isoformat(),
         uploaded_by=uploaded_by,
     )

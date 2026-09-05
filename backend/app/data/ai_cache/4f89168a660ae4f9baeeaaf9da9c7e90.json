@@ -1,0 +1,6 @@
+{
+  "content": "The investigation traced the flow of INR\u202f470,000 originating from the seed wallet\u202f0xa7f39c1d8e4b2a5f7c3d9e0a1b8c6d4e5f2a67e9 on 8\u202fSeptember\u202f2026 at 10:31\u202fIST. Within three hops, the funds were dispersed through 17 transfers involving 14 distinct blockchain entities, of which 16 transfers were confirmed and one inferred. The earliest outbound transaction occurred three minutes after receipt, indicating rapid automated dispersal via address\u202fE04, which subsequently interacted with a mixer contract (0x8589f2c47b1d0a63e95482f7ca1b3d6e0f4a0b6f) moving 1,500\u202fUSDT, and later reached a cross\u2011chain bridge (0xbb17d4a09e26c35f81b0d7a94e13c68f05b2c530) within two downstream hops.\n\nRisk scoring assigned a high rating of 65/100 to the seed wallet, elevated by proximity to a known scam cluster, rapid automated dispersal, mixer interaction, and bridge exposure. Among the entities, address\u202f0x9c04a7e3b21d5f86c0a94e7d2b83f150c6ead21e received the highest score of 75/100 (critical). Sixteen of the transfers met or exceeded the 30\u202f% reporting threshold, while one fell below it.",
+  "meta": {
+    "model": "openai/gpt-oss-120b"
+  }
+}

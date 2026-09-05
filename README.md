@@ -20,8 +20,8 @@ Built for the **Chandigarh Police Hackathon, 8 September 2026**.
 | **P2** | Backend engines (graph / risk / dilution / timeline) | ✅ done |
 | **P3** | Frontend organs | ✅ done |
 | **P4** | Integration | ✅ done |
-| P5 | Sec 63 BSA dossier + AI layer | ⬜ next |
-| P6 | Live mainnet mode | ⬜ |
+| P5 | Sec 63 BSA dossier + AI layer | ✅ |
+| P6 | Live mainnet mode | ⬜ next |
 | P7 | Harden, correct the deck, rehearse | ⬜ |
 
 The full specification lives in **`SPEC.md`**. Read it before writing code.

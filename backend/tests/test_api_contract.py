@@ -166,9 +166,17 @@ def test_audit_log_records_the_trace():
 
 # ------------------------------------------------------------------ report
 
-def test_report_is_declared_but_not_yet_implemented():
-    """Phase 5. The contract exists so FE2 can wire the Export button now."""
-    assert client.post(f"/api/cases/{CASE}/report").status_code == 501
+def test_report_generates_a_dossier():
+    """Was a 501 placeholder through Phase 4; implemented in Phase 5.
+    Depth is covered by test_phase5_report_ai.py - this only guards the
+    frozen response shape."""
+    r = client.post(f"/api/cases/{CASE}/report")
+    assert r.status_code == 200
+    body = r.json()
+    assert set(body) == {"case_id", "filename", "sha256", "generated_at",
+                         "page_count", "download_url"}
+    assert len(body["sha256"]) == 64
+    assert body["page_count"] >= 4
 
 
 def test_reading_the_dashboard_does_not_pollute_the_custody_log():
