@@ -1,0 +1,717 @@
+<title>Violet Milk Demo Brief</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600;1,400;1,600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+  :root {
+    --paper:     #F7F5FA;
+    --card:      #FFFFFF;
+    --sunk:      #EFEBF5;
+    --ink:       #17131F;
+    --ink-soft:  #443C55;
+    --muted:     #6E6682;
+    --rule:      #DBD4E7;
+    --rule-soft: #E9E4F1;
+    --accent:    #6A4CB5;
+    --accent-bg: #EEE8FA;
+    --say:       #1F5D46;
+    --say-bg:    #E3F0EA;
+    --warn:      #9A3E33;
+    --warn-bg:   #F8E9E7;
+
+    --f-display: "Spectral", Cambria, Georgia, serif;
+    --f-body:    "IBM Plex Sans", Calibri, system-ui, sans-serif;
+    --f-mono:    "IBM Plex Mono", "Courier New", monospace;
+    --measure:   36rem;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:     #13101A;
+      --card:      #1C1826;
+      --sunk:      #221D2E;
+      --ink:       #EDE9F4;
+      --ink-soft:  #C4BDD3;
+      --muted:     #958DA9;
+      --rule:      #322B41;
+      --rule-soft: #272134;
+      --accent:    #B49AEC;
+      --accent-bg: #2A2140;
+      --say:       #74C4A0;
+      --say-bg:    #172C24;
+      --warn:      #E38C81;
+      --warn-bg:   #2E1D1B;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper:     #13101A;
+    --card:      #1C1826;
+    --sunk:      #221D2E;
+    --ink:       #EDE9F4;
+    --ink-soft:  #C4BDD3;
+    --muted:     #958DA9;
+    --rule:      #322B41;
+    --rule-soft: #272134;
+    --accent:    #B49AEC;
+    --accent-bg: #2A2140;
+    --say:       #74C4A0;
+    --say-bg:    #172C24;
+    --warn:      #E38C81;
+    --warn-bg:   #2E1D1B;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--f-body);
+    font-size: 16px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .sheet {
+    max-width: 62rem;
+    margin: 0 auto;
+    padding: clamp(1.4rem, 4vw, 3.5rem) clamp(1rem, 4vw, 3rem) 5rem;
+  }
+
+  /* ------------------------------------------------------------- masthead */
+
+  .eyebrow {
+    font-family: var(--f-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 0.9rem;
+  }
+
+  h1 {
+    font-family: var(--f-display);
+    font-weight: 600;
+    font-size: clamp(2rem, 5vw, 3rem);
+    line-height: 1.06;
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+    margin: 0 0 0.8rem;
+  }
+
+  .standfirst {
+    font-family: var(--f-display);
+    font-style: italic;
+    font-size: clamp(1.02rem, 2vw, 1.2rem);
+    color: var(--ink-soft);
+    max-width: var(--measure);
+    margin: 0 0 2rem;
+  }
+
+  .status {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
+    border-top: 2px solid var(--ink);
+    border-bottom: 1px solid var(--rule);
+    margin-bottom: 3rem;
+  }
+  .status div {
+    padding: 0.85rem 1.4rem 0.9rem 0;
+    border-right: 1px solid var(--rule-soft);
+    margin-right: 1.4rem;
+  }
+  .status div:last-child { border-right: 0; margin-right: 0; }
+  .status dt {
+    font-family: var(--f-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 0.25rem;
+  }
+  .status dd {
+    margin: 0;
+    font-size: 0.98rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .status dd.good { color: var(--say); }
+
+  /* -------------------------------------------------------------- section */
+
+  section { margin: 0 0 3.5rem; }
+
+  .kicker {
+    font-family: var(--f-mono);
+    font-size: 0.64rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 0.7rem;
+  }
+
+  h2 {
+    font-family: var(--f-display);
+    font-weight: 600;
+    font-size: 1.7rem;
+    line-height: 1.16;
+    letter-spacing: -0.012em;
+    text-wrap: balance;
+    margin: 0 0 1rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  h3 {
+    font-family: var(--f-body);
+    font-size: 1.02rem;
+    font-weight: 700;
+    margin: 2rem 0 0.6rem;
+    text-wrap: balance;
+  }
+
+  p { max-width: var(--measure); margin: 0 0 0.9rem; }
+  p:last-child { margin-bottom: 0; }
+
+  code {
+    font-family: var(--f-mono);
+    font-size: 0.85em;
+    background: var(--sunk);
+    padding: 0.1em 0.36em;
+    border-radius: 2px;
+    word-break: break-word;
+  }
+
+  .mono { font-family: var(--f-mono); font-size: 0.86em; }
+  strong { font-weight: 600; }
+  a { color: var(--accent); }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+  /* ---------------------------------------------------------- script rail */
+
+  .script { margin-top: 1.5rem; }
+
+  .beat {
+    display: grid;
+    grid-template-columns: 5.5rem 1fr;
+    gap: 0 1.5rem;
+    padding: 1.3rem 0;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  .beat:last-child { border-bottom: 0; }
+
+  .beat .clock {
+    font-family: var(--f-mono);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    color: var(--accent);
+    padding-top: 0.2rem;
+  }
+  .beat .clock small {
+    display: block;
+    font-weight: 400;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    margin-top: 0.2rem;
+  }
+
+  .beat h4 {
+    font-family: var(--f-body);
+    font-size: 1rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem;
+  }
+
+  .do {
+    font-family: var(--f-mono);
+    font-size: 0.78rem;
+    color: var(--muted);
+    background: var(--sunk);
+    padding: 0.4rem 0.7rem;
+    border-radius: 3px;
+    margin: 0 0 0.7rem;
+    max-width: var(--measure);
+  }
+
+  .say {
+    font-family: var(--f-display);
+    font-size: 1.08rem;
+    line-height: 1.5;
+    color: var(--say);
+    background: var(--say-bg);
+    border-left: 3px solid var(--say);
+    padding: 0.7rem 1rem;
+    margin: 0 0 0.7rem;
+    max-width: var(--measure);
+  }
+  .say::before {
+    content: "SAY";
+    display: block;
+    font-family: var(--f-mono);
+    font-size: 0.58rem;
+    letter-spacing: 0.16em;
+    opacity: 0.75;
+    margin-bottom: 0.3rem;
+  }
+
+  .beat .note {
+    font-size: 0.88rem;
+    color: var(--ink-soft);
+    max-width: var(--measure);
+    margin: 0;
+  }
+
+  /* ------------------------------------------------------------- compare */
+
+  .tablewrap { overflow-x: auto; margin: 1.2rem 0 0; }
+  table { border-collapse: collapse; width: 100%; min-width: 34rem; font-size: 0.9rem; }
+  th, td { text-align: left; padding: 0.6rem 0.9rem 0.6rem 0; border-bottom: 1px solid var(--rule-soft); vertical-align: top; }
+  th {
+    font-family: var(--f-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 500;
+    border-bottom: 1px solid var(--rule);
+  }
+  td strong { color: var(--ink); }
+  td.num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+  /* ----------------------------------------------------------------- Q&A */
+
+  .qa { margin-top: 1.2rem; }
+
+  .q {
+    padding: 1.15rem 0 1.25rem;
+    border-bottom: 1px solid var(--rule-soft);
+    max-width: 46rem;
+  }
+  .q:last-child { border-bottom: 0; }
+
+  .q > .ask {
+    font-weight: 700;
+    font-size: 1rem;
+    margin: 0 0 0.5rem;
+    max-width: none;
+  }
+  .q > .ask::before {
+    content: "Q";
+    font-family: var(--f-mono);
+    font-size: 0.68rem;
+    color: var(--accent);
+    background: var(--accent-bg);
+    padding: 0.15em 0.45em;
+    border-radius: 2px;
+    margin-right: 0.55rem;
+    vertical-align: 0.1em;
+  }
+  .q p { max-width: none; font-size: 0.94rem; color: var(--ink-soft); }
+  .q p:last-child { margin-bottom: 0; }
+  .q .headline {
+    font-family: var(--f-display);
+    font-style: italic;
+    font-size: 1.02rem;
+    color: var(--ink);
+  }
+
+  /* --------------------------------------------------------------- lists */
+
+  ul.plain { list-style: none; margin: 1rem 0 0; padding: 0; max-width: var(--measure); }
+  ul.plain li { position: relative; padding: 0 0 0.7rem 1.1rem; font-size: 0.94rem; color: var(--ink-soft); }
+  ul.plain li::before {
+    content: ""; position: absolute; left: 0; top: 0.6em;
+    width: 5px; height: 5px; background: var(--accent); border-radius: 50%;
+  }
+  ul.plain li:last-child { padding-bottom: 0; }
+  ul.plain li b { color: var(--ink); font-weight: 600; }
+
+  ol.steps { list-style: none; margin: 1.1rem 0 0; padding: 0; counter-reset: s; max-width: 46rem; }
+  ol.steps li {
+    counter-increment: s;
+    display: grid;
+    grid-template-columns: 1.9rem 1fr;
+    gap: 0 0.85rem;
+    padding: 0.7rem 0;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  ol.steps li::before {
+    content: counter(s);
+    font-family: var(--f-mono);
+    font-size: 0.72rem;
+    color: var(--accent);
+    background: var(--accent-bg);
+    border-radius: 2px;
+    text-align: center;
+    padding: 0.22rem 0;
+    height: fit-content;
+  }
+  ol.steps b { font-weight: 600; }
+  ol.steps p { font-size: 0.9rem; margin: 0.15rem 0 0; max-width: none; color: var(--ink-soft); }
+
+  /* ---------------------------------------------------------- callouts */
+
+  .trap {
+    background: var(--warn-bg);
+    border-left: 3px solid var(--warn);
+    padding: 0.85rem 1.1rem;
+    margin: 1rem 0 0;
+    border-radius: 0 3px 3px 0;
+    max-width: 46rem;
+  }
+  .trap p { color: var(--warn); font-size: 0.92rem; max-width: none; }
+  .trap b { font-weight: 700; }
+
+  pre {
+    background: var(--sunk);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    padding: 0.85rem 1rem;
+    overflow-x: auto;
+    font-family: var(--f-mono);
+    font-size: 0.8rem;
+    line-height: 1.6;
+    margin: 0.9rem 0 0;
+    max-width: 46rem;
+  }
+
+  footer {
+    margin-top: 3rem;
+    padding-top: 1.2rem;
+    border-top: 2px solid var(--ink);
+    font-family: var(--f-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.5rem;
+    justify-content: space-between;
+  }
+
+  @media (max-width: 36rem) {
+    .beat { grid-template-columns: 1fr; gap: 0.4rem; }
+    .beat .clock small { display: inline; margin-left: 0.5rem; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+
+<div class="sheet">
+
+  <p class="eyebrow">Prototype viewing · 8 September 2026</p>
+  <h1>Violet Milk demo brief</h1>
+  <p class="standfirst">What to click, what to say, and the answer to every hard question — for the round that decides the shortlist.</p>
+
+  <dl class="status">
+    <div><dt>Tests</dt><dd class="good">190 passing</dd></div>
+    <div><dt>Demo trace</dt><dd>14 nodes · 17 edges</dd></div>
+    <div><dt>Seed risk</dt><dd>65 / HIGH</dd></div>
+    <div><dt>Live replay</dt><dd class="good">0.35s</dd></div>
+    <div><dt>Dossier</dt><dd>9 pages</dd></div>
+    <div><dt>Custody chain</dt><dd class="good">intact · 88</dd></div>
+  </dl>
+
+  <section>
+    <p class="kicker">Read this first</p>
+    <h2>The one idea the judges must leave with</h2>
+    <p><strong>The 1930 helpline can freeze a bank account. It goes blind the second the money becomes crypto.</strong> In our case that happens <strong>58 seconds</strong> after the debit. Violet Milk starts exactly there and ends with a court-ready dossier and the name of the exchange to serve notice on.</p>
+    <p>Everything else in this brief supports that sentence. If you have thirty seconds, say that sentence.</p>
+  </section>
+
+  <section>
+    <p class="kicker">Before the judges arrive</p>
+    <h2>Pre-flight, in this order</h2>
+    <ol class="steps">
+      <li><div><b>Set stage mode in <code>.env</code></b><p><code>LIVE_CACHE_FIRST=true</code> — pre-tested mainnet addresses then replay from disk in ~0.35s instead of gambling on venue wifi. The UI still shows <code>EtherscanSource (cached)</code>, so you are not claiming a live pull.</p></div></li>
+      <li><div><b>Warm the caches</b><p><code>prewarm_ai.py</code> then <code>pretest_live.py</code>. Both with <code>.venv\Scripts\python.exe</code>, never bare <code>python</code>.</p></div></li>
+      <li><div><b>Build the frontend and start one server</b><p><code>npm run build</code>, then uvicorn on port 8000. One process, one port — nothing else to go wrong.</p></div></li>
+      <li><div><b>Log in and run the demo trace once</b><p>Leave the app sitting on the Command Center with the case already worked. Never open on an empty shell.</p></div></li>
+      <li><div><b>Unplug the wifi and run it again</b><p>The last rehearsal must be the offline one. If it survives that, nothing at the venue can hurt you.</p></div></li>
+    </ol>
+    <div class="trap">
+      <p><b>Do not demo the Tornado 0.1 ETH pool.</b> It takes 4.1s even cached because depth-2 keeps discovering new addresses. Use the <b>Tornado Cash Router</b> — 0.35s, 18 entities, and it is an OFAC-designated address, which is a stronger story anyway.</p>
+    </div>
+  </section>
+
+  <section>
+    <p class="kicker">The walkthrough</p>
+    <h2>Six minutes, in beats</h2>
+    <p>Judges will interrupt. That is fine — every beat stands alone. If you are cut short after beat 3 you have still made the case.</p>
+
+    <div class="script">
+
+      <div class="beat">
+        <div class="clock">0:00<small>HOOK</small></div>
+        <div>
+          <h4>Open on the Timeline. Not the graph.</h4>
+          <p class="do">Left rail → Timeline. Case CP-CYBER-2026-001 already loaded.</p>
+          <p class="say">A Chandigarh resident lost four lakh seventy thousand rupees. Here is the clock. Ten thirty-one and four seconds, the money leaves her account. Ten thirty-two and two seconds — fifty-eight seconds later — it is USDT on Ethereum and it is outside Indian banking. The 1930 helpline can freeze the bank account. From this point on, it cannot see anything.</p>
+          <p class="note">The graph is prettier. The timeline is what makes them lean in, because it is a clock and everyone understands a clock.</p>
+        </div>
+      </div>
+
+      <div class="beat">
+        <div class="clock">0:50<small>TRUST</small></div>
+        <div>
+          <h4>Graph Visualiser — point at the one dashed edge.</h4>
+          <p class="do">Left rail → Graph Visualiser. Point at the single dashed line near the bank node.</p>
+          <p class="say">Every solid line on this screen is a bank record or a transaction hash you can paste into Etherscan yourself. One line is dashed. That one we inferred — a thirteen-second correlation between a UPI debit and an exchange deposit. We are telling you it is an inference, on the screen, in the data, and in the court dossier. Sixteen confirmed, one inferred.</p>
+          <p class="note">This is the single most credible thing in the demo. Do not rush it. A tool that distinguishes what it knows from what it guessed is a tool a court can use.</p>
+        </div>
+      </div>
+
+      <div class="beat">
+        <div class="clock">1:50<small>METHOD</small></div>
+        <div>
+          <h4>Risk Inspector on the seed wallet — read the arithmetic aloud.</h4>
+          <p class="do">Click the seed <code>0xa7f3…67e9</code> → Risk Inspector. Score reads 65 / HIGH.</p>
+          <p class="say">Sixty-five out of a hundred. Twenty for proximity, fifteen because funds moved out three minutes after arriving, fifteen for a direct transfer into a mixer, fifteen because a cross-chain bridge is two hops away. Seven rules, fixed weights, evidence cited for each one. No model produced that number, which means a defence lawyer can check the addition and I can explain it in a witness box.</p>
+          <div class="trap">
+            <p><b>Do not open the Risk Inspector on the mule bank account.</b> It scores 15/LOW — the rules hunt on-chain laundering behaviour and a mule account does none of it. If a judge finds it, see the Q&amp;A below; the honest answer is strong, but do not walk into it voluntarily.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="beat">
+        <div class="clock">3:00<small>HONESTY</small></div>
+        <div>
+          <h4>Dilution Calculator — show them the negative result.</h4>
+          <p class="do">Left rail → Dilution Calculator. Point at the pool node: 60% → 12%, NOT FLAGGED.</p>
+          <p class="say">This wallet held sixty percent tainted funds. It sent two thousand USDT into an exchange pool that already held eight thousand clean. The tainted share drops to twelve percent, and our own threshold is thirty — so the system tells me this is <em>not</em> flagged. That pool has real criminal money in it and we are still saying the trail ends here. A tool that only ever says guilty is worthless in court. This is the number that makes the other numbers believable.</p>
+          <p class="note">If you only get to show one thing after the timeline, show this. It is the beat that separates you from every other team.</p>
+        </div>
+      </div>
+
+      <div class="beat">
+        <div class="clock">4:00<small>THE AI ANSWER</small></div>
+        <div>
+          <h4>Flag Agent — it flags the victim.</h4>
+          <p class="do">Left rail → Flag Agent (ML). Point at the complainant in the findings list.</p>
+          <p class="say">People will ask where the AI is. Here it is, and look what it did — it flagged the complainant, because she moved the largest single amount and that makes her a statistical outlier. Her risk score is zero. The machine learning generates leads on a separate screen with a separate shape and it cannot touch a score. That is enforced by a test, not by a promise.</p>
+        </div>
+      </div>
+
+      <div class="beat">
+        <div class="clock">4:50<small>OUTPUT</small></div>
+        <div>
+          <h4>Export Court Dossier, then Chain of Custody.</h4>
+          <p class="do">Header → Export Court Dossier. Then left rail → Chain of Custody.</p>
+          <p class="say">Nine pages, formatted for Section 63 of the Bharatiya Sakshya Adhiniyam, with its own SHA-256 printed on it. And here is every action taken on this case, each entry hashed into the one before it. If anybody edits a row, the chain breaks and this screen names the exact entry. Eighty-eight entries, chain intact.</p>
+        </div>
+      </div>
+
+      <div class="beat">
+        <div class="clock">5:40<small>CLOSER</small></div>
+        <div>
+          <h4>Switch to LIVE MAINNET and hand over the keyboard.</h4>
+          <p class="do">Toggle DEMO → LIVE MAINNET. Offer the keyboard, or paste the Tornado Router address.</p>
+          <p class="say">Everything so far was a synthetic case, and I would not trust a demo either. So — give me any Ethereum or Tron address. Same seven rules, same custody log, same dossier. This is real mainnet data.</p>
+          <p class="note">If they hand you an address with nothing on it, say so: <em>"small graph, low score — that is the system working."</em> Never reach back for the demo case to rescue it.</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <p class="kicker">Condition 1 · feasible in India today</p>
+    <h2>What it costs to run this in a district cyber cell</h2>
+    <p>Nothing in this build is aspirational. Every dependency is either free-tier or optional, and the whole system runs on one ordinary laptop with no cloud account.</p>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Component</th><th>What we use</th><th>Cost</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Chain data</strong></td><td>Etherscan free tier, throttled to 3 calls/sec</td><td class="num">₹0</td></tr>
+          <tr><td><strong>Tron data</strong></td><td>TronGrid free tier</td><td class="num">₹0</td></tr>
+          <tr><td><strong>Database</strong></td><td>SQLite — a file on disk</td><td class="num">₹0</td></tr>
+          <tr><td><strong>Software</strong></td><td>Python, FastAPI, React — all open source</td><td class="num">₹0</td></tr>
+          <tr><td><strong>AI narrative</strong></td><td>Optional. Template fallback is tested</td><td class="num">₹0</td></tr>
+          <tr><td><strong>Hardware</strong></td><td>One laptop already on the desk</td><td class="num">existing</td></tr>
+          <tr><td><strong>Anchoring</strong></td><td>Optional, testnet</td><td class="num">₹0</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p style="margin-top:1.2rem"><strong>Marginal cost of adding one more district: zero.</strong> No per-seat licence, no subscription, no procurement cycle. That is the argument — not that we are cheaper than the commercial tools, but that we are in a different category of purchase decision entirely.</p>
+
+    <p>It also runs <strong>fully offline</strong> once addresses are pre-tested, which matters more in an Indian police station than it does in a pitch deck.</p>
+  </section>
+
+  <section>
+    <p class="kicker">Condition 3 · why Chandigarh</p>
+    <h2>A Union Territory is the ideal place to pilot this</h2>
+    <ul class="plain">
+      <li><b>One force, one command chain.</b> No inter-state MoU, no coordination committee. A decision to trial this can be taken and executed inside one organisation.</li>
+      <li><b>Compact jurisdiction, attributable results.</b> A three-month pilot in one cyber cell produces a number you can actually point at — cases where the trail continued past the bank boundary.</li>
+      <li><b>The bottleneck here is not policy, it is capability.</b> The legal instruments already exist: Section 94 BNSS to compel the exchange, the BSA 2023 for electronic evidence, the FIU-IND STR channel. What is missing is the thing that tells an officer <em>which</em> exchange and <em>which</em> deposit address to name. That is the gap we fill.</li>
+      <li><b>It scales by copying a folder.</b> Whatever works here transfers to any other cyber cell at zero licence cost.</li>
+    </ul>
+  </section>
+
+  <section>
+    <p class="kicker">Condition 5 · what a legal advisor will ask</p>
+    <h2>Legal questions</h2>
+
+    <div class="qa">
+      <div class="q">
+        <p class="ask">Is anything this produces admissible in an Indian court?</p>
+        <p class="headline">The dossier is formatted to support a Section 63 BSA certificate. It does not create one.</p>
+        <p>Section 63 of the Bharatiya Sakshya Adhiniyam 2023 requires a certificate describing how the electronic record was produced and by what device or process. Our dossier sets out exactly that: which rules ran, on which inputs, with what version, and the SHA-256 of the output. <strong>A human being still signs the certificate.</strong> Software cannot attest to its own output and we do not pretend it can. Our statutory wording has not yet been reviewed by counsel, and that is written into the README and the dossier itself.</p>
+      </div>
+
+      <div class="q">
+        <p class="ask">How do you prove the evidence was not altered after collection?</p>
+        <p>Every action is written to an append-only log where each entry hashes the one before it, and <code>/audit/verify</code> names the first broken link. The document's own SHA-256 is recorded in that log — a document cannot contain its own digest, so a detached record is the only way to verify it later. Optionally the digest is anchored on a public blockchain.</p>
+        <p><strong>State the limit before they find it:</strong> this makes tampering <em>detectable</em>, not impossible. Anyone who can rewrite the whole chain from the point of edit forward can hide a change. Anchoring is what closes that, because the anchor is outside our control.</p>
+      </div>
+
+      <div class="q">
+        <p class="ask">The system uses AI. Does that not make the evidence unexplainable?</p>
+        <p class="headline">That is precisely why the AI cannot touch the score.</p>
+        <p>A neural network cannot be cross-examined. So every number that could matter to a court comes from seven fixed rules with cited evidence and arithmetic that reconciles. The language model drafts narrative prose and suggests CSV column mappings; the anomaly model produces investigative leads on a separate endpoint. Neither can move a score, and a test proves it by showing the model flags the complainant — who scores zero.</p>
+      </div>
+
+      <div class="q">
+        <p class="ask">Can this identify an accused person?</p>
+        <p>No, and the STR draft says <code>NOT IDENTIFIED</code> in those words. We trace <strong>flow</strong>, not identity. A wallet address is not a person. Identity comes from the exchange's KYC records, obtained under Section 94 BNSS. What we produce is the thing that makes that notice writable — which exchange, which deposit address, which amount, which timestamp.</p>
+      </div>
+
+      <div class="q">
+        <p class="ask">What is the exposure if a risk score is wrong and someone is wrongly suspected?</p>
+        <p>The dossier states in terms that a score is an investigative prioritisation and <strong>not a finding of guilt</strong>. The rule weights are documented as reasoned but uncalibrated — we say so rather than implying a validated model. Because the arithmetic is transparent, a wrong score is <em>arguable</em>: an accused can point at rule R4 and contest the bridge inference. An opaque score would be far more dangerous, because it could not be challenged at all.</p>
+      </div>
+
+      <div class="q">
+        <p class="ask">Can you file the Suspicious Transaction Report?</p>
+        <p>No. FIU-IND has no public submission API and filing requires registered Reporting Entity status. We produce a <strong>draft</strong> in the correct shape, with the reporting-entity fields left as <code>TO BE COMPLETED</code>. A test walks the API schema and fails the build if any endpoint ever appears that could transmit a report. That restriction is enforced in code, not in a promise.</p>
+      </div>
+
+      <div class="q">
+        <p class="ask">What about data protection — the DPDP Act?</p>
+        <p>Today the system runs on synthetic data, and the only external transmission is case facts sent to a language model to draft narrative prose. For a real deployment that decision has to be made deliberately: the template path already exists, is tested, and produces a complete dossier with the AI switched off entirely. We flag this as an open item rather than claiming compliance we have not earned.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <p class="kicker">Condition 5 · what a police officer will ask</p>
+    <h2>Operational questions</h2>
+
+    <div class="qa">
+      <div class="q">
+        <p class="ask">1930 and CFCFRMS already freeze accounts. Why do I need this?</p>
+        <p class="headline">Because they work on bank rails, and this case leaves bank rails in 58 seconds.</p>
+        <p>CFCFRMS is genuinely good at what it does — golden-hour freezing across banks using UTRs. It has no visibility once funds are converted to crypto at an exchange. We do not replace it. We take over at the exact point it stops, and we tell you which exchange received the money and which deposit address to name in your notice.</p>
+      </div>
+
+      <div class="q">
+        <p class="ask">Can I freeze crypto with this?</p>
+        <p>No. Freezing requires the exchange to act. What this gives you is a <strong>better freeze request</strong>: a named deposit address, an amount, a timestamp, and an illicit-share figure — instead of a request that says "please check for suspicious activity."</p>
+      </div>
+
+      <div class="q">
+        <p class="ask">Do my officers need to understand cryptocurrency?</p>
+        <p>They need to paste an address and read a score with reasons written in English underneath it. The seven rules are stated as sentences — "funds moved out three minutes after arriving", "a mixer was used". No officer needs to know what a mixer is <em>technically</em> to understand that using one is a deliberate act of concealment.</p>
+      </div>
+
+      <div class="q">
+        <p class="ask">What do I actually do with the output on Monday morning?</p>
+        <p>Three things. Attach the dilution figure to a freeze request. Serve a Section 94 BNSS notice on the exchange named in the trace, citing the deposit address. File the dossier with the case papers under a signed Section 63 certificate. The STR draft goes to whoever in your chain deals with FIU-IND.</p>
+      </div>
+
+      <div class="q">
+        <p class="ask">How long does it take?</p>
+        <p>The trace and the dossier are minutes. The honest comparison is not against a faster tool — it is against the current position, where a district cyber cell has no practical way to follow funds past the exchange boundary at all.</p>
+      </div>
+
+      <div class="q">
+        <p class="ask">The internet at my station is unreliable.</p>
+        <p>It runs offline. Pre-test the addresses you care about and it replays from disk; with the network entirely dead a circuit breaker trips after three failures and serves cache in about a second. We rehearse the demo with the wifi unplugged for exactly this reason.</p>
+      </div>
+
+      <div class="q">
+        <p class="ask">What if the exchange is foreign and ignores the notice?</p>
+        <p>Then you have a documented trail ending at a named foreign entity, which is the basis for an MLAT request or an FIU-IND referral — and it is a great deal more than an unanswered question. We do not claim to solve international cooperation. We claim to produce the document that cooperation requires.</p>
+      </div>
+
+      <div class="q">
+        <p class="ask">Why does the mule bank account only score 15?</p>
+        <p class="headline">Because the score answers a different question — and the panel already shows the right one.</p>
+        <p>The score measures depth in the <em>laundering machinery</em>: mixers, bridges, fan-out, structuring. A mule account does one thing, receive and forward, so only the rapid-dispersal rule fires. For that account the number that matters is on the same screen — <strong>ILLICIT 100%</strong>. Every rupee through it traces to the complainant, and that is what goes on the freeze request. The score exists for the unlabelled hex addresses where you have nothing else to go on.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <p class="kicker">Condition 5 · differentiation</p>
+    <h2>Where we sit, honestly</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>System</th><th>Does</th><th>Stops at</th></tr></thead>
+        <tbody>
+          <tr><td><strong>NCRP / 1930</strong></td><td>Complaint intake and routing</td><td>Not an analysis tool</td></tr>
+          <tr><td><strong>CFCFRMS</strong></td><td>Golden-hour bank-to-bank freeze on UTRs</td><td><strong>The moment funds become crypto</strong></td></tr>
+          <tr><td><strong>CCTNS</strong></td><td>FIR and case records</td><td>No financial tracing</td></tr>
+          <tr><td><strong>Chainalysis / TRM</strong></td><td>World-class address attribution</td><td>Per-seat foreign-currency licence; cloud; no Indian statutory output</td></tr>
+          <tr><td><strong>Violet Milk</strong></td><td>FIR → trace → Sec 63 dossier → STR draft, offline</td><td><strong>Attribution — 15 curated labels, and we say so</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="trap">
+      <p><b>Never claim to beat Chainalysis at attribution.</b> A judge who knows the field will end your run on that single sentence. Our differentiator is the Indian statutory output and the zero-cost offline deployment — not the tracing intelligence.</p>
+    </div>
+  </section>
+
+  <section>
+    <p class="kicker">If asked what was hard</p>
+    <h2>Problems we hit building it</h2>
+    <p>Specific engineering answers land far better than "time management". Pick two.</p>
+    <ul class="plain">
+      <li><b>Ranking mixed assets is meaningless.</b> Sorting transfers by raw amount put 1,000 ETH above 47 USDT — different units entirely — and starved the USDT out of the graph completely. USDT is the asset Indian fraud actually uses, so we were dropping the evidence that mattered. Fixed by giving each asset its own share of the per-node budget.</li>
+      <li><b>Dilution returned 0.0 for every node in live mode.</b> You cannot reconstruct a wallet's balance <em>at the moment funds arrived</em> from a public explorer. Rather than show a confidently wrong ratio we split it into two models, and the live one carries a caveat saying in plain words that it is not a dilution figure.</li>
+      <li><b>A forged USDT contract on Tron reported a 7.5-trillion transfer.</b> Anyone can deploy a token called "USDT". We now verify tokens by <em>contract address</em>, never by ticker.</li>
+      <li><b>The column mapper read a date as money.</b> A bank statement header <code>Value Dt</code> matched the amount rule's pattern for "value". A date column was being read as the transaction amount. There is now a regression test named after it.</li>
+      <li><b>A dead network took 62.7 seconds to fall through to cache.</b> Correct results, useless on stage. A circuit breaker now trips after three failures and serves cache in about a second.</li>
+      <li><b>Today: the cache was a fallback, not a cache.</b> On a working network every trace still paid full API latency. Slow venue wifi — not dead, just slow — was the one failure mode nothing detected. Fixed this morning.</li>
+    </ul>
+  </section>
+
+  <section>
+    <p class="kicker">If asked what comes next</p>
+    <h2>What officialisation actually requires</h2>
+    <p>Answer this as a person who has thought about deployment, not as someone listing features.</p>
+    <ol class="steps">
+      <li><div><b>Legal review of the statutory wording</b><p>The Sec 63 BSA certificate and Sec 94 BNSS references are drafted in good faith and have not been checked by counsel. This is first because everything downstream depends on it.</p></div></li>
+      <li><div><b>A CERT-In empanelled security audit</b><p>Standard prerequisite for any system handling case data on government infrastructure.</p></div></li>
+      <li><div><b>A DPDP Act decision on the AI narrative</b><p>Either an in-house model, or ship with the tested template path and no external transmission at all.</p></div></li>
+      <li><div><b>Integration with CCTNS and NCRP</b><p>Read the FIR rather than retyping it. This is the difference between a tool an officer uses and a tool an officer is asked to also use.</p></div></li>
+      <li><div><b>An attribution feed</b><p>Our honest weak point. Realistically: an arrangement with FIU-IND-registered Indian exchanges, or a commercial licence layered underneath our workflow.</p></div></li>
+      <li><div><b>Multi-user roles and real key management</b><p>Today it is one seeded officer and a default password the app itself warns about. Production needs per-officer accounts and keys in an HSM.</p></div></li>
+      <li><div><b>A three-month pilot in one cyber cell, then measure</b><p>Cases where the trail continued past the bank boundary. If that number is not meaningfully above zero, the project has not earned wider deployment.</p></div></li>
+    </ol>
+  </section>
+
+  <section>
+    <p class="kicker">Last thing</p>
+    <h2>The three sentences to keep in your pocket</h2>
+    <ul class="plain">
+      <li>"Every solid line is a transaction hash. Every dashed line is an inference, and we label it as one."</li>
+      <li>"The AI writes the report. It does not touch the score — and here is the test that proves it, because the model flags the victim."</li>
+      <li>"The system will tell you the trail ends here. That is what makes the rest of it worth believing."</li>
+    </ul>
+  </section>
+
+  <footer>
+    <span>Project Violet Milk · demo brief</span>
+    <span>190 tests · 19 endpoints · 2 chains</span>
+    <span>IO_SHARMA · CP-CYBER-2026-001</span>
+  </footer>
+
+</div>
