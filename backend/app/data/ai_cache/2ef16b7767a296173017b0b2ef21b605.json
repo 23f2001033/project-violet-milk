@@ -1,0 +1,6 @@
+{
+  "content": "{\"utr\":\"utr\",\"amount\":\"amount\",\"timestamp\":\"date\",\"bank\":\"bank\",\"description\":\"remarks\"}",
+  "meta": {
+    "model": "openai/gpt-oss-120b"
+  }
+}
