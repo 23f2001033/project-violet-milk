@@ -185,10 +185,17 @@ def test_str_is_downloadable(str_doc):
 
 
 def test_str_generation_is_audited(str_doc):
+    """Match on THIS draft's digest, not on the first STR_DRAFT in the log.
+
+    The custody log is append-only, so a case that has been worked on carries
+    every earlier draft too. Taking the first entry asserted against a stale
+    document and started failing the moment a second draft existed.
+    """
     audit = client.get(f"/api/cases/{CASE}/audit").json()
     entry = next(
-        (a for a in audit if a.get("details", {}).get("kind") == "STR_DRAFT"),
+        (a for a in audit
+         if a.get("details", {}).get("kind") == "STR_DRAFT"
+         and a["target_hash"] == str_doc["sha256"]),
         None)
-    assert entry is not None
+    assert entry is not None, "this STR draft's digest is not in the custody log"
     assert entry["details"]["filed"] is False
-    assert entry["target_hash"] == str_doc["sha256"]
