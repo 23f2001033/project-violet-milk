@@ -1,0 +1,577 @@
+<title>Surviving the Panel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600;1,400;1,600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+  :root {
+    --paper:     #F6F4F9;
+    --card:      #FFFFFF;
+    --sunk:      #EEEAF4;
+    --ink:       #16121E;
+    --ink-soft:  #423A53;
+    --muted:     #6C6480;
+    --rule:      #D9D2E6;
+    --rule-soft: #E8E3F0;
+    --accent:    #6A4CB5;
+    --accent-bg: #EDE7F9;
+    --attack:    #98362C;
+    --attack-bg: #F8E8E5;
+    --hold:      #1E5B44;
+    --hold-bg:   #E2EFE9;
+    --open:      #87590F;
+    --open-bg:   #F7EEDC;
+
+    --f-display: "Spectral", Cambria, Georgia, serif;
+    --f-body:    "IBM Plex Sans", Calibri, system-ui, sans-serif;
+    --f-mono:    "IBM Plex Mono", "Courier New", monospace;
+    --measure:   37rem;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:     #131019;
+      --card:      #1B1725;
+      --sunk:      #221D2E;
+      --ink:       #ECE8F3;
+      --ink-soft:  #C2BBD2;
+      --muted:     #948CA8;
+      --rule:      #322B40;
+      --rule-soft: #262033;
+      --accent:    #B39AEB;
+      --accent-bg: #291F3D;
+      --attack:    #E48A7E;
+      --attack-bg: #2D1C1A;
+      --hold:      #74C49F;
+      --hold-bg:   #162B23;
+      --open:      #DBAA55;
+      --open-bg:   #2B2317;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper:     #131019;
+    --card:      #1B1725;
+    --sunk:      #221D2E;
+    --ink:       #ECE8F3;
+    --ink-soft:  #C2BBD2;
+    --muted:     #948CA8;
+    --rule:      #322B40;
+    --rule-soft: #262033;
+    --accent:    #B39AEB;
+    --accent-bg: #291F3D;
+    --attack:    #E48A7E;
+    --attack-bg: #2D1C1A;
+    --hold:      #74C49F;
+    --hold-bg:   #162B23;
+    --open:      #DBAA55;
+    --open-bg:   #2B2317;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--f-body);
+    font-size: 16px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .sheet {
+    max-width: 63rem;
+    margin: 0 auto;
+    padding: clamp(1.4rem, 4vw, 3.5rem) clamp(1rem, 4vw, 3rem) 5rem;
+  }
+
+  .eyebrow {
+    font-family: var(--f-mono);
+    font-size: 0.67rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 0.9rem;
+  }
+
+  h1 {
+    font-family: var(--f-display);
+    font-weight: 600;
+    font-size: clamp(2rem, 5vw, 3rem);
+    line-height: 1.06;
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+    margin: 0 0 0.8rem;
+  }
+
+  .standfirst {
+    font-family: var(--f-display);
+    font-style: italic;
+    font-size: clamp(1.02rem, 2vw, 1.2rem);
+    color: var(--ink-soft);
+    max-width: var(--measure);
+    margin: 0 0 2rem;
+  }
+
+  .status {
+    display: flex;
+    flex-wrap: wrap;
+    border-top: 2px solid var(--ink);
+    border-bottom: 1px solid var(--rule);
+    margin-bottom: 3rem;
+  }
+  .status div {
+    padding: 0.85rem 1.4rem 0.9rem 0;
+    border-right: 1px solid var(--rule-soft);
+    margin-right: 1.4rem;
+  }
+  .status div:last-child { border-right: 0; margin-right: 0; }
+  .status dt {
+    font-family: var(--f-mono);
+    font-size: 0.59rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 0.25rem;
+  }
+  .status dd {
+    margin: 0;
+    font-size: 0.98rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .status dd.good { color: var(--hold); }
+
+  section { margin: 0 0 3.5rem; }
+
+  .kicker {
+    font-family: var(--f-mono);
+    font-size: 0.63rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 0.7rem;
+  }
+
+  h2 {
+    font-family: var(--f-display);
+    font-weight: 600;
+    font-size: 1.7rem;
+    line-height: 1.16;
+    letter-spacing: -0.012em;
+    text-wrap: balance;
+    margin: 0 0 1rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  p { max-width: var(--measure); margin: 0 0 0.9rem; }
+  p:last-child { margin-bottom: 0; }
+
+  code {
+    font-family: var(--f-mono);
+    font-size: 0.85em;
+    background: var(--sunk);
+    padding: 0.1em 0.36em;
+    border-radius: 2px;
+    word-break: break-word;
+  }
+  .mono { font-family: var(--f-mono); font-size: 0.87em; }
+  strong { font-weight: 600; }
+  a { color: var(--accent); }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+  /* ------------------------------------------------------- attack blocks */
+
+  .attacks { margin-top: 1.3rem; }
+
+  .atk {
+    padding: 1.25rem 0 1.35rem;
+    border-bottom: 1px solid var(--rule-soft);
+    max-width: 48rem;
+  }
+  .atk:last-child { border-bottom: 0; }
+
+  .atk .said {
+    font-family: var(--f-display);
+    font-size: 1.12rem;
+    line-height: 1.45;
+    font-style: italic;
+    color: var(--attack);
+    background: var(--attack-bg);
+    border-left: 3px solid var(--attack);
+    padding: 0.65rem 1rem;
+    margin: 0 0 0.75rem;
+    max-width: none;
+  }
+
+  .atk .verdict {
+    display: inline-block;
+    font-family: var(--f-mono);
+    font-size: 0.59rem;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    padding: 0.2em 0.55em;
+    border-radius: 2px;
+    margin-bottom: 0.5rem;
+  }
+  .v-closed { color: var(--hold); background: var(--hold-bg); }
+  .v-true   { color: var(--open); background: var(--open-bg); }
+
+  .atk p { max-width: none; font-size: 0.95rem; color: var(--ink-soft); }
+  .atk p.answer { color: var(--ink); }
+  .atk .lead {
+    font-family: var(--f-display);
+    font-style: italic;
+    font-size: 1.02rem;
+    color: var(--ink);
+  }
+
+  /* -------------------------------------------------------------- tables */
+
+  .tablewrap { overflow-x: auto; margin: 1.2rem 0 0; }
+  table { border-collapse: collapse; width: 100%; min-width: 32rem; font-size: 0.9rem; }
+  th, td { text-align: left; padding: 0.6rem 0.9rem 0.6rem 0; border-bottom: 1px solid var(--rule-soft); vertical-align: top; }
+  th {
+    font-family: var(--f-mono);
+    font-size: 0.61rem;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 500;
+    border-bottom: 1px solid var(--rule);
+  }
+  td.num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+  /* --------------------------------------------------------------- lists */
+
+  ul.plain { list-style: none; margin: 1rem 0 0; padding: 0; max-width: var(--measure); }
+  ul.plain li { position: relative; padding: 0 0 0.7rem 1.1rem; font-size: 0.94rem; color: var(--ink-soft); }
+  ul.plain li::before {
+    content: ""; position: absolute; left: 0; top: 0.6em;
+    width: 5px; height: 5px; background: var(--accent); border-radius: 50%;
+  }
+  ul.plain li:last-child { padding-bottom: 0; }
+  ul.plain li b { color: var(--ink); font-weight: 600; }
+
+  /* -------------------------------------------------------------- speech */
+
+  .speech {
+    margin-top: 1.4rem;
+    max-width: 40rem;
+    border-left: 3px solid var(--accent);
+    padding-left: 1.4rem;
+  }
+  .speech p {
+    font-family: var(--f-display);
+    font-size: 1.14rem;
+    line-height: 1.62;
+    color: var(--ink);
+    max-width: none;
+    margin-bottom: 1.05rem;
+  }
+  .speech p.beat {
+    font-family: var(--f-mono);
+    font-size: 0.63rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 1.6rem 0 0.4rem;
+  }
+  .speech p:first-child { margin-top: 0; }
+
+  pre {
+    background: var(--sunk);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    padding: 0.85rem 1rem;
+    overflow-x: auto;
+    font-family: var(--f-mono);
+    font-size: 0.79rem;
+    line-height: 1.6;
+    margin: 1rem 0 0;
+    max-width: 44rem;
+  }
+
+  footer {
+    margin-top: 3rem;
+    padding-top: 1.2rem;
+    border-top: 2px solid var(--ink);
+    font-family: var(--f-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.5rem;
+    justify-content: space-between;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+
+<div class="sheet">
+
+  <p class="eyebrow">Adversarial pass · 7 September 2026</p>
+  <h1>Surviving the panel</h1>
+  <p class="standfirst">Every reason a tired IPS officer and a sceptical technical expert have to say no — and what the build now answers back with.</p>
+
+  <dl class="status">
+    <div><dt>Tests</dt><dd class="good">224 passing</dd></div>
+    <div><dt>Endpoints</dt><dd>23 paths</dd></div>
+    <div><dt>Chains</dt><dd>Ethereum · Tron</dd></div>
+    <div><dt>Licence</dt><dd class="good">MIT</dd></div>
+    <div><dt>Cost / district</dt><dd class="good">₹0</dd></div>
+    <div><dt>Offline</dt><dd class="good">Verified</dd></div>
+  </dl>
+
+  <section>
+    <p class="kicker">What changed tonight</p>
+    <h2>Three deny-reasons closed since this morning</h2>
+    <ul class="plain">
+      <li><b>“So you drew me a picture. What do I do with it?”</b> — There is now a <strong>Section 94 BNSS 2023 production order draft</strong>. One click turns the trace into the written order that compels the exchange to hand over the KYC record, with the deposit address, amounts, timestamps and transaction hashes recited from the evidence. That is the step that turns a hex string into a person, and it was the single largest hole in the demo.</li>
+      <li><b>“Your repo says all rights reserved.”</b> — A public repository with no licence is legally closed, which contradicted the claim that any force can use it. <strong>MIT licence added.</strong></li>
+      <li><b>“You said Tron matters, but your box only accepts <code>0x…</code>.”</b> — The live search advertised Ethereum only, hiding the rail Indian proceeds actually move on. Placeholder now reads <code>0x… (Ethereum) or T… (Tron / USDT-TRC20)</code>.</li>
+    </ul>
+  </section>
+
+  <section>
+    <p class="kicker">The officer across the table</p>
+    <h2>What the IPS officer will attack</h2>
+    <p>He has sat through nine dashboards today. He is not interested in your architecture. He is deciding whether this survives contact with a district cyber cell on a Tuesday.</p>
+
+    <div class="attacks">
+
+      <div class="atk">
+        <p class="said">“We already have 1930 and CFCFRMS. Why are you here?”</p>
+        <p class="verdict v-closed">Closed</p>
+        <p class="lead answer">Because CFCFRMS works on bank rails, and in this case the money leaves bank rails in fifty-eight seconds.</p>
+        <p>CFCFRMS is genuinely good at what it does — it freezes across banks inside the golden hour using UTRs. It has no visibility the moment funds are converted at an exchange. We do not replace it and we do not compete with it. We take over at the exact second it goes blind, and we hand the officer back the one thing the freeze request needs: which exchange, which deposit address, how much, when.</p>
+      </div>
+
+      <div class="atk">
+        <p class="said">“You cannot seize a single rupee. This is a picture.”</p>
+        <p class="verdict v-closed">Closed</p>
+        <p class="lead answer">Correct — and that is why the last button on the screen is a Section 94 BNSS production order, not a seizure.</p>
+        <p>Seizure requires the exchange to act. What an officer lacks today is the paperwork that makes them act: a written order naming a specific deposit address, a specific amount, a specific time and a specific transaction hash. That draft now comes out of the system with the Schedule filled in. The officer completes their designation and station, has it checked, signs it, serves it. That is a Tuesday-morning action, not a research project.</p>
+      </div>
+
+      <div class="atk">
+        <p class="said">“Students build these and disappear. Who maintains it in six months?”</p>
+        <p class="verdict v-true">Fair — answer honestly</p>
+        <p class="lead answer">Nobody, unless it is worth maintaining — which is exactly why it is MIT-licensed, has 224 tests and runs on a laptop with no cloud account.</p>
+        <p>We have not built something that dies when we graduate. There is no server we pay for, no licence to renew, no API key that only we hold. Any competent developer — including one inside the force — can clone the repository, run the test suite, and know within a minute whether it still works. That is the most honest sustainability answer a student team can give, and pretending otherwise would insult the question.</p>
+      </div>
+
+      <div class="atk">
+        <p class="said">“It says DEFAULT PASSWORD IN USE in red at the top of your own screen. And you want me to trust it?”</p>
+        <p class="verdict v-closed">Closed — turn it around</p>
+        <p class="lead answer">That banner is the feature, sir. Most systems you are shown today would not tell you.</p>
+        <p>The instance is running the documented demo password, and it refuses to hide that. It is checked on every health call and rendered in red at the top of every screen until it is changed. A tool that quietly let you deploy on a default credential is the one you should not trust. Set <code>DEMO_OFFICER_PASSWORD</code> and the banner disappears on its own — no code change.</p>
+      </div>
+
+      <div class="atk">
+        <p class="said">“Synthetic data. Show me something real.”</p>
+        <p class="verdict v-closed">Closed — hand over the keyboard</p>
+        <p class="lead answer">Please type an address. Any Ethereum or Tron address you like.</p>
+        <p>Same seven rules, same custody log, same dossier, against live mainnet. Three OFAC-designated addresses are pre-cached so it answers in under a second even if this room's wifi fails. And if you hand us an address with nothing on it, you will get a small graph and a low score — that is the system working, and we will say so rather than reaching back for the demo case.</p>
+      </div>
+
+      <div class="atk">
+        <p class="said">“My constables are not engineers. Who runs a Python server in a police station?”</p>
+        <p class="verdict v-true">Fair — do not oversell</p>
+        <p class="lead answer">Today, one person in the cyber cell who is already comfortable installing software. Not a constable.</p>
+        <p>It is one command and one port — no separate frontend, no database server, no container. But we will not pretend a district cell installs this unaided. The realistic path is a packaged build placed on one machine by whoever already maintains the cell's computers, and the honest version of this answer scores better than a promise you will see through in a week.</p>
+      </div>
+
+      <div class="atk">
+        <p class="said">“Where is the Hindi? Where is the Punjabi?”</p>
+        <p class="verdict v-true">Not built — say so</p>
+        <p class="lead answer">Not built, and I am not going to claim it is a small job.</p>
+        <p>The interface is English. The generated documents are English because that is the language of the FIR annexure and the FIU-IND submission. Where a bilingual interface genuinely matters is the officer-facing screens, and the strings are centralised enough that it is a fortnight of work, not a rewrite. It is on the roadmap and it is not done.</p>
+      </div>
+
+      <div class="atk">
+        <p class="said">“You have put Chandigarh Police on your screen. Who authorised that?”</p>
+        <p class="verdict v-closed">Closed</p>
+        <p class="lead answer">Nobody, and the software says so before you can ask.</p>
+        <p>The README opens with it in bold, and there is a permanent amber banner across the top of every screen reading <em>demonstration and synthetic data mode active</em>. The agency name describes the intended user of a prototype, not an endorsement. If it is still uncomfortable, it is one string and we will change it tonight.</p>
+      </div>
+
+      <div class="atk">
+        <p class="said">“You are sending Indian case data to a foreign AI company.”</p>
+        <p class="verdict v-closed">Closed</p>
+        <p class="lead answer">Only the narrative prose, only on synthetic data, and the whole thing runs with that switched off.</p>
+        <p>The AI drafts the officer's summary paragraph and guesses at bank CSV column headings. It touches no score and no legal finding. There is a test that deletes the key <em>and</em> the cache and generates a complete dossier from the deterministic template. For a real deployment that is the mode you would run, and the DPDP Act decision gets made deliberately rather than discovered later.</p>
+      </div>
+
+      <div class="atk">
+        <p class="said">“Your own documents admit the law has not been checked. That makes it worthless.”</p>
+        <p class="verdict v-closed">Closed — this is a strength</p>
+        <p class="lead answer">It makes it honest, and it is the reason you can trust the rest of it.</p>
+        <p>We drafted a Section 63 BSA certificate and a Section 94 BNSS order in good faith and we are not lawyers. Rather than let an officer sign something we could not stand behind, we printed the limitation on the face of the document. A team that claimed their statutory wording was settled would either be lying or would not have thought about it. A week with a legal advisor closes this; a false claim never closes.</p>
+      </div>
+
+      <div class="atk">
+        <p class="said">“Chainalysis has millions of labelled addresses. You have fifteen.”</p>
+        <p class="verdict v-closed">Closed — do not fight this</p>
+        <p class="lead answer">Fifteen, and the file says fifteen in writing. We are not competing with them and we should not pretend to.</p>
+        <p>Attribution at scale is their commercial product and it is priced accordingly — per analyst seat, per year, in foreign currency, which is why it sits at national agencies and not in a district cyber cell. What we do is the layer around it: FIR to trace to Sec 63 dossier to production order, offline, at zero licence cost. If a force ever buys that data, this workflow consumes it. An unlabelled address here renders as <em>unknown</em>, never as clean.</p>
+      </div>
+
+      <div class="atk">
+        <p class="said">“Your mule account scores fifteen out of a hundred. Your scoring is broken.”</p>
+        <p class="verdict v-closed">Closed — the answer is on the same card</p>
+        <p class="lead answer">The score answers a different question, and the number you actually want is next to it: illicit one hundred per cent.</p>
+        <p>The score measures depth in the laundering machinery — mixers, bridges, fan-out, structuring. A mule account does one thing, receive and forward, so only the rapid-dispersal rule fires. For a bank account with a KYC record attached, you do not need a score; you need the traced share, and that reads 100%. The score exists for the unlabelled hex addresses where you have nothing else.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <p class="kicker">The other person on the panel</p>
+    <h2>What the technical expert will ask</h2>
+    <p>Different failure mode. They will not be moved by the story; they will probe for the thing you have not thought about. Concede fast where they are right — it buys credibility for the answers that hold.</p>
+
+    <div class="attacks">
+
+      <div class="atk">
+        <p class="said">“Why rules and not a model? A model would perform better.”</p>
+        <p class="verdict v-closed">Closed</p>
+        <p class="lead answer">Because Section 63 BSA requires us to explain how the output was produced, and a neural network cannot be cross-examined.</p>
+        <p>The scores reconcile: a test asserts every score equals the clamped sum of its cited rule points. We do run unsupervised models — Isolation Forest and DBSCAN — but on a separate endpoint with a separate shape, as a lead signal. The proof that it is genuinely walled off is that the model flags the <em>complainant</em>, who scores zero. That test is the reason the design is the way it is.</p>
+      </div>
+
+      <div class="atk">
+        <p class="said">“Your data model is account-based. Bitcoin is UTXO. So you cannot trace Bitcoin.”</p>
+        <p class="verdict v-true">Correct — concede immediately</p>
+        <p class="lead answer">You are right. We support Ethereum and Tron, both account-based, and Bitcoin is not a configuration change.</p>
+        <p>UTXO tracing needs a different graph entirely — inputs and outputs rather than from-and-to — plus a change-address heuristic that is itself a source of error. Doing it badly would be worse than not doing it. The reason we chose Ethereum and Tron first is that Indian fraud proceeds overwhelmingly move as USDT, and USDT lives on those two chains far more than on Bitcoin.</p>
+      </div>
+
+      <div class="atk">
+        <p class="said">“What stops an address-poisoning dust attack from polluting your graph?”</p>
+        <p class="verdict v-true">Partially — be precise</p>
+        <p class="lead answer">Two bounds, and one gap I will name rather than dress up.</p>
+        <p>The trace is bounded — depth capped at 3, edges per node capped, and each asset gets a fair share of that budget so large ETH figures cannot starve USDT out. <code>TraceRequest</code> carries a <code>min_amount</code> filter. What we do <em>not</em> yet have is a per-asset dust threshold applied by default, and a determined poisoning campaign would put junk counterparties in the graph. It is a small table and a filter; it is not written.</p>
+      </div>
+
+      <div class="atk">
+        <p class="said">“Etherscan free tier. What happens at a hundred concurrent cases?”</p>
+        <p class="verdict v-true">Honest scaling answer</p>
+        <p class="lead answer">It does not scale to a hundred concurrent cases, and it is not built to.</p>
+        <p>We self-throttle to three calls per second with a token bucket, cache every response to disk, and trip a circuit breaker after three failures so a dead network falls through to cache in about a second instead of sixty-two. That is sized for one cell working its own caseload. A state-wide deployment needs a paid plan or a self-hosted node, which is a procurement decision, not an architecture rewrite.</p>
+      </div>
+
+      <div class="atk">
+        <p class="said">“Proportional haircut. Why not FIFO, or Clayton's Case? Courts differ on tracing rules.”</p>
+        <p class="verdict v-closed">Closed — good question, real answer</p>
+        <p class="lead answer">Because haircut is the assumption that is hardest to argue with, and we publish which model produced every number.</p>
+        <p>FIFO and lowest-intermediate-balance both require assumptions about ordering that a defence will attack. Proportional haircut says only that a pool mixes. More importantly we ship <em>two</em> models and label them: <code>haircut</code> where curated evidence gives us real prior balances, and <code>propagation</code> on live chains — carrying a caveat that says in plain words it is reach, not a proportion, because historical balances at the moment funds arrived cannot be reconstructed from a public explorer.</p>
+      </div>
+
+      <div class="atk">
+        <p class="said">“Your hash chain is worthless. I recompute every entry from the point I edit.”</p>
+        <p class="verdict v-closed">Closed — and we say this first</p>
+        <p class="lead answer">Entirely correct, and it is why the wording everywhere is <em>detectable</em>, not tamper-proof.</p>
+        <p>Anyone with write access to the database can rewrite the chain forward from an edit. What closes that is putting a digest somewhere we do not control, which is what the optional on-chain anchoring does — it proves a document existed in a given state by a given block time. It does not prove the document is true, and the dossier says so in those words.</p>
+      </div>
+
+      <div class="atk">
+        <p class="said">“SQLite. Concurrency? Chain reorgs? Session tokens in browser storage?”</p>
+        <p class="verdict v-true">Three separate answers, two are gaps</p>
+        <p class="lead answer">SQLite is right for one cell and wrong for a state. Reorgs we do not handle. Tokens are in <code>sessionStorage</code>.</p>
+        <p>SQLite with foreign keys on is correct for single-cell, single-writer use and would need Postgres for anything wider — that is a connection string. Chain reorganisations we genuinely do not handle; a trace records what the explorer returned at that moment, which is why the custody log timestamps it. Session tokens are HMAC-signed and die with the browser tab; that is a deliberate trade against a persistent cookie, and a real deployment wants httpOnly cookies with CSRF protection.</p>
+      </div>
+
+      <div class="atk">
+        <p class="said">“Depth three. The money is eight hops away. You will miss it.”</p>
+        <p class="verdict v-closed">Closed</p>
+        <p class="lead answer">Often, yes — and the graph reports <code>truncated</code> rather than pretending it saw everything.</p>
+        <p>The bound exists because unbounded traversal on a real wallet exhausts the rate limit and freezes the browser, and because a graph nobody can read communicates nothing. The header shows <em>bounds reached</em> when we stopped early. An investigator re-seeds from a terminal address and continues — the custody log records each run as a separate traced action, which is closer to how the enquiry actually proceeds anyway.</p>
+      </div>
+
+      <div class="atk">
+        <p class="said">“What is your false positive rate?”</p>
+        <p class="verdict v-true">The sharpest question — do not bluff</p>
+        <p class="lead answer">Unknown. We have no labelled ground truth, so any number I gave you would be invented.</p>
+        <p>The rule weights are documented as reasoned, not calibrated. There is no empirical basis for twenty points versus fifteen and we say so in the README and in the dossier. What we can defend is that every score is reproducible and contestable — an accused can point at rule R4 and argue the bridge inference, which is impossible with an opaque model. Getting a real figure needs a pilot with outcomes attached, which is precisely what we are asking for.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <p class="kicker">Grounding</p>
+    <h2>The India facts to have straight</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Thing</th><th>What it is</th><th>Why it matters here</th></tr></thead>
+        <tbody>
+          <tr><td><strong>NCRP / 1930</strong></td><td>National Cybercrime Reporting Portal and the financial-fraud helpline</td><td>Where the complaint enters. Not an analysis tool.</td></tr>
+          <tr><td><strong>CFCFRMS</strong></td><td>Citizen Financial Cyber Fraud Reporting and Management System</td><td>Golden-hour bank freeze on UTRs. <strong>Blind once funds are crypto.</strong></td></tr>
+          <tr><td><strong>BSA 2023</strong></td><td>Bharatiya Sakshya Adhiniyam — replaced the Evidence Act</td><td>Sec 63 governs electronic evidence and its certificate.</td></tr>
+          <tr><td><strong>BNSS 2023</strong></td><td>Bharatiya Nagarik Suraksha Sanhita — replaced the CrPC</td><td>Sec 94 is the production order. Successor to Sec 91 CrPC.</td></tr>
+          <tr><td><strong>FIU-IND</strong></td><td>Financial Intelligence Unit</td><td>Receives STRs via FINnet. Registered entities only — we cannot file.</td></tr>
+          <tr><td><strong>VDA SPs</strong></td><td>Virtual Digital Asset Service Providers</td><td>Indian exchanges register with FIU-IND. They are the KYC holders you serve.</td></tr>
+          <tr><td><strong>DPDP Act 2023</strong></td><td>Digital Personal Data Protection Act</td><td>Governs the AI-narrative decision in any real deployment.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:1.1rem"><strong>Why Chandigarh is the right pilot:</strong> a Union Territory is one force under one command chain. No inter-state memorandum, no coordination committee. A three-month trial can be decided and executed inside one organisation, and the result — cases where the trail continued past the bank boundary — is attributable to that decision.</p>
+  </section>
+
+  <section>
+    <p class="kicker">Ninety seconds, said out loud</p>
+    <h2>The speech</h2>
+    <p>Deliver this standing, without the screen, before you touch anything. It is written to be spoken, not read.</p>
+
+    <div class="speech">
+      <p class="beat">Open — the specific human being</p>
+      <p>Sir, a woman in Sector 34 lost four lakh seventy thousand rupees. She did everything right. She called 1930 within the hour.</p>
+      <p>By then it was already too late, and I want to show you exactly how much too late. Her money left her SBI account at ten thirty-one and four seconds. At ten thirty-two and two seconds — <em>fifty-eight seconds later</em> — it was USDT on a blockchain, outside Indian banking, and outside what the helpline can see.</p>
+
+      <p class="beat">The gap — name it precisely</p>
+      <p>CFCFRMS can freeze her bank account. It is good at that. But at that fifty-eighth second the trail goes dark, and the officer who has to write the chargesheet has nothing. Not because he lacks the law — Section 94 of the BNSS lets him compel any exchange in the country. He lacks one thing: he does not know <em>which</em> exchange, or <em>which</em> deposit address to name in the order.</p>
+      <p>That is the entire gap. It is not a legal gap. It is not a policy gap. It is a capability gap, and it is narrow enough to close.</p>
+
+      <p class="beat">What we built — one sentence</p>
+      <p>So we built the thing that starts where 1930 stops, and ends with a signed piece of paper.</p>
+
+      <p class="beat">Credibility — the dashed line</p>
+      <p>One thing before I show you anything. On our map, every solid line is a bank record or a transaction hash you can paste into a public explorer yourself. One line is dashed. That one we <em>inferred</em> — a thirteen-second gap between a UPI debit and an exchange deposit. It is a hypothesis, not a proven transfer, and it is drawn differently on the screen, typed differently in the data, and marked INFERRED on the face of the court document. Sixteen confirmed, one inferred.</p>
+      <p>I mention it first because everything else I say is only worth anything if you believe that distinction is real.</p>
+
+      <p class="beat">The turn — the honest negative</p>
+      <p>And I will show you something no other prototype today will show you. Our own tool will tell you it has <em>failed</em>. Sixty per cent of the tainted funds land in an exchange pool that already held clean money, the traced share falls to twelve per cent, and our threshold is thirty — so the system says NOT FLAGGED. That pool contains real criminal proceeds and we still say the trail ends there.</p>
+      <p>A tool that only ever says guilty is worthless in a courtroom. That negative is what makes the sixty-five out of a hundred on the previous screen worth believing.</p>
+
+      <p class="beat">Close — Tuesday morning</p>
+      <p>Which brings me to the only question that matters. On Tuesday morning, what does the officer actually do?</p>
+      <p>He presses one button, and out comes a draft production order under Section 94 BNSS, addressed to the exchange, with the deposit address, the amount, the timestamp and the transaction hash already in the Schedule — and each line marked CONFIRMED or INFERRED so he knows what a defence will contest. He fills in his designation, has it checked, signs it, serves it.</p>
+      <p>It runs on one laptop. It works with the wifi unplugged. It costs nothing per district, and as of today it is MIT-licensed, so any force in this country can take it.</p>
+      <p>We are not asking you to believe it is finished. We are asking for three months in one cyber cell, and one number back: how many cases where the trail continued past the bank. If that number is not meaningfully above zero, we have not earned anything.</p>
+    </div>
+  </section>
+
+  <section>
+    <p class="kicker">Discipline</p>
+    <h2>Four rules while you are being attacked</h2>
+    <ul class="plain">
+      <li><b>Concede within one sentence when they are right.</b> Bitcoin, dust filtering, the false-positive rate, Hindi. Say "you are right" and move. Every fast concession buys credibility for the answers that actually hold.</li>
+      <li><b>Never claim to beat Chainalysis at attribution.</b> One sentence there ends your run with anyone who knows the field. Fifteen labels, in writing, every time.</li>
+      <li><b>When a number is challenged, show the screen, not the argument.</b> The score decomposition, the ILLICIT 100% beside the LOW 15, the CONFIRMED/INFERRED column. Let them read it.</li>
+      <li><b>Do not defend the demo case when a live address comes back empty.</b> "Small graph, low score — that is the system working." Reaching back for the synthetic case is the only thing that would actually lose you the room.</li>
+    </ul>
+  </section>
+
+  <footer>
+    <span>Project Violet Milk · panel defence</span>
+    <span>224 tests · 23 endpoints · MIT</span>
+    <span>Prototype viewing 8 Sep 2026</span>
+  </footer>
+
+</div>
