@@ -342,6 +342,8 @@ class DilutionResult(BaseModel):
     case_id: str
     threshold: float = 0.30
     version: str = DILUTION_VERSION
+    model: Literal["haircut", "propagation"] = "haircut"
+    caveat: str = ""
     steps: list[DilutionStep]
     computed_at: str
 
@@ -375,6 +377,21 @@ class AuditLog(BaseModel):
     target: str
     target_hash: str | None = None
     details: dict[str, Any] = Field(default_factory=dict)
+    prev_hash: str = ""
+    entry_hash: str = Field(
+        "", description="SHA-256 over this entry plus the previous entry_hash."
+    )
+
+
+class AuditVerification(BaseModel):
+    """Result of re-walking the custody chain."""
+    case_id: str
+    entries: int
+    intact: bool
+    broken_at: str | None = Field(
+        None, description="audit_id of the first entry whose link fails."
+    )
+    head_hash: str = ""
 
 
 # ---------------------------------------------------------------------------

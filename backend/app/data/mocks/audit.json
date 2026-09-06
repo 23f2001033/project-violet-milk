@@ -7,7 +7,10 @@
     "action": "CASE_CREATED",
     "target": "CP-CYBER-2026-001",
     "target_hash": null,
-    "details": {}
+    "details": {},
+    "seq": 1,
+    "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+    "entry_hash": "804b22d65fb6790422998f2a6a345681903f12103ea291f85bc4ef612780b359"
   },
   {
     "audit_id": "A-seed0002",
@@ -19,7 +22,10 @@
     "target_hash": "9f8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d2e1f0a9b8c7d6e5f4a3b2c1d0e9f8a",
     "details": {
       "rows": 17
-    }
+    },
+    "seq": 2,
+    "prev_hash": "804b22d65fb6790422998f2a6a345681903f12103ea291f85bc4ef612780b359",
+    "entry_hash": "feb7fd5e84a1fae2ad54edbb11b14b4643e9d9eb58227be0594a9b9f8dfd6096"
   },
   {
     "audit_id": "A-seed0003",
@@ -30,9 +36,12 @@
     "target": "0xa7f39c1d8e4b2a5f7c3d9e0a1b8c6d4e5f2a67e9",
     "target_hash": null,
     "details": {
+      "edges": 17,
       "max_depth": 3,
-      "nodes": 14,
-      "edges": 17
-    }
+      "nodes": 14
+    },
+    "seq": 3,
+    "prev_hash": "feb7fd5e84a1fae2ad54edbb11b14b4643e9d9eb58227be0594a9b9f8dfd6096",
+    "entry_hash": "790f2b72086249cf27bc62496974b601960ba934ced089e2e9be3f8045907f68"
   }
 ]

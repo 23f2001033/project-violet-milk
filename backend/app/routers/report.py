@@ -46,7 +46,8 @@ def generate_report(case_id: str):
     text, provenance = narrative_service.build(analysis, case)
 
     path, digest, pages = build_dossier(
-        analysis, case, evidence, audit_before, text, provenance
+        analysis, case, evidence, audit_before, text, provenance,
+        audit_verification=audit_service.verify(case_id).model_dump(mode="json"),
     )
 
     # The dossier's own hash is a DETACHED record - a file cannot contain its

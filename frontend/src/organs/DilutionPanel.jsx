@@ -26,11 +26,29 @@ export default function DilutionPanel({ dilution, onSelect, selected }) {
   if (!dilution) return <Empty>No dilution data.</Empty>
 
   const rescue = [...dilution.steps].reverse().find((s) => !s.flagged)
+  const propagation = dilution.model === 'propagation'
 
   return (
     <div className="p-4 space-y-4 overflow-y-auto h-full">
+      {/* A live trace has no prior balances, so the figure is REACH, not a
+          proportion. Labelling both the same way would overstate the live
+          result - the caveat is not decoration. */}
+      {propagation && (
+        <div className="rounded border border-risk-high/50 bg-risk-high/10 p-3">
+          <div className="text-[10px] font-bold uppercase tracking-wider
+                          text-risk-high mb-1">
+            Propagation mode — not a dilution figure
+          </div>
+          <p className="text-[10px] text-slate-400 leading-relaxed">
+            {dilution.caveat}
+          </p>
+        </div>
+      )}
+
       <div className="bg-panel2 rounded p-3">
-        <div className="label mb-2">Proportional haircut</div>
+        <div className="label mb-2">
+          {propagation ? 'Taint propagation' : 'Proportional haircut'}
+        </div>
         <pre className="font-mono text-[10px] text-slate-400 leading-relaxed
                         overflow-x-auto">
 {`              incoming × source_ratio
@@ -39,7 +57,7 @@ new ratio =  ──────────────────────�
         </pre>
       </div>
 
-      {rescue && (
+      {rescue && !propagation && (
         <div className="rounded border border-risk-low/40 bg-risk-low/10 p-3">
           <div className="text-[10px] font-bold uppercase tracking-wider
                           text-risk-low mb-1.5">

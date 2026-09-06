@@ -46,13 +46,14 @@ _EVIDENCE = (
 # have generated. Live actions append to this trail rather than replacing it.
 _AUDIT = [
     ("A-seed0001", DEMO_CASE_ID, "2026-09-08T10:30:12+05:30", "IO_SHARMA",
-     AuditAction.CASE_CREATED.value, DEMO_CASE_ID, None, "{}"),
+     AuditAction.CASE_CREATED.value, DEMO_CASE_ID, None,
+     json.dumps({}, sort_keys=True)),
     ("A-seed0002", DEMO_CASE_ID, "2026-09-08T10:30:45+05:30", "IO_SHARMA",
      AuditAction.EVIDENCE_UPLOADED.value, "Bank_Stmt_SBI.csv", EVIDENCE_HASH,
-     json.dumps({"rows": 17})),
+     json.dumps({"rows": 17}, sort_keys=True)),
     ("A-seed0003", DEMO_CASE_ID, "2026-09-08T10:35:18+05:30", "IO_SHARMA",
      AuditAction.TRACE_RUN.value, SEED_WALLET, None,
-     json.dumps({"max_depth": 3, "nodes": 14, "edges": 17})),
+     json.dumps({"max_depth": 3, "nodes": 14, "edges": 17}, sort_keys=True)),
 ]
 
 
@@ -77,8 +78,20 @@ def seed_demo_case() -> None:
             "is_synthetic, row_count, column_mapping, uploaded_at, uploaded_by) "
             "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)", _EVIDENCE,
         )
-        conn.executemany(
-            "INSERT INTO audit_log (audit_id, case_id, timestamp, user_id, "
-            "action, target, target_hash, details) VALUES (?,?,?,?,?,?,?,?)",
-            _AUDIT,
-        )
+        # Seeded history must form a VALID chain, or the demo case would
+        # report itself as tampered the moment anyone verified it.
+        from .services.audit import GENESIS, _digest
+
+        prev = GENESIS
+        for seq, row in enumerate(_AUDIT, start=1):
+            audit_id, cid, ts, user, action, target, thash, details = row
+            entry = _digest(prev, audit_id, ts, user, action, target,
+                            thash, details)
+            conn.execute(
+                "INSERT INTO audit_log (audit_id, case_id, timestamp, "
+                "user_id, action, target, target_hash, details, seq, "
+                "prev_hash, entry_hash) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+                (audit_id, cid, ts, user, action, target, thash, details,
+                 seq, prev, entry),
+            )
+            prev = entry

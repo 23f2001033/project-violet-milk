@@ -147,6 +147,9 @@ engines must reproduce them exactly.**
 | Seed wallet risk | **65 / HIGH** (R1+R2+R3+R4; R5 deliberately not firing) |
 | Dilution rescue | **60% → 12%**, NOT flagged |
 | Inferred edges | exactly 1 (the UPI→exchange correlation) |
+| Dilution model (curated) | `haircut` — a true proportion |
+| Dilution model (live) | `propagation` — **reach, not proportion** |
+| Custody chain | hash-chained; `/audit/verify` names any broken link |
 
 ---
 

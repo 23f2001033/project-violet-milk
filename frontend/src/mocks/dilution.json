@@ -2,6 +2,8 @@
   "case_id": "CP-CYBER-2026-001",
   "threshold": 0.3,
   "version": "haircut-1.0",
+  "model": "haircut",
+  "caveat": "Prior balances are drawn from curated case evidence, so each ratio is a true proportional haircut.",
   "steps": [
     {
       "node_id": "SBI_XXXXXXXX8891",

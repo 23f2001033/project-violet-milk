@@ -18,7 +18,9 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
 from backend.app.engines.pipeline import analyse            # noqa: E402
+from backend.app.main import app  # noqa: F401,E402  (seeds the demo case)
 from backend.app.seed import SEED_WALLET, _CASE, _EVIDENCE  # noqa: E402
+from backend.app.services import audit as audit_service     # noqa: E402
 
 CASE_ID = "CP-CYBER-2026-001"
 OUT_FRONTEND = ROOT / "frontend" / "src" / "mocks"
@@ -65,21 +67,9 @@ def build() -> dict:
     evidence["is_synthetic"] = bool(evidence["is_synthetic"])
     evidence["column_mapping"] = json.loads(evidence["column_mapping"])
 
-    audit = [
-        {"audit_id": "A-seed0001", "case_id": CASE_ID,
-         "timestamp": "2026-09-08T10:30:12+05:30", "user_id": "IO_SHARMA",
-         "action": "CASE_CREATED", "target": CASE_ID, "target_hash": None,
-         "details": {}},
-        {"audit_id": "A-seed0002", "case_id": CASE_ID,
-         "timestamp": "2026-09-08T10:30:45+05:30", "user_id": "IO_SHARMA",
-         "action": "EVIDENCE_UPLOADED", "target": "Bank_Stmt_SBI.csv",
-         "target_hash": evidence["sha256_server"], "details": {"rows": 17}},
-        {"audit_id": "A-seed0003", "case_id": CASE_ID, "timestamp": TRACED_AT,
-         "user_id": "IO_SHARMA", "action": "TRACE_RUN", "target": SEED_WALLET,
-         "target_hash": None,
-         "details": {"max_depth": 3, "nodes": len(a.nodes),
-                     "edges": len(a.edges)}},
-    ]
+    # Read the real chained rows so the fixtures carry genuine hashes.
+    audit = _freeze(audit_service.for_case(CASE_ID))
+    verification = audit_service.verify(CASE_ID).model_dump(mode="json")
 
     health = {
         "status": "ok", "data_mode": "synthetic", "version": "0.1.0",
@@ -122,6 +112,7 @@ def build() -> dict:
         "dilution.json": dilution,
         "evidence.json": [evidence],
         "audit.json": audit,
+        "audit_verify.json": verification,
         "health.json": health,
     }
 

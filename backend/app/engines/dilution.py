@@ -37,28 +37,65 @@ def _norm(amount: float, asset: Asset) -> float:
     return amount / DEMO_INR_PER_USDT if asset == Asset.INR else amount
 
 
+HAIRCUT_CAVEAT = (
+    "Prior balances are drawn from curated case evidence, so each ratio is a "
+    "true proportional haircut."
+)
+PROPAGATION_CAVEAT = (
+    "PROPAGATION ONLY - NOT A DILUTION FIGURE. Historical balances at the "
+    "moment funds arrived cannot be reconstructed from a public explorer, so "
+    "the haircut denominator is unavailable. These values show how far traced "
+    "funds REACHED, not what proportion of each wallet they represent. A "
+    "wallet shown at 100% may hold far more untraced value."
+)
+
+
 def compute_dilution(
     case_id: str,
     nodes: list[Node],
     edges: list[Edge],
     origin_node: str | None = None,
+    prior_balances_available: bool = True,
 ) -> tuple[DilutionResult, dict[str, float]]:
     """Replay the ledger chronologically.
 
-    `origin_node` is where the taint enters - the victim. Funds leaving it are
-    100% traced by definition. Returns the full result plus a
-    {node_id: illicit_ratio} map for the risk engine and the graph payload.
+    Two modes, and the distinction is not cosmetic:
+
+    HAIRCUT (curated evidence) - every node carries a known prior balance, so
+    the denominator is real and the output is a genuine proportion.
+
+    PROPAGATION (live chain data) - a public explorer cannot tell us what a
+    wallet held at the moment funds arrived. Historical balance reconstruction
+    means replaying every prior transfer for every address, which the rate
+    limits make impossible inside a trace. Rather than invent a denominator,
+    the prior-balance term is dropped and the result is relabelled: it shows
+    REACH, not proportion.
+
+    Before this split existed, live mode silently produced 0.0 for every node
+    - there was no victim to seed the taint from - so the headline feature
+    quietly did nothing on real data.
     """
-    balance = {n.node_id: _norm(n.prior_balance, Asset.INR
-                                if n.chain.value == "bank_inr" else Asset.USDT)
-               for n in nodes}
+    balance = {
+        n.node_id: (
+            _norm(n.prior_balance,
+                  Asset.INR if n.chain.value == "bank_inr" else Asset.USDT)
+            if prior_balances_available else 0.0
+        )
+        for n in nodes
+    }
     dirty = {n.node_id: 0.0 for n in nodes}
     ratio: dict[str, float] = {n.node_id: 0.0 for n in nodes}
 
-    if origin_node is None:
-        origin = next((n.node_id for n in nodes if n.node_type.value == "victim"), None)
-    else:
+    if origin_node is not None:
         origin = origin_node
+    else:
+        # Curated cases start at the complainant. A live trace has no victim
+        # node at all, so the seed address becomes the origin of taint.
+        origin = next(
+            (n.node_id for n in nodes if n.node_type.value == "victim"), None
+        )
+        if origin is None:
+            origin = next((n.node_id for n in nodes if n.is_seed), None)
 
     steps: list[DilutionStep] = []
 
@@ -99,9 +136,18 @@ def compute_dilution(
             flagged=new_ratio >= DILUTION_THRESHOLD,
         ))
 
+    # The origin itself is fully traced by definition - it is the money the
+    # complainant lost, or the address the investigator named.
+    if origin:
+        ratio.setdefault(origin, 0.0)
+        if not prior_balances_available:
+            ratio[origin] = 1.0
+
     result = DilutionResult(
         case_id=case_id,
         threshold=DILUTION_THRESHOLD,
+        model="haircut" if prior_balances_available else "propagation",
+        caveat=HAIRCUT_CAVEAT if prior_balances_available else PROPAGATION_CAVEAT,
         steps=steps,
         computed_at=datetime.now(timezone.utc).isoformat(),
     )

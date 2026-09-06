@@ -26,6 +26,7 @@ import evidenceMock from './mocks/evidence.json'
 import auditMock from './mocks/audit.json'
 import healthMock from './mocks/health.json'
 import anomalyMock from './mocks/anomaly.json'
+import auditVerifyMock from './mocks/audit_verify.json'
 
 const LATENCY_MS = 220 // keeps loading states honest while mocking
 
@@ -179,6 +180,10 @@ export const getTimeline = (caseId) =>
 
 export const getAudit = (caseId) =>
   USE_MOCKS ? mock(auditMock) : req(`/api/cases/${caseId}/audit`)
+
+/** Re-walks the hash chain. Reports the first broken link, if any. */
+export const verifyAudit = (caseId) =>
+  USE_MOCKS ? mock(auditVerifyMock) : req(`/api/cases/${caseId}/audit/verify`)
 
 export const generateReport = (caseId) =>
   USE_MOCKS

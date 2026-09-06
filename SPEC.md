@@ -51,7 +51,20 @@ Maximum = 100, clamped to `[0, 100]`.
 
 ---
 
-## 3. Dilution — proportional haircut (SPEC §06)
+## 3. Dilution — TWO models, never confused
+
+| Mode | When | What the number means |
+|---|---|---|
+| **haircut** | curated case evidence | a true proportion — prior balances are known |
+| **propagation** | live chain data | **REACH, not proportion** — a public explorer cannot supply the historical balance at the moment funds arrived, so there is no denominator |
+
+Live mode previously reported `0.0` for every node: with no victim node the
+taint had no origin, so the headline feature silently did nothing on real
+data. The seed address is now the origin in live mode, and the result carries
+an explicit caveat. **Never present a propagation figure as a dilution
+percentage.**
+
+### Proportional haircut (curated mode)
 
 ```
 illicit_ratio_new = (incoming_amount × illicit_ratio_source)
@@ -165,6 +178,25 @@ intellectual honesty visible to a judge.
 
 ---
 
+## 8b. Chain of custody is hash-chained
+
+Each audit entry commits to its predecessor:
+
+```
+entry_hash = SHA256(prev_hash | audit_id | timestamp | user | action
+                    | target | target_hash | canonical(details))
+```
+
+`GET /api/cases/{id}/audit/verify` re-walks the chain and names the first
+broken link. Ordering uses an explicit `seq` column — not `rowid` (not stable
+across a dump/restore) and not `timestamp` (the seeded case is dated ahead of
+live actions).
+
+**Say it precisely:** this makes tampering *detectable*, not *impossible*.
+Only an append-only store or external notarisation prevents it.
+
+---
+
 ## 9. What we must never claim
 
 From the constraints in `project.md`, still binding:
@@ -220,6 +252,22 @@ A test asserts no STR-filing endpoint can ever exist in this codebase.
 ---
 
 ## 11. Open items
+
+### Known gaps, ranked (from the adversarial review)
+
+| Gap | Status |
+|---|---|
+| Dilution dead on live data | ✅ fixed — propagation mode |
+| Custody log editable without trace | ✅ fixed — hash-chained |
+| White screen on a render error | ✅ fixed — ErrorBoundary |
+| **Uploaded evidence never reaches the trace** | ⚠️ open — the graph always reads the bundled CSV |
+| **No authentication** — `uploaded_by` is client-supplied | ⚠️ open |
+| **Ethereum only** — most Indian USDT fraud is on Tron | ⚠️ open, architecturally ready |
+| Rule weights are uncalibrated | ⚠️ by design — that is what a pilot measures |
+| Bank clock vs block clock | ⚠️ say "same minute", not "+13 seconds" |
+| AI narrative sends case data to Groq | ⚠️ contradicts the data-sovereignty claim |
+
+---
 
 | # | Question | Blocks |
 |---|---|---|

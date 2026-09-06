@@ -55,7 +55,14 @@ CREATE TABLE IF NOT EXISTS audit_log (
     action      TEXT NOT NULL,
     target      TEXT NOT NULL,
     target_hash TEXT,
-    details     TEXT NOT NULL DEFAULT '{}'
+    details     TEXT NOT NULL DEFAULT '{}',
+    -- Tamper-evidence: each row commits to the one before it. Editing or
+    -- deleting any row breaks every subsequent link, which /audit reports.
+    -- `seq` makes the chain's order explicit rather than relying on SQLite's
+    -- rowid, which is not preserved across a dump and restore.
+    seq         INTEGER NOT NULL DEFAULT 0,
+    prev_hash   TEXT NOT NULL DEFAULT '',
+    entry_hash  TEXT NOT NULL DEFAULT ''
 );
 
 CREATE INDEX IF NOT EXISTS idx_evidence_case ON evidence(case_id);

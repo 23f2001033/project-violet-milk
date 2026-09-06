@@ -22,6 +22,7 @@ import {
   getTimeline,
   inr,
   listEvidence,
+  verifyAudit,
 } from './api'
 import { Button, ErrorBox, RiskPill, Spinner, short } from './components/ui'
 import CommandCenter from './organs/CommandCenter'
@@ -86,12 +87,15 @@ export default function App() {
       // The Flag Agent must never block the case view: a model failure is a
       // missing panel, not a broken dashboard.
       getAnomaly(DEMO_CASE_ID).catch(() => null),
+      verifyAudit(DEMO_CASE_ID).catch(() => null),
     ])
-      .then(([kase, graph, dilution, timeline, audit, evidence, anomaly]) =>
-        setData({
-          loading: false, kase, graph, dilution, timeline, audit, evidence,
-          anomaly,
-        })
+      .then(
+        ([kase, graph, dilution, timeline, audit, evidence, anomaly,
+          verification]) =>
+          setData({
+            loading: false, kase, graph, dilution, timeline, audit, evidence,
+            anomaly, verification,
+          })
       )
       .catch((e) => setData({ loading: false, error: e.message }))
   }, [])
@@ -196,7 +200,7 @@ export default function App() {
       />
     ),
     dossier: <ReportExport kase={kase} />,
-    audit: <AuditLog audit={audit} />,
+    audit: <AuditLog audit={audit} verification={data.verification} />,
   }[organ]
 
   return (

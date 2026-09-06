@@ -128,6 +128,7 @@ def build_dossier(
     narrative: str,
     narrative_provenance: str,
     out_dir: Path | None = None,
+    audit_verification: dict | None = None,
 ) -> tuple[Path, str, int]:
     """Render the dossier. Returns (path, sha256_of_file, page_count)."""
     out_dir = out_dir or REPORTS_DIR
@@ -246,6 +247,21 @@ def build_dossier(
     story.append(_table(au_rows,
                         [30 * mm, 20 * mm, 32 * mm, 52 * mm, 40 * mm]))
 
+    if audit_verification:
+        intact = audit_verification.get("intact")
+        story.append(Paragraph(
+            ("<b>Chain verification: INTACT.</b> " if intact
+             else "<b>Chain verification: FAILED at "
+                  f"{audit_verification.get('broken_at')}.</b> ")
+            + "Each entry above carries a SHA-256 committing to the entry "
+            "before it, so altering, reordering or removing any row breaks "
+            f"every subsequent link. {audit_verification.get('entries', 0)} "
+            "entries were re-walked at the time of export"
+            + (f"; the chain head is {audit_verification.get('head_hash','')[:32]}…."
+               if intact else ".")
+            + " This makes tampering detectable; it does not prevent it.",
+            S_SMALL))
+
     # ------------------------------------------------------------ page 3
     story.append(PageBreak())
     story.append(Paragraph("6. Entities traced", S_H))
@@ -306,6 +322,9 @@ def build_dossier(
         "incoming amount). Applied in strict chronological order. Entities "
         f"below {analysis.dilution.threshold:.0%} are recorded but not flagged, "
         "which prevents legitimate liquidity from being implicated.", S_BODY))
+    story.append(Paragraph(
+        f"<b>Model applied: {analysis.dilution.model.upper()}.</b> "
+        + analysis.dilution.caveat, S_BODY))
     d_rows = [["Entity", "Prior", "Incoming", "Source %", "Traced", "Result %", "Flag"]]
     for s in analysis.dilution.steps:
         d_rows.append([

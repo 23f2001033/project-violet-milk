@@ -143,7 +143,13 @@ def analyse(
     )
 
     # Dilution BEFORE risk - the ratio is an input to the assessment.
-    dilution, ratios = compute_dilution(case_id, nodes, edges)
+    # A live source has no curated prior balances and no victim node, so it
+    # runs in propagation mode with the seed as the taint origin. Without this
+    # split, live traces reported 0.0 for every node.
+    dilution, ratios = compute_dilution(
+        case_id, nodes, edges,
+        prior_balances_available=not src.is_live(),
+    )
 
     victim_debit = next(
         (e.timestamp for e in sorted(edges, key=lambda x: x.timestamp)
