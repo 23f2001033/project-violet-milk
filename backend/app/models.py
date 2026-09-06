@@ -599,3 +599,28 @@ class AssetBreakdown(BaseModel):
     totals: list[AssetAmount]
     layers: list[LayerAssets]
     nodes: list[NodeAssets]
+
+
+class NoticeResponse(BaseModel):
+    """Section 94 BNSS 2023 production order - DRAFT.
+
+    `signed` is permanently false and no endpoint can set it. A production
+    order takes its force from the signature of an officer competent to issue
+    it; software can assemble the recitals but cannot confer the authority,
+    and a button claiming otherwise would be a lie about a legal instrument.
+    """
+    case_id: str
+    notice_reference: str
+    generated_at: str
+    status: Literal["DRAFT"] = "DRAFT"
+    signed: Literal[False] = False
+    addressee_identified: bool
+    issue_instruction: str = (
+        "This is an unsigned draft. It must be reviewed with a legal advisor, "
+        "completed by the issuing officer, and served under signature. This "
+        "software does not issue or serve it."
+    )
+    filename: str
+    sha256: str
+    download_url: str
+    fields: dict[str, Any]

@@ -7,10 +7,11 @@ from ..config import REPORTS_DIR
 from ..db import cursor, row_to_evidence
 from ..engines.pipeline import get_analysis
 from ..engines.report_engine import build_dossier
+from ..engines.notice_engine import build_notice_document
 from ..engines.str_engine import build_str_document
 from ..models import (
-    AnchorRecord, AnomalyFinding, AnomalyResponse, AuditAction, ReportResponse,
-    STRResponse,
+    AnchorRecord, AnomalyFinding, AnomalyResponse, AuditAction,
+    NoticeResponse, ReportResponse, STRResponse,
 )
 from ..services import anchor as anchor_service
 from ..services import audit as audit_service
@@ -211,3 +212,51 @@ def create_anchor(case_id: str, digest: str):
                      "chain_id": record.get("chain_id")},
         )
     return AnchorRecord(**record)
+
+
+@router.post("/{case_id}/notice", response_model=NoticeResponse,
+             summary="Draft a Sec 94 BNSS production order to the exchange")
+def generate_notice(case_id: str):
+    """Turns a finished trace into the paperwork that actually names a person.
+
+    A wallet address is not a person. The lawful route from a hex string to a
+    human being runs through the exchange holding the KYC record, and the
+    instrument that compels it is a written order under Section 94 BNSS 2023.
+    This assembles that order's recitals from the trace.
+
+    It is never signed and never served. Authority to issue comes from the
+    officer, not from software, and a `signed` field that could be set true
+    would be a lie about a legal instrument.
+    """
+    with cursor() as conn:
+        row = conn.execute(
+            "SELECT * FROM cases WHERE case_id = ?", (case_id,)
+        ).fetchone()
+    if not row:
+        raise HTTPException(404, f"Case {case_id} not found")
+
+    case = dict(row)
+    if not case.get("seed_wallet"):
+        raise HTTPException(422, "Case has no seed wallet to trace.")
+
+    analysis = get_analysis(case_id, case["seed_wallet"])
+    path, digest, fields, reference = build_notice_document(analysis, case)
+
+    audit_service.record(
+        case_id, AuditAction.REPORT_GENERATED, path.name,
+        user_id=case.get("io_name", "IO_SHARMA"), target_hash=digest,
+        details={"kind": "BNSS94_DRAFT", "reference": reference,
+                 "signed": False,
+                 "addressee": fields["addressee_address_on_chain"]},
+    )
+
+    return NoticeResponse(
+        case_id=case_id,
+        notice_reference=reference,
+        generated_at=analysis.traced_at,
+        addressee_identified=bool(fields["addressee_address_on_chain"]),
+        filename=path.name,
+        sha256=digest,
+        download_url=f"/api/cases/{case_id}/report/{path.name}",
+        fields=fields,
+    )

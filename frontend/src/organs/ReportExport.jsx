@@ -8,7 +8,7 @@
 
 import { useState } from 'react'
 import { Button } from '../components/ui'
-import { generateReport, generateSTR } from '../api'
+import { generateNotice, generateReport, generateSTR } from '../api'
 
 const SECTIONS = [
   ['Agency header & case metadata', 'FIR / NCRP reference, IO, incident time'],
@@ -23,6 +23,18 @@ const SECTIONS = [
 export default function ReportExport({ kase }) {
   const [state, setState] = useState({ status: 'idle' })
   const [str, setStr] = useState({ status: 'idle' })
+  const [notice, setNotice] = useState({ status: 'idle' })
+
+  async function runNotice() {
+    setNotice({ status: 'working' })
+    try {
+      const r = await generateNotice(kase.case_id)
+      setNotice({ status: 'done', result: r })
+      window.open(r.download_url, '_blank', 'noopener')
+    } catch (e) {
+      setNotice({ status: 'error', error: e.message })
+    }
+  }
 
   async function runStr() {
     setStr({ status: 'working' })
@@ -242,6 +254,88 @@ export default function ReportExport({ kase }) {
                            font-mono"
               >
                 {str.result.filename} ↗
+              </a>
+            </div>
+          )}
+        </div>
+
+        {/* --------------------------- Sec 94 BNSS production order draft */}
+        <div className="pt-4 mt-2 border-t border-edge space-y-3">
+          <div>
+            <div className="label mb-1">
+              Sec 94 BNSS production order to the exchange
+            </div>
+            <p className="text-[11px] text-slate-400 leading-relaxed">
+              A wallet address is not a person. This drafts the written order
+              that compels the exchange holding the KYC record to produce it —
+              with the deposit address, amounts, timestamps and transaction
+              hashes recited straight from the trace.
+            </p>
+          </div>
+
+          <div className="rounded border border-risk-high/40
+                          bg-risk-high/10 px-3 py-2">
+            <div className="text-[10px] font-bold uppercase tracking-wider
+                            text-risk-high mb-1">
+              Unsigned draft — no legal effect
+            </div>
+            <p className="text-[10px] text-slate-400 leading-relaxed">
+              Authority to issue comes from the officer&rsquo;s signature, not
+              from software. The statutory wording has not been settled by a
+              legal practitioner, and the addressee&rsquo;s legal name must be
+              established independently before service. Nothing here issues or
+              serves anything.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3 flex-wrap">
+            <Button onClick={runNotice} disabled={notice.status === 'working'}>
+              {notice.status === 'working'
+                ? 'Drafting…'
+                : 'Draft production order'}
+            </Button>
+            {notice.status === 'error' && (
+              <span className="text-[11px] text-risk-high font-mono">
+                {notice.error}
+              </span>
+            )}
+          </div>
+
+          {notice.status === 'done' && (
+            <div className="organ p-3 space-y-2">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-mono text-[10px] font-bold px-1.5 py-0.5
+                                 rounded bg-risk-high/20 text-risk-high">
+                  {notice.result.status} · UNSIGNED
+                </span>
+                <span className="font-mono text-[10px] text-slate-500">
+                  {notice.result.notice_reference}
+                </span>
+              </div>
+              {notice.result.addressee_identified ? (
+                <p className="text-[10px] text-slate-400 font-mono break-all">
+                  Addressee:{' '}
+                  {notice.result.fields.addressee_observed_label}
+                  {' · '}
+                  {notice.result.fields.addressee_address_on_chain}
+                </p>
+              ) : (
+                <p className="text-[10px] text-risk-high leading-relaxed">
+                  This trace reached no exchange, so no addressee could be
+                  identified. The draft says so rather than naming anyone.
+                </p>
+              )}
+              <p className="text-[10px] text-slate-500 leading-relaxed">
+                {notice.result.issue_instruction}
+              </p>
+              <a
+                href={notice.result.download_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block text-[11px] text-violet hover:underline
+                           font-mono"
+              >
+                {notice.result.filename} ↗
               </a>
             </div>
           )}

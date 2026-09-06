@@ -281,3 +281,10 @@ export const getAssets = (caseId) =>
 
 export const getNodeAssets = (caseId, nodeId) =>
   USE_MOCKS ? mock(null) : req(`/api/cases/${caseId}/assets/nodes/${nodeId}`)
+
+/** Drafts a Sec 94 BNSS 2023 production order to the exchange.
+    Never signed and never served - authority comes from the officer. */
+export const generateNotice = (caseId) =>
+  USE_MOCKS
+    ? Promise.reject(new Error('Notice drafting requires the backend'))
+    : req(`/api/cases/${caseId}/notice`, { method: 'POST' })

@@ -328,7 +328,7 @@ export default function App() {
                 value={live.addr}
                 onChange={(e) => setLive((s) => ({ ...s, addr: e.target.value }))}
                 onKeyDown={(e) => e.key === 'Enter' && runLiveTrace()}
-                placeholder="0x… paste any Ethereum address"
+                placeholder="0x… (Ethereum) or T… (Tron / USDT-TRC20)"
                 spellCheck={false}
                 className="flex-1 min-w-[260px] bg-panel2 border border-edge rounded
                            px-2 py-1 text-[11px] font-mono text-slate-200
