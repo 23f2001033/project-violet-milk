@@ -136,11 +136,23 @@ def _ingested(case_id: str, known: set[str]) -> tuple[list[Node], list[Edge]]:
     return nodes, edges
 
 
-def make_source(case_id: str, data_mode: str = "synthetic") -> DataSource:
-    if str(data_mode).lower() == "live":
-        from ..sources.etherscan import EtherscanSource
-        return EtherscanSource(case_id)
-    return SyntheticSource(case_id)
+def make_source(case_id: str, data_mode: str = "synthetic",
+                seed: str = "") -> DataSource:
+    """Pick the source, and in live mode pick the CHAIN from the address itself.
+
+    An investigator pastes an address; they should not have to know or declare
+    which network it belongs to. Tron addresses are Base58 starting with "T",
+    Ethereum addresses are 0x-hex, and the two are unmistakable.
+    """
+    if str(data_mode).lower() != "live":
+        return SyntheticSource(case_id)
+
+    from ..sources.tron import TronSource, is_tron_address
+    if is_tron_address(seed):
+        return TronSource(case_id)
+
+    from ..sources.etherscan import EtherscanSource
+    return EtherscanSource(case_id)
 
 
 def analyse(
@@ -154,7 +166,7 @@ def analyse(
     incident_at: str | None = None,
     data_mode: str = "synthetic",
 ) -> CaseAnalysis:
-    src = source or make_source(case_id, data_mode)
+    src = source or make_source(case_id, data_mode, seed)
 
     if hasattr(src, "all_nodes"):
         # Bundled dataset: the whole case is already in memory.

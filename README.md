@@ -87,8 +87,10 @@ as NOT ANCHORED. Setup takes ~20 minutes and costs nothing — see the header of
 
 ## Architecture in one paragraph
 
-A **DataSource** interface has two implementations — `SyntheticSource` (bundled
-CSV) and `EtherscanSource` (live mainnet). The graph, risk, dilution, timeline
+A **DataSource** interface has three implementations — `SyntheticSource`
+(bundled CSV), `EtherscanSource` (Ethereum) and `TronSource` (TRC-20, the
+dominant rail for Indian fraud proceeds). A pasted address routes itself:
+`0x…` is Ethereum, `T…` is Tron. The graph, risk, dilution, timeline
 and report engines never know which is active, so a judge can hand us a real
 address mid-demo and nothing downstream changes. Scoring is **deterministic
 rules, never ML**: Section 63 BSA 2023 requires explaining how evidence was

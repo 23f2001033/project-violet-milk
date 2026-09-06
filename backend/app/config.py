@@ -57,6 +57,12 @@ TIME_WINDOW_HOURS = _int("TIME_WINDOW_HOURS", 72)
 DEMO_INR_PER_USDT = _float("DEMO_INR_PER_USDT", 90.38)
 DEMO_CASE_ID = "CP-CYBER-2026-001"
 
+# --- Tron (TRC-20) ---------------------------------------------------------
+# The dominant rail for Indian fraud proceeds. TronGrid needs no key for read
+# access; a key only raises the rate limit.
+TRONGRID_BASE_URL = os.getenv("TRONGRID_BASE_URL", "https://api.trongrid.io").strip()
+TRONGRID_API_KEY = os.getenv("TRONGRID_API_KEY", "").strip()
+
 # --- Blockchain evidence anchoring -----------------------------------------
 # ANCHOR_PRIVATE_KEY signs the anchoring transaction and nothing else. It is
 # read here, used only by eth_account, and never logged, returned by an

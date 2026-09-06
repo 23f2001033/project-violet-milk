@@ -168,7 +168,13 @@ def test_every_curated_label_declares_a_source():
         (config.DATA_DIR / "known_addresses.json").read_text(encoding="utf-8"))
     assert blob["labels"], "the curated list must not be empty"
     for addr, entry in blob["labels"].items():
-        assert addr == addr.lower(), f"{addr} must be lowercase for lookup"
+        if addr.startswith("0x"):
+            # Ethereum hex is case-insensitive, so it is normalised to lower.
+            assert addr == addr.lower(), f"{addr} must be lowercase for lookup"
+        else:
+            # Tron Base58 is case-SENSITIVE. Lowercasing it makes every
+            # curated Tron label silently miss.
+            assert addr != addr.lower(),                 f"{addr} looks like Tron and must keep its casing"
         assert entry.get("source"), f"{addr} has a label with no provenance"
         assert "verified_by_team" in entry, f"{addr} missing verification flag"
 

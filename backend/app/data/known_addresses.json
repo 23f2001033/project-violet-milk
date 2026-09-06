@@ -10,7 +10,8 @@
     "   Chainalysis's actual commercial product and cannot be reproduced here.",
     "   Never imply coverage. An unlabelled address is not thereby innocent,",
     "   and a labelled one is not thereby proven.",
-    "4. Absence of a label must render as 'unknown', never as 'clean'."
+    "4. Absence of a label must render as 'unknown', never as 'clean'.",
+    "5. Tron entries are Base58 and case-SENSITIVE - unlike Ethereum they must not be lowercased, or the lookup silently misses."
   ],
   "labels": {
     "0x12d66f87a04a9e220743712ce6d9bb1b5616b8fc": {
@@ -95,6 +96,27 @@
       "node_type": "contract",
       "confidence": "confirmed",
       "source": "Circle official contract address",
+      "verified_by_team": false
+    },
+    "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t": {
+      "label": "Tether USD (USDT) TRC-20 token contract",
+      "node_type": "contract",
+      "confidence": "confirmed",
+      "source": "Tether official TRC-20 contract address",
+      "verified_by_team": false
+    },
+    "TEkxiTehnzSmSe2XqrBj4w32RUN966rdz8": {
+      "label": "USD Coin (USDC) TRC-20 token contract",
+      "node_type": "contract",
+      "confidence": "confirmed",
+      "source": "Circle official TRC-20 contract address",
+      "verified_by_team": false
+    },
+    "TMuA6YqfCeX8EhbfYEg5y7S4DqzSJireY9": {
+      "label": "Binance hot wallet (Tron)",
+      "node_type": "exchange",
+      "confidence": "inferred",
+      "source": "public Tronscan address label",
       "verified_by_team": false
     }
   }

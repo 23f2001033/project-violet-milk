@@ -151,6 +151,35 @@ time_window_hours  = 72
 
 ---
 
+## 6b. Two chains, routed by address format
+
+| Address | Source | Why |
+|---|---|---|
+| `0x…` (40 hex) | `EtherscanSource` | Ethereum mainnet |
+| `T…` (34 Base58) | `TronSource` | **TRC-20 — the dominant Indian rail** |
+
+An investigator pastes an address; they never declare a chain. Both implement
+the same `DataSource`, so no engine changed.
+
+### Tron differs in four silent ways
+
+1. Base58 addresses, **case-sensitive** — lowercasing breaks every label
+2. Timestamps in **milliseconds** — reading as seconds dates everything to 1970
+3. Amounts scale by `token_info.decimals`
+4. Native TRX in **sun** (1 TRX = 1,000,000), nested in `raw_data.contract[0]`
+
+### ⚠️ Tokens are verified by CONTRACT, never by ticker
+
+Anyone can deploy a TRC-20 whose symbol reads `USDT`. Live traffic on a real
+address contains lookalikes (`USDTT` at a different contract). A scammer can
+mint fake USDT into a wallet to distort any tool that trusts the symbol.
+
+On our first live trace this caught a **7.5-trillion** fake-token transfer
+that would otherwise have been reported as USDT. Unrecognised contracts are
+reported as `TOKEN`, never as the coin they claim to be.
+
+---
+
 ## 7. The one detail that decides whether live mode works
 
 Indian crypto-fraud proceeds move as **USDT**, not native ETH.
@@ -291,7 +320,7 @@ A test asserts no STR-filing endpoint can ever exist in this codebase.
 | White screen on a render error | ✅ fixed — ErrorBoundary |
 | Uploaded evidence never reaches the trace | ✅ fixed — parsed and merged; `stats.ingested_edges` reports how many |
 | **No authentication** — `uploaded_by` is client-supplied | ⚠️ open |
-| **Ethereum only** — most Indian USDT fraud is on Tron | ⚠️ open, architecturally ready |
+| Ethereum only — most Indian USDT fraud is on Tron | ✅ fixed — `TronSource`, routed by address format |
 | Rule weights are uncalibrated | ⚠️ by design — that is what a pilot measures |
 | Bank clock vs block clock | ⚠️ say "same minute", not "+13 seconds" |
 | AI narrative sends case data to Groq | ⚠️ contradicts the data-sovereignty claim |

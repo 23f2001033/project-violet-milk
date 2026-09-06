@@ -55,6 +55,7 @@ class NodeType(str, Enum):
 
 class Chain(str, Enum):
     ETHEREUM = "ethereum"
+    TRON = "tron"
     BANK_INR = "bank_inr"
     UPI = "upi"
     NONE = "none"
@@ -86,8 +87,14 @@ class EvidenceType(str, Enum):
 
 class Asset(str, Enum):
     ETH = "ETH"
+    TRX = "TRX"
     USDT = "USDT"
     INR = "INR"
+    # A token whose contract is NOT on the verified registry. On Tron anyone
+    # can deploy a contract calling itself "USDT", so an unrecognised contract
+    # is reported as an unverified token rather than as the coin it claims to
+    # be - otherwise a scammer can poison an investigation with fake inflows.
+    TOKEN = "TOKEN"
 
 
 class RiskLevel(str, Enum):
