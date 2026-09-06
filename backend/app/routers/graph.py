@@ -11,7 +11,9 @@ from ..models import (
 from ..models import AuthUser
 from ..services import audit
 from .auth import RequireUser
+from ..sources.etherscan import EtherscanSource
 from ..sources.synthetic import SyntheticSource
+from ..sources.tron import TronSource
 
 router = APIRouter(prefix="/api", tags=["graph"])
 
@@ -101,8 +103,21 @@ def get_graph(case_id: str, seed: str | None = None,
 @router.get("/labels/{address}", response_model=Label,
             summary="Resolve an address label")
 def get_label(address: str):
-    # Phase 6 adds the curated known_addresses.json lookup for live mode.
+    """Resolve against the demo case first, then the curated mainnet list.
+
+    This endpoint used to consult SyntheticSource alone, so every live-mode
+    lookup 404'd even for OFAC-designated addresses that are in
+    known_addresses.json. Graph nodes carried the label correctly; only this
+    standalone lookup did not.
+
+    Order matters: the demo case is authoritative for its own synthetic
+    entities, and the curated file covers real mainnet addresses. Tron is
+    Base58 and case-SENSITIVE, so it is tried before the lowercased form.
+    """
     found = SyntheticSource("lookup").get_label(address)
+    if not found:
+        found = (EtherscanSource("lookup").get_label(address)
+                 or TronSource("lookup").get_label(address))
     if not found:
         raise HTTPException(404, f"No label on record for {address}")
     return found

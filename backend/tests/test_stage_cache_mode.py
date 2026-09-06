@@ -106,3 +106,39 @@ def test_an_unknown_address_still_goes_to_the_network(cached_address,
     EtherscanSource("TEST")._fetch("txlist",
                              "0x9999999999999999999999999999999999999999")
     assert called["n"] == 1
+
+
+# ----------------------------------------------------- curated label lookup
+
+def test_label_endpoint_resolves_a_mainnet_address():
+    """Regression: /api/labels only consulted SyntheticSource, so every
+    live-mode lookup 404'd - including OFAC-designated mixers that are in
+    known_addresses.json."""
+    from ._client import make_client
+
+    c = make_client()
+    r = c.get("/api/labels/0x12d66f87a04a9e220743712ce6d9bb1b5616b8fc")
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert body["node_type"] == "mixer"
+    assert "Tornado" in body["label"]
+    assert body["reference"], "a label without provenance must not be served"
+
+
+def test_label_endpoint_resolves_a_tron_address_case_sensitively():
+    """Base58 is case-SENSITIVE; lowercasing a Tron address misses silently."""
+    from ._client import make_client
+
+    c = make_client()
+    r = c.get("/api/labels/TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t")
+    assert r.status_code == 200, r.text
+    assert "USDT" in r.json()["label"]
+
+
+def test_unknown_address_still_404s():
+    """Absence of a label must stay an explicit 'unknown', never a fabrication."""
+    from ._client import make_client
+
+    c = make_client()
+    r = c.get("/api/labels/0x0000000000000000000000000000000000000001")
+    assert r.status_code == 404
