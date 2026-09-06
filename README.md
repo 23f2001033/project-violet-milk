@@ -52,7 +52,7 @@ python -m venv .venv
 .venv\Scripts\Activate.ps1
 pip install -r backend\requirements.txt
 Copy-Item .env.example .env      # then paste your keys into .env
-python -m uvicorn backend.app.main:app --reload --port 8000
+.venv\Scripts\python.exe -m uvicorn backend.app.main:app --reload --port 8000
 ```
 
 Interactive API contract → <http://127.0.0.1:8000/docs>
@@ -93,6 +93,39 @@ as NOT ANCHORED. Setup takes ~20 minutes and costs nothing — see the header of
 ```powershell
 .venv\Scripts\python.exe -m pytest backend\tests -q
 ```
+
+### 5. Demo day
+
+Run these in order **while you still have working internet**, then leave the
+server up. Every command spells out `.venv\Scripts\python.exe` on purpose: a
+bare `python` picks up whatever interpreter is first on PATH, and a global
+Python that happens to have FastAPI but not `eth-account` fails deep inside
+`services/anchor.py` rather than at the first import.
+
+```powershell
+.venv\Scripts\python.exe backend\tools\prewarm_ai.py
+```
+
+```powershell
+.venv\Scripts\python.exe backend\tools\pretest_live.py
+```
+
+```powershell
+cd frontend; npm run build; cd ..
+```
+
+```powershell
+.venv\Scripts\python.exe -m uvicorn backend.app.main:app --port 8000
+```
+
+Everything is then served from <http://127.0.0.1:8000> - one process, one port,
+no separate frontend server.
+
+`pretest_live.py` is slow the first time and that is expected: it is populating
+`data/live_cache/`, and a busy address can take a minute. `[SLOW]` only means
+the trace exceeded the 10-second budget on a cold fetch. Run it a second time
+and the same addresses replay from disk. **Let it finish** - interrupting it
+leaves that address partially cached.
 
 ---
 
