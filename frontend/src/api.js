@@ -77,12 +77,14 @@ export const listEvidence = (caseId) =>
  * Evidence upload is multipart, not JSON, and carries the browser-computed
  * SHA-256. The server re-hashes and rejects the file if the two disagree.
  */
-export async function uploadEvidence(caseId, file, sha256Client, uploadedBy) {
+export async function uploadEvidence(
+  caseId, file, sha256Client, uploadedBy, isSynthetic = true
+) {
   if (USE_MOCKS) return mock(evidenceMock[0])
   const form = new FormData()
   form.append('file', file)
   form.append('sha256_client', sha256Client)
-  form.append('is_synthetic', 'true')
+  form.append('is_synthetic', String(isSynthetic))
   form.append('uploaded_by', uploadedBy ?? 'IO_SHARMA')
   const res = await fetch(`/api/cases/${caseId}/evidence`, {
     method: 'POST',
@@ -120,8 +122,19 @@ export const runTrace = (caseId, body) =>
         body: JSON.stringify(body),
       })
 
-export const getGraph = (caseId) =>
-  USE_MOCKS ? mock(graphMock) : req(`/api/cases/${caseId}/graph`)
+/**
+ * Omit `seed`/`mode` for the case's own synthetic graph. Passing them renders
+ * a live mainnet trace WITHOUT mutating the stored case, so experimenting on
+ * stage can never damage the scripted demo path.
+ */
+export const getGraph = (caseId, seed = null, mode = 'synthetic') => {
+  if (USE_MOCKS) return mock(graphMock)
+  const q = new URLSearchParams()
+  if (seed) q.set('seed', seed)
+  if (mode) q.set('data_mode', mode)
+  const qs = q.toString()
+  return req(`/api/cases/${caseId}/graph${qs ? `?${qs}` : ''}`)
+}
 
 export const getLabel = (address) =>
   USE_MOCKS ? mock(null) : req(`/api/labels/${address}`)

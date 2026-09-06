@@ -191,8 +191,8 @@ Our output is the annexure that justifies that order.
 | P3 | Frontend organs | ✅ |
 | P4 | Integration | ✅ |
 | P5 | Sec 63 BSA dossier + AI layer | ✅ |
-| P6 | Live mainnet mode | ⬜ next |
-| P7 | Harden, correct the deck, rehearse | ⬜ |
+| P6 | Live mainnet mode | ✅ |
+| P7 | Harden, correct the deck, rehearse | ⬜ next |
 
 ---
 
@@ -202,6 +202,6 @@ Our output is the annexure that justifies that order.
 |---|---|---|
 | 1 | **LLM provider** — Groq, `openai/gpt-oss-120b`. Key verified against the live `/models` endpoint. | ✅ resolved |
 | 2 | **Confirm ₹90.38/USDT** as the locked rate. | ✅ applied |
-| 3 | **Which three real addresses** get pre-tested for live mode? Must be publicly documented as illicit — never a private individual's wallet. | P6 |
+| 3 | **Live demo addresses** — 3 pre-tested and cached: Tornado Cash 0.1 ETH pool, Tornado Cash Router (both OFAC-designated) and a publicly-labelled Binance hot wallet. Confirm you are happy to use these. | ✅ proposed |
 | 4 | **Whose laptop presents,** and has it been tested on an external projector? | P7 |
 | 5 | **Has a law student verified** the exact Section 63 BSA / Section 94 BNSS wording? Do not quote statute you have not checked. | P5 |

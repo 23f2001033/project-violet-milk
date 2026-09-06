@@ -88,6 +88,48 @@ const STYLE = [
   },
 ]
 
+/**
+ * Layout is chosen by shape, not by preference.
+ *
+ * A curated case is a chain: victim -> bank -> exchange -> wallet -> fan-out,
+ * and breadthfirst renders that story left to right exactly as an officer
+ * describes it.
+ *
+ * A live mainnet address is hub-and-spoke: one wallet with dozens of
+ * counterparties. Breadthfirst lays those out in a single enormous row, and
+ * fitting it to the pane shrinks every node to a speck - the canvas looked
+ * blank. Concentric puts the seed at the centre with counterparties ringed
+ * around it, which is both readable and an honest picture of the topology.
+ */
+function layoutFor(graph) {
+  const nodes = graph.elements.nodes
+  const common = { padding: 30, fit: true, animate: false }
+
+  if (nodes.length > 25) {
+    return {
+      ...common,
+      name: 'concentric',
+      minNodeSpacing: 14,
+      // Seed at the centre; everything else ranked by risk so the entities
+      // that matter sit on the inner rings.
+      concentric: (n) => (n.data('is_seed') ? 1000 : n.data('risk_score') || 1),
+      levelWidth: () => 25,
+    }
+  }
+
+  const victims = nodes.filter((n) => n.data.type === 'victim').map((n) => n.data.id)
+  const seed = nodes.find((n) => n.data.is_seed)
+  const roots = victims.length ? victims : seed ? [seed.data.id] : undefined
+
+  return {
+    ...common,
+    name: 'breadthfirst',
+    directed: true,
+    spacingFactor: 1.4,
+    ...(roots ? { roots } : {}),
+  }
+}
+
 export default function GraphVisualiser({ graph, selected, onSelect }) {
   const boxRef = useRef(null)
   const cyRef = useRef(null)
@@ -116,16 +158,7 @@ export default function GraphVisualiser({ graph, selected, onSelect }) {
       container: boxRef.current,
       elements,
       style: STYLE,
-      layout: {
-        name: 'breadthfirst',
-        directed: true,
-        spacingFactor: 1.4,
-        padding: 30,
-        fit: true,
-        roots: graph.elements.nodes
-          .filter((n) => n.data.type === 'victim')
-          .map((n) => n.data.id),
-      },
+      layout: layoutFor(graph),
       wheelSensitivity: 0.2,
       minZoom: 0.2,
       maxZoom: 2.5,
@@ -144,13 +177,27 @@ export default function GraphVisualiser({ graph, selected, onSelect }) {
       cy.resize()
       cy.fit(undefined, 30)
     }
-    cy.ready(refit)
+    // `ready` fires before the layout has finished positioning nodes, so
+    // fitting there centres on half-placed coordinates and leaves the graph
+    // hugging one edge. `layoutstop` is the point at which positions are final.
+    cy.on('layoutstop', refit)
+    cy.ready(() => cy.resize())
+
+    // Fit is timing-sensitive in a way that is not worth being clever about.
+    // `layoutstop` can fire during construction, before this handler exists;
+    // the three-column grid may still be resolving track widths; and fonts
+    // load asynchronously. Any single hook leaves a case where the graph
+    // renders pinned to one edge and reads as broken. A few cheap settling
+    // passes cover all of them - the manual FIT control proved the fit itself
+    // is correct, only its timing was wrong.
+    const settles = [80, 300, 800].map((ms) => setTimeout(refit, ms))
 
     const ro = new ResizeObserver(refit)
     ro.observe(boxRef.current)
 
     cyRef.current = cy
     return () => {
+      settles.forEach(clearTimeout)
       ro.disconnect()
       cy.destroy()
     }
@@ -162,13 +209,21 @@ export default function GraphVisualiser({ graph, selected, onSelect }) {
     const cy = cyRef.current
     if (!cy) return
     cy.$(':selected').unselect()
-    if (selected) {
-      const node = cy.getElementById(selected)
-      if (node.nonempty()) {
-        node.select()
-        cy.animate({ center: { eles: node } }, { duration: 220 })
-      }
-    }
+    if (!selected) return
+
+    const node = cy.getElementById(selected)
+    if (node.empty()) return
+    node.select()
+
+    // Only pan when the node is actually off-screen. Centring unconditionally
+    // fought the initial fit: selecting the seed straight after a trace panned
+    // the view to the edge of the layout and pushed the rest of the graph out
+    // of sight, which read as a broken render.
+    const view = cy.extent()
+    const p = node.position()
+    const inView =
+      p.x > view.x1 && p.x < view.x2 && p.y > view.y1 && p.y < view.y2
+    if (!inView) cy.animate({ center: { eles: node } }, { duration: 220 })
   }, [selected])
 
   return (

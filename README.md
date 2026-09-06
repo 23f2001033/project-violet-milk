@@ -21,8 +21,8 @@ Built for the **Chandigarh Police Hackathon, 8 September 2026**.
 | **P3** | Frontend organs | ✅ done |
 | **P4** | Integration | ✅ done |
 | P5 | Sec 63 BSA dossier + AI layer | ✅ |
-| P6 | Live mainnet mode | ⬜ next |
-| P7 | Harden, correct the deck, rehearse | ⬜ |
+| P6 | Live mainnet mode | ✅ |
+| P7 | Harden, correct the deck, rehearse | ⬜ next |
 
 The full specification lives in **`SPEC.md`**. Read it before writing code.
 
@@ -61,9 +61,9 @@ npm run dev
 
 App → <http://localhost:5173>
 
-**The frontend runs with the backend switched off.** `src/api.js` has
-`USE_MOCKS = true`, so every organ renders from the generated fixtures. Flip it
-to `false` at Phase 4 integration.
+`src/api.js` runs against the live backend (`USE_MOCKS = false`). Set it back
+to `true` to develop any organ with the backend switched off - the fixtures in
+`src/mocks/` are generated from the real engines, so they cannot drift.
 
 ### 3. Tests
 

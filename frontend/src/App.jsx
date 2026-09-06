@@ -64,6 +64,10 @@ function Banner() {
 export default function App() {
   const [organ, setOrgan] = useState('command')
   const [selected, setSelected] = useState(null)
+  // Live mainnet is held entirely in local state and never written back to the
+  // case. The scripted demo path stays intact no matter what gets traced live.
+  const [live, setLive] = useState({ on: false, addr: '', busy: false,
+                                     graph: null, error: null })
   const [inspectorTab, setInspectorTab] = useState('risk')
   const [data, setData] = useState({ loading: true })
 
@@ -107,7 +111,32 @@ export default function App() {
   if (data.loading) return <Spinner label="Loading case…" />
   if (data.error) return <ErrorBox error={data.error} onRetry={load} />
 
-  const { kase, graph, dilution, timeline, audit } = data
+  const { kase, dilution, timeline, audit } = data
+  // The live trace, when one is loaded, replaces the displayed graph only.
+  const graph = live.on && live.graph ? live.graph : data.graph
+  const evidence = data.evidence ?? []
+  const verified = evidence.filter((e) => e.hash_match).length
+  async function runLiveTrace() {
+    const addr = live.addr.trim().toLowerCase()
+    if (!/^0x[0-9a-f]{40}$/.test(addr)) {
+      setLive((s) => ({ ...s, error: 'Enter a valid 40-character 0x address.' }))
+      return
+    }
+    setLive((s) => ({ ...s, busy: true, error: null }))
+    try {
+      const g = await getGraph(kase.case_id, addr, 'live')
+      setLive((s) => ({ ...s, busy: false, graph: g, on: true }))
+      // Deliberately NOT auto-selecting the seed. Selecting a node pans the
+      // canvas to centre it, which fought the initial fit and left the fresh
+      // trace pinned to one edge. After a trace the right thing to show is the
+      // whole neighbourhood; the operator clicks in from there.
+      setSelected(null)
+      setOrgan('graph')
+    } catch (e) {
+      setLive((s) => ({ ...s, busy: false, error: e.message }))
+    }
+  }
+
   const selectNode = (id) => {
     setSelected(id)
     if (id && !['graph', 'timeline'].includes(organ)) setOrgan('graph')
@@ -122,8 +151,12 @@ export default function App() {
         onOpen={selectNode}
       />
     ),
-    intake: <CaseIntake kase={kase} />,
-    evidence: <EvidenceUploader evidence={data.evidence ?? []} />,
+    intake: <CaseIntake kase={kase} onSaved={load} />,
+    evidence: (
+      <EvidenceUploader
+        caseId={kase.case_id} evidence={evidence} onUploaded={load}
+      />
+    ),
 
     graph: (
       <div className="grid grid-rows-[1fr_auto] h-full min-h-0">
@@ -165,15 +198,76 @@ export default function App() {
               PROJECT VIOLET MILK
             </div>
           </div>
-          <span className="font-mono text-[9px] px-1.5 py-0.5 rounded
-                           bg-risk-low/15 text-risk-low border border-risk-low/40">
-            SEC-63 BSA
+          {/* Reflects the actual data source, not a certification claim. */}
+          <span
+            className="font-mono text-[9px] px-1.5 py-0.5 rounded border"
+            style={
+              graph.stats.source === 'SyntheticSource'
+                ? { color: '#e5901d', background: '#e5901d1a', borderColor: '#e5901d66' }
+                : { color: '#e5484d', background: '#e5484d1a', borderColor: '#e5484d66' }
+            }
+          >
+            {graph.stats.source === 'SyntheticSource' ? 'SYNTHETIC' : 'LIVE MAINNET'}
           </span>
           <div className="ml-auto flex items-center gap-2">
             <Button variant="primary" onClick={() => setOrgan('dossier')}>
               Export Court Dossier
             </Button>
           </div>
+        </div>
+
+        {/* ------------------------------------------- live mainnet bar */}
+        <div className="flex flex-wrap items-center gap-2 px-4 py-1.5
+                        border-t border-edge">
+          <div className="flex rounded overflow-hidden border border-edge">
+            <button
+              onClick={() => setLive((s) => ({ ...s, on: false }))}
+              className={`px-2.5 py-1 text-[10px] font-mono tracking-wider
+                ${!live.on ? 'bg-violet/25 text-slate-100'
+                           : 'text-slate-500 hover:text-slate-300'}`}
+            >
+              ◉ DEMO
+            </button>
+            <button
+              onClick={() => setLive((s) => ({ ...s, on: true }))}
+              className={`px-2.5 py-1 text-[10px] font-mono tracking-wider
+                ${live.on ? 'bg-risk-critical/25 text-risk-critical'
+                          : 'text-slate-500 hover:text-slate-300'}`}
+            >
+              ◉ LIVE MAINNET
+            </button>
+          </div>
+
+          {live.on && (
+            <>
+              <input
+                value={live.addr}
+                onChange={(e) => setLive((s) => ({ ...s, addr: e.target.value }))}
+                onKeyDown={(e) => e.key === 'Enter' && runLiveTrace()}
+                placeholder="0x… paste any Ethereum address"
+                spellCheck={false}
+                className="flex-1 min-w-[260px] bg-panel2 border border-edge rounded
+                           px-2 py-1 text-[11px] font-mono text-slate-200
+                           placeholder:text-slate-700 focus:border-violet
+                           focus:outline-none"
+              />
+              <Button onClick={runLiveTrace} disabled={live.busy}>
+                {live.busy ? 'Tracing mainnet…' : 'Trace'}
+              </Button>
+              {live.error && (
+                <span className="text-[10px] text-risk-critical font-mono">
+                  {live.error}
+                </span>
+              )}
+              {live.graph && !live.error && (
+                <span className="text-[10px] text-slate-500 font-mono">
+                  {live.graph.stats.nodes} entities · {live.graph.stats.edges}{' '}
+                  transfers
+                  {live.graph.stats.truncated && ' · bounds reached'}
+                </span>
+              )}
+            </>
+          )}
         </div>
 
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-1.5
@@ -232,11 +326,25 @@ export default function App() {
               {o.label}
             </button>
           ))}
+          {/* Derived from the real evidence register: a file is "verified"
+              only when the browser hash and the server hash actually agree.
+              This previously read "SHA-256 chain valid" unconditionally - a
+              false integrity claim in a forensics tool. */}
           <div className="mt-auto p-3 border-t border-edge">
-            <div className="label mb-1">Ledger status</div>
-            <div className="font-mono text-[10px] text-risk-low">
-              ✓ SHA-256 chain valid
-            </div>
+            <div className="label mb-1">Evidence integrity</div>
+            {evidence.length === 0 ? (
+              <div className="font-mono text-[10px] text-slate-600">
+                no files ingested
+              </div>
+            ) : verified === evidence.length ? (
+              <div className="font-mono text-[10px] text-risk-low">
+                ✓ {verified}/{evidence.length} hash-verified
+              </div>
+            ) : (
+              <div className="font-mono text-[10px] text-risk-critical">
+                ✗ {evidence.length - verified} of {evidence.length} failed
+              </div>
+            )}
           </div>
         </nav>
 

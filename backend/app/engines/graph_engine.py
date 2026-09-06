@@ -30,6 +30,46 @@ def _parse(ts: str) -> datetime:
     return datetime.fromisoformat(ts)
 
 
+def _rank_incident(edges: list[Edge], cap: int) -> list[Edge]:
+    """Choose which incident edges to keep when a node exceeds the cap.
+
+    Ranking by raw `amount` across mixed assets is meaningless: 1,000 ETH and
+    47.7 USDT are quantities of different things, and comparing the numbers
+    directly is not a comparison of value. On a real exchange wallet the large
+    native-ETH figures starved USDT out completely - and USDT is precisely
+    where Indian fraud proceeds move, so the trace silently lost the evidence
+    that mattered.
+
+    Without a price oracle we cannot rank across assets honestly, so we do not
+    pretend to: each asset gets a fair share of the budget, ranked by amount
+    within its own denomination. Any leftover slots go to the largest remaining
+    edges regardless of asset.
+    """
+    if len(edges) <= cap:
+        return list(edges)
+
+    by_asset: dict[str, list[Edge]] = {}
+    for e in edges:
+        by_asset.setdefault(e.asset.value, []).append(e)
+    for group in by_asset.values():
+        group.sort(key=lambda x: x.amount, reverse=True)
+
+    share = max(1, cap // len(by_asset))
+    kept: list[Edge] = []
+    for group in by_asset.values():
+        kept.extend(group[:share])
+
+    if len(kept) < cap:
+        chosen = {id(e) for e in kept}
+        remainder = sorted(
+            (e for e in edges if id(e) not in chosen),
+            key=lambda x: x.amount, reverse=True,
+        )
+        kept.extend(remainder[: cap - len(kept)])
+
+    return kept[:cap]
+
+
 def bounded_trace(
     nodes: list[Node],
     edges: list[Edge],
@@ -91,10 +131,8 @@ def bounded_trace(
                 continue
 
             incident = adj.get(current, [])
-            # Keep the largest flows first - that is where the money actually is.
-            ranked = sorted(incident, key=lambda x: x.amount, reverse=True)
-            if len(ranked) > max_edges_per_node:
-                ranked = ranked[:max_edges_per_node]
+            ranked = _rank_incident(incident, max_edges_per_node)
+            if len(ranked) < len(incident):
                 truncated = True
 
             for e in ranked:

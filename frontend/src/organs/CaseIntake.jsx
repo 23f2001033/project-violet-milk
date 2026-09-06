@@ -7,7 +7,7 @@
 
 import { useState } from 'react'
 import { Button } from '../components/ui'
-import { inr } from '../api'
+import { inr, updateCase } from '../api'
 
 function Field({ label, children, hint, wide }) {
   return (
@@ -24,7 +24,8 @@ const input =
   'font-mono text-slate-200 placeholder:text-slate-700 ' +
   'focus:border-violet focus:outline-none'
 
-export default function CaseIntake({ kase }) {
+export default function CaseIntake({ kase, onSaved }) {
+  const [save, setSave] = useState({ status: 'idle' })
   const [form, setForm] = useState({
     fir_ref: kase.fir_ref,
     ncrp_ref: kase.ncrp_ref,
@@ -37,6 +38,25 @@ export default function CaseIntake({ kase }) {
   })
 
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value })
+
+  async function submit() {
+    setSave({ status: 'working' })
+    try {
+      // The API exposes a deliberately narrow update surface: notes, status,
+      // seed wallet and data mode. Immutable case facts - the FIR reference,
+      // the reported loss, the incident time - are not editable after
+      // creation, because silently rewriting them would break the custody
+      // trail the dossier depends on.
+      await updateCase(kase.case_id, {
+        notes: form.notes,
+        seed_wallet: form.seed_wallet || null,
+      })
+      setSave({ status: 'done' })
+      onSaved?.()
+    } catch (e) {
+      setSave({ status: 'error', error: e.message })
+    }
+  }
 
   return (
     <div className="p-5 overflow-y-auto h-full">
@@ -94,9 +114,13 @@ export default function CaseIntake({ kase }) {
           </Field>
           <Field
             label="Sec 94 BNSS production order"
-            hint="Required before off-chain bank or KYC records may be requested"
+            hint="Upload via Evidence Ingestion — it is hashed and entered in
+                  the custody register like any other document"
           >
-            <input className={input} type="file" />
+            <div className="text-[11px] text-slate-600 bg-panel2 border border-edge
+                            rounded px-2.5 py-1.5">
+              Handled by the Evidence Ingestion organ
+            </div>
           </Field>
 
           <Field label="Investigator notes" wide>
@@ -108,12 +132,35 @@ export default function CaseIntake({ kase }) {
           </Field>
         </div>
 
-        <div className="flex items-center gap-3">
-          <Button variant="primary">Save case</Button>
+        <div className="flex items-center gap-3 flex-wrap">
+          <Button
+            variant="primary"
+            onClick={submit}
+            disabled={save.status === 'working'}
+          >
+            {save.status === 'working' ? 'Saving…' : 'Save case'}
+          </Button>
+          {save.status === 'done' && (
+            <span className="text-[11px] text-risk-low font-mono">
+              ✓ saved · audit row written
+            </span>
+          )}
+          {save.status === 'error' && (
+            <span className="text-[11px] text-risk-critical font-mono">
+              {save.error}
+            </span>
+          )}
           <span className="text-[10px] text-slate-600">
             Demonstration workspace · all identities synthetic
           </span>
         </div>
+
+        <p className="text-[10px] text-slate-600 leading-relaxed max-w-xl">
+          Case facts fixed at creation — FIR reference, reported loss and
+          incident time — are shown read-only in effect: editing them after
+          evidence has been ingested would break the chain of custody the
+          dossier relies on. Notes and the trace seed remain editable.
+        </p>
       </div>
     </div>
   )

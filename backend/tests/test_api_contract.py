@@ -192,3 +192,53 @@ def test_reading_the_dashboard_does_not_pollute_the_custody_log():
     after = client.get(f"/api/cases/{CASE}/audit").json()
     assert len(after) == before
     assert not any(a["action"] == "DILUTION_COMPUTED" for a in after)
+
+
+# ------------------------------------------------- real evidence ingestion
+
+def test_evidence_upload_stores_and_maps_columns():
+    """The uploader is a real ingestion path, not a preview widget: the file
+    is hashed in the browser, re-hashed here, stored, audited, and its columns
+    mapped onto the case schema."""
+    import hashlib
+
+    csv_bytes = (
+        b"Txn Date,Ref No./Cheque No.,Narration,Debit,Bank Name\n"
+        b"2026-09-08,420192830192,UPI/TRANSFER,470000,SBI\n"
+    )
+    digest = hashlib.sha256(csv_bytes).hexdigest()
+
+    r = client.post(
+        f"/api/cases/{CASE}/evidence",
+        files={"file": ("Bank_Stmt_Test.csv", csv_bytes, "text/csv")},
+        data={"sha256_client": digest, "is_synthetic": "true",
+              "uploaded_by": "IO_TEST"},
+    )
+    assert r.status_code == 201, r.text
+    body = r.json()
+    assert body["sha256_server"] == digest
+    assert body["hash_match"] is True
+    assert body["row_count"] == 1
+    assert body["column_mapping"]["timestamp"] == "Txn Date"
+    assert body["column_mapping"]["amount"] == "Debit"
+
+    listed = client.get(f"/api/cases/{CASE}/evidence").json()
+    assert any(e["evidence_id"] == body["evidence_id"] for e in listed)
+
+    audit = client.get(f"/api/cases/{CASE}/audit").json()
+    assert any(a["target_hash"] == digest for a in audit)
+
+
+def test_evidence_upload_rejects_a_hash_mismatch():
+    """A file that changed in transit must be REJECTED, never stored. An
+    evidence table holding unverified files is worse than no table."""
+    before = len(client.get(f"/api/cases/{CASE}/evidence").json())
+    r = client.post(
+        f"/api/cases/{CASE}/evidence",
+        files={"file": ("tampered.csv", b"a,b\n1,2\n", "text/csv")},
+        data={"sha256_client": "0" * 64, "is_synthetic": "true"},
+    )
+    assert r.status_code == 422
+    assert "rejected" in r.json()["detail"].lower()
+    after = len(client.get(f"/api/cases/{CASE}/evidence").json())
+    assert after == before, "a rejected file must not be persisted"

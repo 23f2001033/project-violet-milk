@@ -13,16 +13,37 @@
 import { useRef, useState } from 'react'
 import Papa from 'papaparse'
 import { Button, ConfidenceTag, short, timeIST } from '../components/ui'
-import { hashFile } from '../api'
+import { hashFile, uploadEvidence } from '../api'
 
 const ALLOWED = ['csv', 'pdf', 'txt']
 
-export default function EvidenceUploader({ evidence = [] }) {
+export default function EvidenceUploader({ caseId, evidence = [], onUploaded }) {
   const [drag, setDrag] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState(null)
   const [staged, setStaged] = useState(null)
+  const [synthetic, setSynthetic] = useState(true)
+  const [ingesting, setIngesting] = useState(false)
+  const [result, setResult] = useState(null)
   const inputRef = useRef(null)
+
+  async function ingestToServer() {
+    if (!staged) return
+    setIngesting(true)
+    setError(null)
+    try {
+      const saved = await uploadEvidence(
+        caseId, staged.file, staged.sha256, 'IO_SHARMA', synthetic
+      )
+      setResult(saved)
+      setStaged(null)
+      onUploaded?.()
+    } catch (e) {
+      setError(e.message)
+    } finally {
+      setIngesting(false)
+    }
+  }
 
   async function ingest(file) {
     setError(null)
@@ -52,7 +73,9 @@ export default function EvidenceUploader({ evidence = [] }) {
         })
       }
 
+      setResult(null)
       setStaged({
+        file,
         name: file.name,
         size: file.size,
         ext,
@@ -179,9 +202,45 @@ export default function EvidenceUploader({ evidence = [] }) {
           )}
 
           <label className="flex items-center gap-2 text-[11px] text-slate-400">
-            <input type="checkbox" defaultChecked className="accent-violet" />
+            <input
+              type="checkbox"
+              checked={synthetic}
+              onChange={(e) => setSynthetic(e.target.checked)}
+              className="accent-violet"
+            />
             Mark as synthetic / demonstration data
           </label>
+
+          <div className="flex items-center gap-3 pt-1">
+            <Button variant="primary" onClick={ingestToServer} disabled={ingesting}>
+              {ingesting ? 'Ingesting…' : 'Confirm & ingest evidence'}
+            </Button>
+            <span className="text-[10px] text-slate-600">
+              The server re-hashes on receipt and rejects any mismatch.
+            </span>
+          </div>
+        </div>
+      )}
+
+      {result && (
+        <div className="rounded border border-risk-low/40 bg-risk-low/10 px-3 py-2">
+          <div className="text-[10px] font-bold uppercase tracking-wider text-risk-low">
+            ✓ Ingested · integrity confirmed
+          </div>
+          <div className="font-mono text-[10px] text-slate-400 mt-1">
+            {result.evidence_id} · {result.filename}
+            {result.row_count != null && ` · ${result.row_count} rows`}
+          </div>
+          {result.column_mapping && (
+            <div className="mt-1.5">
+              <div className="label mb-0.5">Resolved column mapping</div>
+              <div className="font-mono text-[10px] text-slate-500">
+                {Object.entries(result.column_mapping)
+                  .map(([k, v]) => `${k} ← ${v}`)
+                  .join(' · ')}
+              </div>
+            </div>
+          )}
         </div>
       )}
 

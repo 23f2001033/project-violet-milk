@@ -18,7 +18,9 @@ dist/
 npm-debug.log*
 
 # --- generated artefacts ---
-backend/app/data/live_cache/*.json
+# NOTE: live_cache is deliberately COMMITTED. Those files are what let
+# LIVE MAINNET mode work with the venue wifi down - they are demo safety
+# equipment, not build output.
 backend/generated_reports/
 *.pdf.tmp
 

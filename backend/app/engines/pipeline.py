@@ -92,6 +92,13 @@ class CaseAnalysis:
         )
 
 
+def make_source(case_id: str, data_mode: str = "synthetic") -> DataSource:
+    if str(data_mode).lower() == "live":
+        from ..sources.etherscan import EtherscanSource
+        return EtherscanSource(case_id)
+    return SyntheticSource(case_id)
+
+
 def analyse(
     case_id: str,
     seed: str,
@@ -101,12 +108,26 @@ def analyse(
     max_edges_per_node: int = 20,
     time_window_hours: int = 72,
     incident_at: str | None = None,
+    data_mode: str = "synthetic",
 ) -> CaseAnalysis:
-    src = source or SyntheticSource(case_id)
+    src = source or make_source(case_id, data_mode)
 
-    all_nodes = src.all_nodes() if hasattr(src, "all_nodes") else []
-    all_edges = src.all_edges() if hasattr(src, "all_edges") else \
-        src.get_transactions(seed, limit=500)
+    if hasattr(src, "all_nodes"):
+        # Bundled dataset: the whole case is already in memory.
+        all_nodes = src.all_nodes()
+        all_edges = src.all_edges()
+    else:
+        # Live source: it must walk the chain itself, because discovering the
+        # neighbourhood costs API calls and only the source knows how to pace
+        # them. It returns an already-bounded neighbourhood; the engines then
+        # apply the case's own bounds on top.
+        all_nodes, all_edges = src.expand(
+            seed, max_depth=max_depth, max_edges_per_node=max_edges_per_node
+        )
+        # A live trace has no incident anchor and no curated prior balances, so
+        # the time window would discard everything. Widen it deliberately
+        # rather than silently returning an empty graph.
+        incident_at = None
 
     nodes, edges, hop, truncated = bounded_trace(
         all_nodes, all_edges, seed,
@@ -152,21 +173,24 @@ def analyse(
 
 @lru_cache(maxsize=16)
 def _cached(case_id: str, seed: str, depth: int, min_amount: float,
-            per_node: int, window: int) -> CaseAnalysis:
+            per_node: int, window: int, data_mode: str) -> CaseAnalysis:
     return analyse(
         case_id, seed, max_depth=depth, min_amount=min_amount,
         max_edges_per_node=per_node, time_window_hours=window,
+        data_mode=data_mode,
     )
 
 
 def get_analysis(
     case_id: str, seed: str, max_depth: int = 3, min_amount: float = 0.0,
     max_edges_per_node: int = 20, time_window_hours: int = 72,
+    data_mode: str = "synthetic",
 ) -> CaseAnalysis:
     """Cached entry point. Traces are pure functions of their bounds, so
-    repeating one within a demo costs nothing."""
+    repeating one within a demo costs nothing - and on stage it means a live
+    trace is fetched once and then replays instantly."""
     return _cached(case_id, seed.lower(), max_depth, min_amount,
-                   max_edges_per_node, time_window_hours)
+                   max_edges_per_node, time_window_hours, data_mode)
 
 
 def clear_cache() -> None:
