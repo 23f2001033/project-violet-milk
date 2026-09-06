@@ -129,6 +129,7 @@ def build_dossier(
     narrative_provenance: str,
     out_dir: Path | None = None,
     audit_verification: dict | None = None,
+    evidence_anchors: dict[str, dict] | None = None,
 ) -> tuple[Path, str, int]:
     """Render the dossier. Returns (path, sha256_of_file, page_count)."""
     out_dir = out_dir or REPORTS_DIR
@@ -364,7 +365,51 @@ def build_dossier(
     ], start=1):
         story.append(Paragraph(f"<b>10.{idx}</b>&nbsp;&nbsp;{text}", S_BODY))
 
-    story.append(Paragraph("11. Verification of this document", S_H))
+    story.append(Paragraph("11. Blockchain anchoring of evidence digests", S_H))
+    anchors = evidence_anchors or {}
+    anchored = [(f, a) for f, a in anchors.items() if a.get("anchored")]
+
+    if anchored:
+        story.append(Paragraph(
+            "The digest of each ingested file below has been published to a "
+            "public blockchain. Because that record is outside this system, "
+            "the fact that the file existed in this form at that time remains "
+            "checkable even if this server is later compromised, rebuilt, or "
+            "its database rewritten.", S_BODY))
+        an_rows = [["File", "SHA-256", "Block", "Transaction"]]
+        for fname, a in anchored:
+            an_rows.append([
+                _cell(fname),
+                Paragraph(a.get("digest", "")[:32] + "…", S_MONO),
+                _cell(a.get("block_number") or "—"),
+                Paragraph(str(a.get("tx_hash") or "—")[:34] + "…", S_MONO),
+            ])
+        story.append(_table(an_rows,
+                            [34 * mm, 56 * mm, 20 * mm, 64 * mm]))
+        first = anchored[0][1]
+        if first.get("explorer_url"):
+            story.append(Paragraph(
+                f"Verify independently at: {first['explorer_url']}", S_MONO))
+    else:
+        story.append(Paragraph(
+            "Blockchain anchoring is not enabled on this instance, so no "
+            "external existence proof accompanies this dossier. The evidence "
+            "digests in section 4 and the chain-of-custody log in section 5 "
+            "remain the record of integrity.", S_BODY))
+
+    story.append(Paragraph(
+        "<b>What an anchor establishes, and what it does not.</b> An anchor "
+        "shows that a digest existed at or before the stated block and that "
+        "the record cannot afterwards be revised. It does <b>not</b> "
+        "establish who created the document — any party may anchor any "
+        "digest — and it does not render a document tamper-proof. It makes a "
+        "later substitution <b>detectable</b>, because an altered file "
+        "produces a different digest. Block timestamps are set by the block "
+        "proposer and may drift by seconds, so an anchor should be read as "
+        "‘at or before this block’ rather than as a precise time.",
+        S_BODY))
+
+    story.append(Paragraph("12. Verification of this document", S_H))
     story.append(Paragraph(
         "A document cannot contain its own cryptographic digest, because "
         "printing the digest alters the bytes being digested. The SHA-256 of "
@@ -373,7 +418,7 @@ def build_dossier(
         "log. To verify this dossier, compute the SHA-256 of this PDF and "
         "compare it against that recorded value.", S_BODY))
 
-    story.append(Spacer(1, 14))
+    story.append(Spacer(1, 10))
     story.append(_table([
         [_cell("<b>Certifying officer</b>"), _cell(case.get("io_name", "")),
          _cell("<b>Signature (DSC)</b>"), _cell(" ")],

@@ -106,6 +106,7 @@ class AuditAction(str, Enum):
     DILUTION_COMPUTED = "DILUTION_COMPUTED"
     REPORT_GENERATED = "REPORT_GENERATED"
     MODE_SWITCHED = "MODE_SWITCHED"
+    EVIDENCE_ANCHORED = "EVIDENCE_ANCHORED"
 
 
 # ---------------------------------------------------------------------------
@@ -417,6 +418,7 @@ class ReportResponse(BaseModel):
     generated_at: str
     page_count: int
     download_url: str
+    anchor: AnchorRecord | None = None
 
 
 class AnomalyFinding(BaseModel):
@@ -472,12 +474,40 @@ class STRResponse(BaseModel):
     fields: dict[str, Any]
 
 
+class AnchorRecord(BaseModel):
+    """On-chain existence proof for a digest.
+
+    Deliberately explicit about its limits: an anchor proves a digest existed
+    at or before a block and cannot be revised afterwards. It does not prove
+    authorship, and it does not make a document tamper-proof - it makes
+    substitution detectable.
+    """
+    digest: str
+    anchored: bool
+    tx_hash: str | None = None
+    block_number: int | None = None
+    block_time: int | None = None
+    anchored_by: str | None = None
+    explorer_url: str | None = None
+    chain_id: int | None = None
+    contract: str | None = None
+    mode: str = "unavailable"
+    source: str | None = None
+    reason: str | None = None
+    note: str | None = None
+    proves: str = (
+        "The digest existed at or before this block and the record cannot be "
+        "revised. It does not establish who created the document."
+    )
+
+
 class ComponentHealth(BaseModel):
     database: bool
     graph_engine: bool
     report_engine: bool
     llm_configured: bool
     etherscan_configured: bool
+    anchoring_configured: bool = False
 
 
 class HealthResponse(BaseModel):

@@ -135,6 +135,45 @@ export default function ReportExport({ kase }) {
             >
               {state.result.filename} ↗
             </a>
+
+            {/* Anchoring is a bonus, never a dependency: when it is off the
+                dossier is unaffected and we say so rather than hiding it. */}
+            {state.result.anchor && (
+              <div className="pt-2 mt-1 border-t border-edge">
+                <div className="label mb-1">Blockchain anchor</div>
+                {state.result.anchor.anchored ? (
+                  <>
+                    <div className="text-[11px] text-risk-low">
+                      ⛓ Anchored in block{' '}
+                      <span className="font-mono">
+                        {state.result.anchor.block_number}
+                      </span>
+                      {state.result.anchor.mode === 'contract'
+                        ? ' · contract storage'
+                        : ' · transaction calldata'}
+                    </div>
+                    {state.result.anchor.explorer_url && (
+                      <a
+                        href={state.result.anchor.explorer_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block font-mono text-[10px] text-violet
+                                   hover:underline break-all mt-1"
+                      >
+                        {state.result.anchor.explorer_url} ↗
+                      </a>
+                    )}
+                  </>
+                ) : (
+                  <div className="text-[11px] text-slate-500">
+                    Not anchored — {state.result.anchor.reason}
+                  </div>
+                )}
+                <p className="text-[10px] text-slate-600 mt-1.5 leading-relaxed">
+                  {state.result.anchor.proves}
+                </p>
+              </div>
+            )}
           </div>
         )}
 

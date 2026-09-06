@@ -9,8 +9,10 @@ from ..engines.pipeline import get_analysis
 from ..engines.report_engine import build_dossier
 from ..engines.str_engine import build_str_document
 from ..models import (
-    AnomalyFinding, AnomalyResponse, AuditAction, ReportResponse, STRResponse,
+    AnchorRecord, AnomalyFinding, AnomalyResponse, AuditAction, ReportResponse,
+    STRResponse,
 )
+from ..services import anchor as anchor_service
 from ..services import audit as audit_service
 from ..services import narrative as narrative_service
 
@@ -45,9 +47,20 @@ def generate_report(case_id: str):
     # template is used and the dossier records which was applied.
     text, provenance = narrative_service.build(analysis, case)
 
+    # Evidence digests are known BEFORE generation, so their anchors CAN be
+    # printed in the document. The dossier's own digest cannot be - printing
+    # it would change the bytes being hashed - so that anchor is returned by
+    # the API and written to the custody log instead.
+    ev_anchors = {}
+    for e in evidence:
+        rec = anchor_service.read_cached(e["sha256_server"])
+        if rec:
+            ev_anchors[e["filename"]] = rec
+
     path, digest, pages = build_dossier(
         analysis, case, evidence, audit_before, text, provenance,
         audit_verification=audit_service.verify(case_id).model_dump(mode="json"),
+        evidence_anchors=ev_anchors,
     )
 
     # The dossier's own hash is a DETACHED record - a file cannot contain its
@@ -60,6 +73,19 @@ def generate_report(case_id: str):
                  "entities": len(analysis.nodes), "transfers": len(analysis.edges)},
     )
 
+    # Anchor the dossier's own digest AFTER generation - it cannot be printed
+    # inside the document it describes, for the same reason the hash cannot be.
+    # The anchor is returned here and written to the custody log instead.
+    anchor_record = anchor_service.anchor_digest(digest)
+    if anchor_record.get("anchored"):
+        audit_service.record(
+            case_id, AuditAction.EVIDENCE_ANCHORED, path.name,
+            user_id=case.get("io_name", "IO_SHARMA"), target_hash=digest,
+            details={"tx_hash": anchor_record.get("tx_hash"),
+                     "block_number": anchor_record.get("block_number"),
+                     "chain_id": anchor_record.get("chain_id")},
+        )
+
     return ReportResponse(
         case_id=case_id,
         filename=path.name,
@@ -67,6 +93,7 @@ def generate_report(case_id: str):
         generated_at=analysis.traced_at,
         page_count=pages,
         download_url=f"/api/cases/{case_id}/report/{path.name}",
+        anchor=AnchorRecord(**anchor_record),
     )
 
 
@@ -153,3 +180,34 @@ def get_anomaly(case_id: str):
         ],
         cluster_sizes={str(k): v for k, v in r.cluster_sizes.items()},
     )
+
+
+@router.get("/{case_id}/anchor/{digest}", response_model=AnchorRecord,
+            summary="Verify a digest against the chain")
+def verify_anchor(case_id: str, digest: str):
+    """Read-only, so anyone auditing a dossier can run it without credentials.
+
+    That is the point of anchoring: verification must not depend on trusting
+    — or even having access to — this server.
+    """
+    return AnchorRecord(**anchor_service.verify_digest(digest))
+
+
+@router.post("/{case_id}/anchor/{digest}", response_model=AnchorRecord,
+             summary="Anchor a digest on-chain")
+def create_anchor(case_id: str, digest: str):
+    with cursor() as conn:
+        if not conn.execute("SELECT 1 FROM cases WHERE case_id = ?",
+                            (case_id,)).fetchone():
+            raise HTTPException(404, f"Case {case_id} not found")
+
+    record = anchor_service.anchor_digest(digest)
+    if record.get("anchored"):
+        audit_service.record(
+            case_id, AuditAction.EVIDENCE_ANCHORED, digest,
+            target_hash=digest,
+            details={"tx_hash": record.get("tx_hash"),
+                     "block_number": record.get("block_number"),
+                     "chain_id": record.get("chain_id")},
+        )
+    return AnchorRecord(**record)

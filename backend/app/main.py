@@ -84,6 +84,7 @@ def health():
         report_engine=True,
         llm_configured=config.LLM_CONFIGURED,
         etherscan_configured=config.ETHERSCAN_CONFIGURED,
+        anchoring_configured=config.ANCHOR_CONFIGURED,
     )
     healthy = components.database and components.graph_engine
     return HealthResponse(

@@ -28,7 +28,7 @@ def test_health():
     assert body["status"] in {"ok", "degraded"}
     assert set(body["components"]) == {
         "database", "graph_engine", "report_engine",
-        "llm_configured", "etherscan_configured",
+        "llm_configured", "etherscan_configured", "anchoring_configured",
     }
 
 
@@ -174,7 +174,7 @@ def test_report_generates_a_dossier():
     assert r.status_code == 200
     body = r.json()
     assert set(body) == {"case_id", "filename", "sha256", "generated_at",
-                         "page_count", "download_url"}
+                         "page_count", "download_url", "anchor"}
     assert len(body["sha256"]) == 64
     assert body["page_count"] >= 4
 

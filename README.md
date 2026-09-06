@@ -66,7 +66,18 @@ App → <http://localhost:5173>
 to `true` to develop any organ with the backend switched off - the fixtures in
 `src/mocks/` are generated from the real engines, so they cannot drift.
 
-### 3. Tests
+### 3. Blockchain anchoring (optional)
+
+```powershell
+.venv\Scripts\python.exe backend	oolsnchor_setup.py           # status
+.venv\Scripts\python.exe backend	oolsnchor_setup.py --anchor  # send
+```
+
+Off by default. With it off the system runs normally and reports every dossier
+as NOT ANCHORED. Setup takes ~20 minutes and costs nothing — see the header of
+`anchor_setup.py`.
+
+### 4. Tests
 
 ```powershell
 .venv\Scripts\python.exe -m pytest backend\tests -q
@@ -150,6 +161,7 @@ engines must reproduce them exactly.**
 | Dilution model (curated) | `haircut` — a true proportion |
 | Dilution model (live) | `propagation` — **reach, not proportion** |
 | Custody chain | hash-chained; `/audit/verify` names any broken link |
+| Evidence anchoring | optional; proves existence + time, **not** authorship |
 
 ---
 

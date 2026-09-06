@@ -31,7 +31,8 @@ Thumbs.db
 .vscode/
 *.swp
 
-# generated AI cache is committed deliberately (demo safety); reports are not
+# AI cache and anchor receipts are committed deliberately (demo safety);
+# generated reports are not
 backend/generated_reports/
 
 # deck render scratch

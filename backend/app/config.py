@@ -57,8 +57,20 @@ TIME_WINDOW_HOURS = _int("TIME_WINDOW_HOURS", 72)
 DEMO_INR_PER_USDT = _float("DEMO_INR_PER_USDT", 90.38)
 DEMO_CASE_ID = "CP-CYBER-2026-001"
 
+# --- Blockchain evidence anchoring -----------------------------------------
+# ANCHOR_PRIVATE_KEY signs the anchoring transaction and nothing else. It is
+# read here, used only by eth_account, and never logged, returned by an
+# endpoint, or written into a receipt. Use a TESTNET key funded from a faucet;
+# there is no reason for this account to hold anything of value.
+ANCHOR_RPC_URL = os.getenv("ANCHOR_RPC_URL", "").strip()
+ANCHOR_PRIVATE_KEY = os.getenv("ANCHOR_PRIVATE_KEY", "").strip()
+ANCHOR_CONTRACT_ADDRESS = os.getenv("ANCHOR_CONTRACT_ADDRESS", "").strip()
+ANCHOR_CHAIN_ID = _int("ANCHOR_CHAIN_ID", 11155111)   # Sepolia
+ANCHOR_TIMEOUT_SECONDS = _int("ANCHOR_TIMEOUT_SECONDS", 30)
+
 # --- Derived flags ---------------------------------------------------------
 LLM_CONFIGURED = bool(LLM_API_KEY and LLM_BASE_URL and LLM_MODEL)
 ETHERSCAN_CONFIGURED = bool(ETHERSCAN_API_KEY)
+ANCHOR_CONFIGURED = bool(ANCHOR_RPC_URL and ANCHOR_PRIVATE_KEY)
 
 DILUTION_THRESHOLD = 0.30

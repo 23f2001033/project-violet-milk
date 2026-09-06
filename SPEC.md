@@ -197,6 +197,35 @@ Only an append-only store or external notarisation prevents it.
 
 ---
 
+## 8c. Blockchain evidence anchoring
+
+The SHA-256 of each ingested file is published to a public chain
+(`contracts/EvidenceAnchor.sol`, or as transaction calldata when no contract
+is deployed). Receipts are cached, so the dossier can cite a real transaction
+offline.
+
+**Say exactly this, and no more:**
+
+| Proves | Does NOT prove |
+|---|---|
+| the digest existed at or before that block | who created the document — anyone may anchor any digest |
+| the record cannot afterwards be revised | that the document is tamper-**proof** — only tamper-**evident** |
+| a substituted document no longer matches | a precise time — `block.timestamp` is proposer-set and drifts |
+
+> ⚠️ Do **not** claim anchoring "meets the tamper-proof requirement of Section
+> 63(4) BSA 2023". Nobody on this team has verified what that sub-section
+> requires. State what the anchor does; leave the statutory mapping to counsel.
+
+The dossier prints anchors for **evidence** digests (known before generation).
+The dossier's **own** digest is anchored after generation and returned by the
+API — it cannot be printed inside the document it describes, for the same
+reason its hash cannot be.
+
+`ANCHOR_PRIVATE_KEY` signs and nothing else: never logged, never returned,
+never written to a receipt. Use a testnet key funded from a faucet.
+
+---
+
 ## 9. What we must never claim
 
 From the constraints in `project.md`, still binding:
