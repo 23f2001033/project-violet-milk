@@ -207,6 +207,7 @@ engines must reproduce them exactly.**
 | Dilution model (curated) | `haircut` — a true proportion |
 | Dilution model (live) | `propagation` — **reach, not proportion** |
 | Custody chain | hash-chained; `/audit/verify` names any broken link |
+| Asset ledger | INR + USDT convert at the locked rate; ETH/TRX/TOKEN report **no rate**, never zero |
 | Evidence anchoring | optional; proves existence + time, **not** authorship |
 
 ---

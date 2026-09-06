@@ -409,7 +409,7 @@
   <p class="standfirst">What to click, what to say, and the answer to every hard question — for the round that decides the shortlist.</p>
 
   <dl class="status">
-    <div><dt>Tests</dt><dd class="good">190 passing</dd></div>
+    <div><dt>Tests</dt><dd class="good">206 passing</dd></div>
     <div><dt>Demo trace</dt><dd>14 nodes · 17 edges</dd></div>
     <div><dt>Seed risk</dt><dd>65 / HIGH</dd></div>
     <div><dt>Live replay</dt><dd class="good">0.35s</dd></div>
@@ -485,6 +485,16 @@
           <p class="do">Left rail → Dilution Calculator. Point at the pool node: 60% → 12%, NOT FLAGGED.</p>
           <p class="say">This wallet held sixty percent tainted funds. It sent two thousand USDT into an exchange pool that already held eight thousand clean. The tainted share drops to twelve percent, and our own threshold is thirty — so the system tells me this is <em>not</em> flagged. That pool has real criminal money in it and we are still saying the trail ends here. A tool that only ever says guilty is worthless in court. This is the number that makes the other numbers believable.</p>
           <p class="note">If you only get to show one thing after the timeline, show this. It is the beat that separates you from every other team.</p>
+        </div>
+      </div>
+
+      <div class="beat">
+        <div class="clock">3:40<small>RUPEES</small></div>
+        <div>
+          <h4>Asset Ledger — the officer&rsquo;s view, in rupees.</h4>
+          <p class="do">Left rail &rarr; Asset Ledger. Point at the layer breakdown.</p>
+          <p class="say">An investigating officer writes rupees into a chargesheet, not tokens. So here is the same trace by currency and by layer. Nine lakh forty thousand in rupee transfers, fourteen thousand three hundred USDT &mdash; twelve lakh ninety-two thousand at the locked rate. And look at layer zero: no rupees at all. By the time the money reaches the seed wallet it is entirely USDT. That is the boundary the 1930 helpline cannot cross, shown as a number.</p>
+          <p class="note">If a judge asks about Ethereum, point at the caveat: this build has no price feed, so ETH and TRX show native amounts and <em>no rate</em> &mdash; never an invented rupee figure. Same discipline as the dashed edge.</p>
         </div>
       </div>
 
@@ -642,6 +652,11 @@
       </div>
 
       <div class="q">
+        <p class="ask">Your ledger shows no rupee value for Ethereum. Is that a gap?</p>
+        <p>It is a deliberate refusal. We have no market price feed, so an ETH figure in rupees would be a number we invented. Given that figure could be quoted as a loss in a chargesheet, an absent value is safer than a fabricated one &mdash; the screen says <em>no rate</em>, and the caveat says an absent figure never means the amount is zero. Adding a price oracle is a day of work; adding it without saying where the rate came from would be the actual gap.</p>
+      </div>
+
+      <div class="q">
         <p class="ask">Why does the mule bank account only score 15?</p>
         <p class="headline">Because the score answers a different question — and the panel already shows the right one.</p>
         <p>The score measures depth in the <em>laundering machinery</em>: mixers, bridges, fan-out, structuring. A mule account does one thing, receive and forward, so only the rapid-dispersal rule fires. For that account the number that matters is on the same screen — <strong>ILLICIT 100%</strong>. Every rupee through it traces to the complainant, and that is what goes on the freeze request. The score exists for the unlabelled hex addresses where you have nothing else to go on.</p>
@@ -710,7 +725,7 @@
 
   <footer>
     <span>Project Violet Milk · demo brief</span>
-    <span>190 tests · 19 endpoints · 2 chains</span>
+    <span>206 tests · 22 endpoints · 2 chains</span>
     <span>IO_SHARMA · CP-CYBER-2026-001</span>
   </footer>
 
