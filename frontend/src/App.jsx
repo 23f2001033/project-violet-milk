@@ -161,11 +161,20 @@ export default function App() {
   const evidence = data.evidence ?? []
   const verified = evidence.filter((e) => e.hash_match).length
   async function runLiveTrace() {
-    const addr = live.addr.trim().toLowerCase()
-    if (!/^0x[0-9a-f]{40}$/.test(addr)) {
-      setLive((s) => ({ ...s, error: 'Enter a valid 40-character 0x address.' }))
+    // Tron was supported by the backend and rejected here, so pasting the very
+    // rail Indian proceeds move on failed with "enter a valid 0x address".
+    // Base58 is case-SENSITIVE, so only the hex form may be lowercased.
+    const raw = live.addr.trim()
+    const isEth = /^0x[0-9a-fA-F]{40}$/.test(raw)
+    const isTron = /^T[1-9A-HJ-NP-Za-km-z]{33}$/.test(raw)
+    if (!isEth && !isTron) {
+      setLive((s) => ({
+        ...s,
+        error: 'Enter an Ethereum address (0x…, 42 chars) or a Tron address (T…, 34 chars).',
+      }))
       return
     }
+    const addr = isEth ? raw.toLowerCase() : raw
     setLive((s) => ({ ...s, busy: true, error: null }))
     try {
       const g = await getGraph(kase.case_id, addr, 'live')
@@ -227,6 +236,7 @@ export default function App() {
     risk: (
       <RiskInspector
         risk={riskCache[selected]} node={selected ? nodesById[selected] : null}
+        nodes={graph.elements.nodes.map((n) => n.data)} onSelect={setSelected}
       />
     ),
     dilution: (
