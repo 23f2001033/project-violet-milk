@@ -19,6 +19,7 @@ from ..models import (
 )
 from ..sources.base import DataSource
 from ..sources.synthetic import SyntheticSource
+from .anomaly import AnomalyResult, detect as detect_anomalies
 from .dilution import compute_dilution
 from .graph_engine import bounded_trace
 from .risk_engine import assess
@@ -40,6 +41,9 @@ class CaseAnalysis:
     risk: dict[str, RiskAssessment]
     timeline: list[TimelineEvent]
     traced_at: str
+    # Secondary lead signal only. Deliberately NOT an input to `risk` - the
+    # deterministic rules stay the sole basis for any score in the dossier.
+    anomaly: AnomalyResult | None = None
 
     # ---------------------------------------------------------- projections
 
@@ -168,6 +172,8 @@ def analyse(
         risk=risk,
         timeline=build_timeline(case_id, nodes, edges),
         traced_at=datetime.now(timezone.utc).isoformat(),
+        # Runs AFTER risk, and its result is never fed back in.
+        anomaly=detect_anomalies(nodes, edges),
     )
 
 

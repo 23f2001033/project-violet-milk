@@ -390,6 +390,59 @@ class ReportResponse(BaseModel):
     download_url: str
 
 
+class AnomalyFinding(BaseModel):
+    node_id: str
+    score: float = Field(..., description="Isolation Forest decision function; "
+                                          "lower is more anomalous.")
+    cluster: int = Field(..., description="DBSCAN label; -1 means unclustered.")
+    explanation: str
+
+
+class AnomalyResponse(BaseModel):
+    """Secondary lead signal. NEVER a risk score.
+
+    Deliberately a separate endpoint and a separate shape from RiskAssessment,
+    so a consumer cannot mistake a model output for a statutory finding.
+    """
+    case_id: str
+    version: str
+    trained: bool
+    reason: str = ""
+    method: str = "IsolationForest + DBSCAN over behavioural graph features"
+    advisory: str = (
+        "Unsupervised lead generation only. These findings do not contribute "
+        "to any risk score and carry no evidentiary weight. An entity may be "
+        "anomalous for entirely lawful reasons - the complainant is usually "
+        "an outlier because they moved the largest single amount."
+    )
+    findings: list[AnomalyFinding] = Field(default_factory=list)
+    cluster_sizes: dict[str, int] = Field(default_factory=dict)
+
+
+class STRResponse(BaseModel):
+    """FIU-IND Suspicious Transaction Report - DRAFT.
+
+    `filed` is permanently false and there is no endpoint that can set it.
+    Filing an STR requires the organisation to be a registered Reporting
+    Entity with FINnet credentials; there is no public API and no way for
+    software to do it on the user's behalf.
+    """
+    case_id: str
+    str_reference: str
+    generated_at: str
+    status: Literal["DRAFT"] = "DRAFT"
+    filed: Literal[False] = False
+    filing_instruction: str = (
+        "This is a draft for review by an authorised Reporting Entity. It "
+        "must be verified by the Principal Officer and submitted through the "
+        "FIU-IND FINnet portal. This software cannot and does not file it."
+    )
+    filename: str
+    sha256: str
+    download_url: str
+    fields: dict[str, Any]
+
+
 class ComponentHealth(BaseModel):
     database: bool
     graph_engine: bool

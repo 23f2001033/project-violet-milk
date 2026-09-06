@@ -7,7 +7,10 @@ from ..config import REPORTS_DIR
 from ..db import cursor, row_to_evidence
 from ..engines.pipeline import get_analysis
 from ..engines.report_engine import build_dossier
-from ..models import AuditAction, ReportResponse
+from ..engines.str_engine import build_str_document
+from ..models import (
+    AnomalyFinding, AnomalyResponse, AuditAction, ReportResponse, STRResponse,
+)
 from ..services import audit as audit_service
 from ..services import narrative as narrative_service
 
@@ -75,3 +78,77 @@ def download_report(case_id: str, filename: str):
     if not path.is_file() or REPORTS_DIR.resolve() not in path.parents:
         raise HTTPException(404, "Dossier not found")
     return FileResponse(path, media_type="application/pdf", filename=filename)
+
+
+@router.post("/{case_id}/str", response_model=STRResponse,
+             summary="Generate a DRAFT FIU-IND Suspicious Transaction Report")
+def generate_str(case_id: str):
+    """Produces a reviewable draft, never a filing.
+
+    There is deliberately no endpoint that files an STR. FIU-IND's FINnet
+    portal has no public submission API, and lodging a report requires the
+    submitting organisation to be a registered Reporting Entity whose
+    Principal Officer signs it. A button that claimed to file would be false.
+    """
+    with cursor() as conn:
+        row = conn.execute(
+            "SELECT * FROM cases WHERE case_id = ?", (case_id,)
+        ).fetchone()
+    if not row:
+        raise HTTPException(404, f"Case {case_id} not found")
+
+    case = dict(row)
+    if not case.get("seed_wallet"):
+        raise HTTPException(422, "Case has no seed wallet to report on.")
+
+    analysis = get_analysis(case_id, case["seed_wallet"])
+    path, digest, fields, reference = build_str_document(analysis, case)
+
+    audit_service.record(
+        case_id, AuditAction.REPORT_GENERATED, path.name,
+        user_id=case.get("io_name", "IO_SHARMA"), target_hash=digest,
+        details={"kind": "STR_DRAFT", "reference": reference, "filed": False},
+    )
+
+    return STRResponse(
+        case_id=case_id,
+        str_reference=reference,
+        generated_at=analysis.traced_at,
+        filename=path.name,
+        sha256=digest,
+        download_url=f"/api/cases/{case_id}/report/{path.name}",
+        fields=fields,
+    )
+
+
+@router.get("/{case_id}/anomaly", response_model=AnomalyResponse,
+            summary="Unsupervised anomaly findings (secondary lead signal)")
+def get_anomaly(case_id: str):
+    """Isolation Forest + DBSCAN over behavioural graph features.
+
+    Served on its own endpoint with its own shape so it can never be mistaken
+    for a risk score. Nothing here contributes to a score or to the statutory
+    section of the dossier.
+    """
+    with cursor() as conn:
+        row = conn.execute(
+            "SELECT seed_wallet FROM cases WHERE case_id = ?", (case_id,)
+        ).fetchone()
+    if not row or not row["seed_wallet"]:
+        raise HTTPException(404, f"Case {case_id} not found")
+
+    a = get_analysis(case_id, row["seed_wallet"])
+    r = a.anomaly
+    if r is None:
+        raise HTTPException(503, "Anomaly engine unavailable")
+
+    return AnomalyResponse(
+        case_id=case_id, version=r.version, trained=r.trained, reason=r.reason,
+        findings=[
+            AnomalyFinding(node_id=nid, score=r.scores.get(nid, 0.0),
+                           cluster=r.clusters.get(nid, -1),
+                           explanation=r.explanations.get(nid, ""))
+            for nid in r.outliers
+        ],
+        cluster_sizes={str(k): v for k, v in r.cluster_sizes.items()},
+    )
