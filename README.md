@@ -22,6 +22,15 @@ Built for the **Chandigarh Police Hackathon, 8 September 2026**.
 
 ---
 
+## Licence
+
+MIT &mdash; see [LICENSE](LICENSE). Any police force, agency or individual may
+use, modify and deploy this without permission or payment. If institutional
+adoption later needs an explicit patent grant, swap in Apache-2.0 from
+apache.org; nothing in the codebase depends on the choice.
+
+---
+
 ## Status
 
 | Phase | Scope | State |
