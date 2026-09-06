@@ -34,7 +34,8 @@ Built for the **Chandigarh Police Hackathon, 8 September 2026**.
 | P5 | Sec 63 BSA dossier + AI layer | ✅ |
 | P6 | Live mainnet mode | ✅ |
 | **P7** | Single-port serving, Flag Agent + STR in UI | ✅ done |
-| — | Correct slides 12 & 13, rehearse | ⬜ remaining |
+| **P8** | Asset ledger — currency by layer and entity | ✅ done |
+| — | Legal review of statutory wording, LICENSE, rehearse | ⬜ remaining |
 
 The full specification lives in **`SPEC.md`**. Read it before writing code.
 
@@ -80,8 +81,8 @@ to `true` to develop any organ with the backend switched off - the fixtures in
 ### 3. Blockchain anchoring (optional)
 
 ```powershell
-.venv\Scripts\python.exe backend	oolsnchor_setup.py           # status
-.venv\Scripts\python.exe backend	oolsnchor_setup.py --anchor  # send
+.venv\Scripts\python.exe backend\tools\anchor_setup.py           # status
+.venv\Scripts\python.exe backend\tools\anchor_setup.py --anchor  # send
 ```
 
 Off by default. With it off the system runs normally and reports every dossier
