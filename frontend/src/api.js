@@ -9,7 +9,12 @@
  *                                   contract - the contract is authoritative.
  */
 
-export const USE_MOCKS = false
+// Env-driven so a static deploy needs no source edit:
+//   local / demo laptop -> unset  -> false -> real backend on the same origin
+//   Vercel static build -> VITE_USE_MOCKS=true -> fixtures, no backend needed
+// The fixtures are generated FROM the engines, so the hosted build shows the
+// same numbers the real system computes.
+export const USE_MOCKS = import.meta.env.VITE_USE_MOCKS === 'true'
 
 import graphMock from './mocks/graph.json'
 import caseMock from './mocks/case.json'

@@ -33,3 +33,6 @@ Thumbs.db
 
 # generated AI cache is committed deliberately (demo safety); reports are not
 backend/generated_reports/
+
+# deck render scratch
+_deckshots/
