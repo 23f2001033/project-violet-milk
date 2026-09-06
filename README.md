@@ -3,11 +3,22 @@
 Crypto flow tracking and analytics for Indian cyber-crime investigation.
 Built for the **Chandigarh Police Hackathon, 8 September 2026**.
 
+> **⚠ NOT AN OFFICIAL POLICE SYSTEM.**
+> This is an independent student project built for a hackathon. It is **not
+> affiliated with, endorsed by, or deployed by** Chandigarh Police, FIU-IND, or
+> any law-enforcement agency. Agency names appear only to describe the intended
+> user of a prototype.
+>
 > **⚠ DEMONSTRATION / SYNTHETIC DATA MODE.**
 > Output provides analytical leads for investigative assistance. It does not
 > constitute a legal finding of guilt and does not identify any person without
 > independent verification under Section 94 BNSS 2023. All demo identities,
 > accounts, UPI handles and addresses are synthetic.
+>
+> **⚠ STATUTORY TEXT IS UNREVIEWED.**
+> The Section 63 BSA 2023 certificate and Section 94 BNSS 2023 references in
+> the generated documents were drafted by the authors and have **not** been
+> checked by a legal practitioner. Do not rely on them.
 
 ---
 
