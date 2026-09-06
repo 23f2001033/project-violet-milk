@@ -1,0 +1,665 @@
+<title>Violet Milk Build Report</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+
+<style>
+  :root {
+    --paper:      #F5F3F8;
+    --card:       #FFFFFF;
+    --ink:        #191521;
+    --ink-soft:   #423B52;
+    --muted:      #6B6480;
+    --rule:       #DAD3E6;
+    --rule-soft:  #E9E4F0;
+    --accent:     #6A4CB5;
+    --accent-dim: #EDE7F8;
+    --closed:     #2C6A50;
+    --closed-bg:  #E4F0EA;
+    --open:       #8A5F16;
+    --open-bg:    #F6EDDC;
+
+    --f-display: "Spectral", Cambria, Georgia, serif;
+    --f-body:    "IBM Plex Sans", Calibri, system-ui, sans-serif;
+    --f-mono:    "IBM Plex Mono", "Courier New", monospace;
+
+    --measure: 34rem;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:      #14111B;
+      --card:       #1C1826;
+      --ink:        #EDEAF3;
+      --ink-soft:   #C3BCD3;
+      --muted:      #948CA8;
+      --rule:       #302A3E;
+      --rule-soft:  #262032;
+      --accent:     #B49AEC;
+      --accent-dim: #29213A;
+      --closed:     #7FC7A0;
+      --closed-bg:  #1B2C25;
+      --open:       #DCAE58;
+      --open-bg:    #2C2418;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper:      #14111B;
+    --card:       #1C1826;
+    --ink:        #EDEAF3;
+    --ink-soft:   #C3BCD3;
+    --muted:      #948CA8;
+    --rule:       #302A3E;
+    --rule-soft:  #262032;
+    --accent:     #B49AEC;
+    --accent-dim: #29213A;
+    --closed:     #7FC7A0;
+    --closed-bg:  #1B2C25;
+    --open:       #DCAE58;
+    --open-bg:    #2C2418;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--f-body);
+    font-size: 16px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .sheet {
+    max-width: 60rem;
+    margin: 0 auto;
+    padding: clamp(1.5rem, 4vw, 4rem) clamp(1.1rem, 4vw, 3rem) 5rem;
+  }
+
+  /* ---------------------------------------------------------- masthead */
+
+  .eyebrow {
+    font-family: var(--f-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 1rem;
+  }
+
+  h1 {
+    font-family: var(--f-display);
+    font-weight: 600;
+    font-size: clamp(2.1rem, 5.5vw, 3.3rem);
+    line-height: 1.08;
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+    margin: 0 0 0.9rem;
+  }
+
+  .standfirst {
+    font-family: var(--f-display);
+    font-size: clamp(1.05rem, 2.2vw, 1.25rem);
+    font-style: italic;
+    color: var(--ink-soft);
+    max-width: var(--measure);
+    margin: 0;
+  }
+
+  /* ------------------------------------------------------------ docket */
+
+  .docket {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+    gap: 0;
+    margin: 2.5rem 0 3.5rem;
+    border-top: 2px solid var(--ink);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .docket div {
+    padding: 0.9rem 1rem 1rem 0;
+    border-right: 1px solid var(--rule-soft);
+  }
+  .docket div:last-child { border-right: 0; }
+
+  .docket dt {
+    font-family: var(--f-mono);
+    font-size: 0.63rem;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 0.3rem;
+  }
+
+  .docket dd {
+    margin: 0;
+    font-size: 1.02rem;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+  .docket dd.mono { font-family: var(--f-mono); font-size: 0.9rem; }
+  .docket dd.pass { color: var(--closed); }
+
+  /* ----------------------------------------------------------- section */
+
+  section { margin: 0 0 3.25rem; }
+
+  h2 {
+    font-family: var(--f-display);
+    font-weight: 600;
+    font-size: 1.55rem;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+    margin: 0 0 0.25rem;
+  }
+
+  .kicker {
+    font-family: var(--f-mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 0.85rem;
+  }
+
+  p { max-width: var(--measure); margin: 0 0 1rem; }
+  p:last-child { margin-bottom: 0; }
+
+  strong { font-weight: 600; }
+  em { font-style: italic; }
+
+  code, .mono { font-family: var(--f-mono); font-size: 0.87em; }
+  code {
+    background: var(--rule-soft);
+    padding: 0.1em 0.35em;
+    border-radius: 2px;
+    word-break: break-word;
+  }
+
+  a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+
+  /* -------------------------------------------------------- inventory */
+
+  .inventory {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    gap: 1.75rem 2.25rem;
+    margin-top: 1.5rem;
+  }
+
+  .inventory h3 {
+    font-family: var(--f-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 0.55rem;
+    padding-bottom: 0.45rem;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .inventory ul { list-style: none; margin: 0; padding: 0; }
+
+  .inventory li {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.28rem 0;
+    font-size: 0.92rem;
+    color: var(--ink-soft);
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  .inventory li:last-child { border-bottom: 0; }
+  .inventory li span:last-child {
+    font-family: var(--f-mono);
+    font-size: 0.78rem;
+    color: var(--muted);
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  /* ------------------------------------------------------------ chart */
+
+  figure { margin: 1.75rem 0 0; }
+
+  .chart-wrap { overflow-x: auto; }
+  svg { display: block; min-width: 30rem; max-width: 100%; height: auto; }
+
+  figcaption {
+    font-size: 0.85rem;
+    color: var(--muted);
+    max-width: var(--measure);
+    margin-top: 0.85rem;
+  }
+
+  /* ----------------------------------------------------------- ledger */
+
+  .ledger { margin-top: 1.5rem; border-top: 1px solid var(--rule); }
+
+  .entry {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.4rem 2rem;
+    padding: 1.15rem 0 1.25rem;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+
+  .entry > h3 {
+    grid-column: 1 / -1;
+    font-family: var(--f-body);
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0 0 0.2rem;
+  }
+
+  .entry > h3 .tag {
+    font-family: var(--f-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--closed);
+    background: var(--closed-bg);
+    padding: 0.18em 0.5em;
+    border-radius: 2px;
+    margin-left: 0.5rem;
+    vertical-align: 0.12em;
+    white-space: nowrap;
+  }
+
+  .side { font-size: 0.9rem; color: var(--ink-soft); }
+  .side .lbl {
+    display: block;
+    font-family: var(--f-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.15rem;
+  }
+  .side.now { color: var(--ink); }
+
+  /* ------------------------------------------------------- plain list */
+
+  ul.plain { list-style: none; margin: 1.25rem 0 0; padding: 0; max-width: var(--measure); }
+  ul.plain li {
+    padding: 0 0 0.85rem 1.05rem;
+    position: relative;
+    color: var(--ink-soft);
+    font-size: 0.95rem;
+  }
+  ul.plain li::before {
+    content: "";
+    position: absolute;
+    left: 0; top: 0.62em;
+    width: 5px; height: 5px;
+    background: var(--accent);
+    border-radius: 50%;
+  }
+  ul.plain li:last-child { padding-bottom: 0; }
+
+  /* limits deliberately read in a quieter register: no dot, no colour */
+  ul.limits { list-style: none; margin: 1.25rem 0 0; padding: 0; max-width: var(--measure); }
+  ul.limits li {
+    padding: 0.75rem 0 0.75rem 0;
+    border-top: 1px solid var(--rule-soft);
+    font-size: 0.93rem;
+    color: var(--ink-soft);
+  }
+  ul.limits li b {
+    display: block;
+    font-weight: 600;
+    color: var(--ink);
+    font-size: 0.95rem;
+  }
+
+  /* --------------------------------------------------------- schedule */
+
+  ol.schedule { list-style: none; margin: 1.4rem 0 0; padding: 0; counter-reset: step; }
+  ol.schedule li {
+    counter-increment: step;
+    display: grid;
+    grid-template-columns: 2.1rem 1fr;
+    gap: 0 0.9rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--rule-soft);
+    align-items: start;
+  }
+  ol.schedule li::before {
+    content: counter(step);
+    font-family: var(--f-mono);
+    font-size: 0.75rem;
+    color: var(--accent);
+    background: var(--accent-dim);
+    border-radius: 2px;
+    text-align: center;
+    padding: 0.25rem 0;
+    line-height: 1.2;
+  }
+  ol.schedule b { font-weight: 600; }
+  ol.schedule .who {
+    font-family: var(--f-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--open);
+    background: var(--open-bg);
+    padding: 0.15em 0.45em;
+    border-radius: 2px;
+    margin-left: 0.4rem;
+    white-space: nowrap;
+  }
+  ol.schedule p { font-size: 0.9rem; color: var(--ink-soft); margin: 0.15rem 0 0; }
+
+  /* ------------------------------------------------------------- note */
+
+  .note {
+    margin-top: 1.5rem;
+    padding: 1.1rem 1.3rem;
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--accent);
+    border-radius: 3px;
+    max-width: var(--measure);
+  }
+  .note p { font-size: 0.92rem; color: var(--ink-soft); }
+  .note .mono { color: var(--ink); }
+
+  footer {
+    margin-top: 3.5rem;
+    padding-top: 1.25rem;
+    border-top: 2px solid var(--ink);
+    font-family: var(--f-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.5rem;
+    justify-content: space-between;
+  }
+
+  @media (max-width: 34rem) {
+    .entry { grid-template-columns: 1fr; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+
+<div class="sheet">
+
+  <p class="eyebrow">Final build · 6 September 2026</p>
+  <h1>Violet Milk, as built</h1>
+  <p class="standfirst">What the software actually does two days before the Chandigarh Police Cyber Crime Hackathon — and, just as usefully, what it still refuses to claim.</p>
+
+  <dl class="docket">
+    <div><dt>Head commit</dt><dd class="mono">8d3ecd9</dd></div>
+    <div><dt>Test suite</dt><dd class="pass">183 passing</dd></div>
+    <div><dt>API surface</dt><dd>19 paths</dd></div>
+    <div><dt>Chains</dt><dd>Ethereum · Tron</dd></div>
+    <div><dt>Deck</dt><dd>15 slides</dd></div>
+    <div><dt>Offline demo</dt><dd class="pass">Verified</dd></div>
+  </dl>
+
+  <section>
+    <p class="kicker">Where it stands</p>
+    <h2>The build is finished and the demo runs unplugged</h2>
+    <p>Every capability the deck claims is exercised by a test. The system traces a seed address across Ethereum and Tron, scores wallets against seven documented rules, computes proportional dilution, generates a Sec 63 BSA dossier and an FIU-IND STR draft, records every action in a hash-chained custody log, and can anchor a document digest on-chain. It serves as one process on one port.</p>
+    <p>It runs against three interchangeable data sources — a curated synthetic case, live Ethereum via Etherscan, live Tron — and no engine knows which one it is reading from. Live responses, AI narratives and anchor receipts are all cached to disk, so the entire demo works with the network cable pulled. That was tested, not assumed.</p>
+  </section>
+
+  <section>
+    <p class="kicker">The rule everything else was built around</p>
+    <h2>The AI never touches the score</h2>
+    <p>Risk scores come from seven rules with fixed weights and cited evidence. Nothing statistical, learned, or generative can move a number a court might be asked to accept. The language model writes narrative prose and guesses at CSV column headings; the Isolation Forest and DBSCAN pass produces investigative leads on a separate endpoint with a separate shape. Neither can reach the score.</p>
+    <p>This is not a promise in a slide — it is enforced by a test, and the proof is embarrassing in the right way:</p>
+    <div class="note">
+      <p class="mono">test_an_ml_outlier_is_not_automatically_high_risk</p>
+      <p>The anomaly model flags the <em>complainant</em> — they moved the largest single amount in the case, so they look statistically odd. The complainant's risk score is <strong>0</strong>. If the model drove scoring, the victim would be the prime suspect. That test is the reason the model is kept off the score.</p>
+    </div>
+  </section>
+
+  <section>
+    <p class="kicker">What is in the box</p>
+    <h2>Three sources, eight engines, nine services</h2>
+    <p>The shape is deliberate: sources are swappable, engines are pure, services own the side effects. <code>models.py</code> is the single source of truth for every shape that crosses a boundary.</p>
+
+    <div class="inventory">
+      <div>
+        <h3>Data sources</h3>
+        <ul>
+          <li><span>Synthetic</span><span>curated case</span></li>
+          <li><span>Etherscan</span><span>ETH + ERC-20</span></li>
+          <li><span>Tron</span><span>TRX + TRC-20</span></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Engines</h3>
+        <ul>
+          <li><span>Graph</span><span>bounded trace</span></li>
+          <li><span>Risk</span><span>7 rules</span></li>
+          <li><span>Dilution</span><span>2 models</span></li>
+          <li><span>Timeline</span><span>IST-aware</span></li>
+          <li><span>Anomaly</span><span>leads only</span></li>
+          <li><span>Report</span><span>Sec 63 BSA</span></li>
+          <li><span>STR</span><span>draft only</span></li>
+          <li><span>Pipeline</span><span>orchestration</span></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Services</h3>
+        <ul>
+          <li><span>Audit</span><span>hash chain</span></li>
+          <li><span>Auth</span><span>PBKDF2 240k</span></li>
+          <li><span>Anchor</span><span>on-chain digest</span></li>
+          <li><span>Ingestion</span><span>CSV → graph</span></li>
+          <li><span>Column mapper</span><span>AI + heuristic</span></li>
+          <li><span>Narrative</span><span>AI + template</span></li>
+          <li><span>LLM client</span><span>cached, optional</span></li>
+          <li><span>Hashing</span><span>SHA-256</span></li>
+          <li><span>Formatting</span><span>Indian grouping</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <p class="kicker">What the demo shows</p>
+    <h2>Taint does not survive contact with a deep pool</h2>
+    <p>The curated case follows ₹4,70,000 from a complainant's SBI account through a UPI cash-out, an off-ramp wallet, and a layering hop, into an exchange pool. Proportional haircut dilution at every hop:</p>
+
+    <figure>
+      <div class="chart-wrap">
+        <svg viewBox="0 0 700 320" role="img" aria-label="Tainted share falls from 100 percent at the victim account and seed wallet, to 60 percent at the layering wallet, to 12 percent in the exchange pool, crossing below the 30 percent flag threshold.">
+          <!-- axis -->
+          <line x1="78" y1="40" x2="78" y2="240" stroke="var(--rule)" stroke-width="1" fill="none"/>
+          <line x1="78" y1="240" x2="660" y2="240" stroke="var(--rule)" stroke-width="1" fill="none"/>
+
+          <!-- gridlines + axis labels -->
+          <line x1="78" y1="40"  x2="660" y2="40"  stroke="var(--rule-soft)" stroke-width="1" fill="none"/>
+          <line x1="78" y1="140" x2="660" y2="140" stroke="var(--rule-soft)" stroke-width="1" fill="none"/>
+          <text x="68" y="44"  text-anchor="end" fill="var(--muted)" font-family="IBM Plex Mono, monospace" font-size="11">100%</text>
+          <text x="68" y="144" text-anchor="end" fill="var(--muted)" font-family="IBM Plex Mono, monospace" font-size="11">50%</text>
+          <text x="68" y="244" text-anchor="end" fill="var(--muted)" font-family="IBM Plex Mono, monospace" font-size="11">0%</text>
+
+          <!-- threshold -->
+          <line x1="78" y1="180" x2="660" y2="180" stroke="var(--open)" stroke-width="1.5" stroke-dasharray="5 4" fill="none"/>
+          <text x="660" y="174" text-anchor="end" fill="var(--open)" font-family="IBM Plex Mono, monospace" font-size="11">flag threshold 30%</text>
+
+          <!-- area under the taint curve -->
+          <path d="M 130 40 L 300 40 L 470 120 L 620 216 L 620 240 L 130 240 Z"
+                fill="var(--accent)" fill-opacity="0.13" stroke="none"/>
+          <!-- taint curve -->
+          <path d="M 130 40 L 300 40 L 470 120 L 620 216"
+                fill="none" stroke="var(--accent)" stroke-width="2.5"
+                stroke-linejoin="round" stroke-linecap="round"/>
+
+          <!-- points -->
+          <circle cx="130" cy="40"  r="5" fill="var(--accent)"/>
+          <circle cx="300" cy="40"  r="5" fill="var(--accent)"/>
+          <circle cx="470" cy="120" r="5" fill="var(--accent)"/>
+          <circle cx="620" cy="216" r="6.5" fill="var(--paper)" stroke="var(--accent)" stroke-width="2.5"/>
+
+          <!-- value labels -->
+          <text x="130" y="27" text-anchor="middle" fill="var(--ink)" font-family="IBM Plex Mono, monospace" font-size="12.5" font-weight="500">100%</text>
+          <text x="300" y="27" text-anchor="middle" fill="var(--ink)" font-family="IBM Plex Mono, monospace" font-size="12.5" font-weight="500">100%</text>
+          <text x="470" y="107" text-anchor="middle" fill="var(--ink)" font-family="IBM Plex Mono, monospace" font-size="12.5" font-weight="500">60%</text>
+          <text x="620" y="203" text-anchor="middle" fill="var(--ink)" font-family="IBM Plex Mono, monospace" font-size="12.5" font-weight="500">12%</text>
+
+          <!-- hop labels -->
+          <text x="130" y="264" text-anchor="middle" fill="var(--ink-soft)" font-family="IBM Plex Sans, sans-serif" font-size="12">Victim account</text>
+          <text x="130" y="280" text-anchor="middle" fill="var(--muted)" font-family="IBM Plex Mono, monospace" font-size="10.5">SBI ****8891</text>
+
+          <text x="300" y="264" text-anchor="middle" fill="var(--ink-soft)" font-family="IBM Plex Sans, sans-serif" font-size="12">Seed wallet</text>
+          <text x="300" y="280" text-anchor="middle" fill="var(--muted)" font-family="IBM Plex Mono, monospace" font-size="10.5">0xa7f3…67e9</text>
+
+          <text x="470" y="264" text-anchor="middle" fill="var(--ink-soft)" font-family="IBM Plex Sans, sans-serif" font-size="12">Layering hop</text>
+          <text x="470" y="280" text-anchor="middle" fill="var(--muted)" font-family="IBM Plex Mono, monospace" font-size="10.5">1,200 clean + 1,800</text>
+
+          <text x="620" y="264" text-anchor="middle" fill="var(--ink-soft)" font-family="IBM Plex Sans, sans-serif" font-size="12">Exchange pool</text>
+          <text x="620" y="280" text-anchor="middle" fill="var(--muted)" font-family="IBM Plex Mono, monospace" font-size="10.5">8,000 clean + 2,000</text>
+
+          <text x="620" y="302" text-anchor="middle" fill="var(--open)" font-family="IBM Plex Mono, monospace" font-size="10.5">not flagged</text>
+        </svg>
+      </div>
+      <figcaption>Figures are the engine's actual output for case CP-CYBER-2026-001, not an illustration. The exchange pool receives real criminal proceeds and still falls below the flag threshold — which is the honest answer, and the one an investigator needs before writing to an exchange.</figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <p class="kicker">Closed since the adversarial review</p>
+    <h2>Six things that were wrong, and are not now</h2>
+    <p>Each of these was a genuine defect found by attacking the build rather than demonstrating it. Each is now covered by a test that fails if it regresses.</p>
+
+    <div class="ledger">
+
+      <div class="entry">
+        <h3>Dilution was silently meaningless on live chains<span class="tag">Closed</span></h3>
+        <div class="side"><span class="lbl">Before</span>Every node returned 0.0 in live mode. Historical balances cannot be reconstructed from a public explorer, so the denominator was empty — and the UI showed the emptiness as a clean result.</div>
+        <div class="side now"><span class="lbl">Now</span>Two explicit models. <code>haircut</code> for curated evidence; <code>propagation</code> for live traces, which carries a caveat stating in plain words that it is not a dilution figure.</div>
+      </div>
+
+      <div class="entry">
+        <h3>The custody log could be edited without a trace<span class="tag">Closed</span></h3>
+        <div class="side"><span class="lbl">Before</span>An append-only table that anyone with the SQLite file could rewrite. The chain-of-custody claim was doing no work.</div>
+        <div class="side now"><span class="lbl">Now</span>Each entry hashes its predecessor. <code>/audit/verify</code> names the first broken link. Rows order by an explicit <code>seq</code>, not rowid.</div>
+      </div>
+
+      <div class="entry">
+        <h3>Uploaded evidence never reached the trace<span class="tag">Closed</span></h3>
+        <div class="side"><span class="lbl">Before</span>A CSV could be uploaded, parsed and stored, and then had no effect on the graph. The ingestion feature was a dead end.</div>
+        <div class="side now"><span class="lbl">Now</span>Rows merge into the case graph as typed nodes and edges. Bank statements and transfer lists are both handled; naive timestamps are read as IST, not UTC.</div>
+      </div>
+
+      <div class="entry">
+        <h3>Anyone could write to the custody log<span class="tag">Closed</span></h3>
+        <div class="side"><span class="lbl">Before</span>The officer's name was a form field. The log recorded whatever the request body claimed.</div>
+        <div class="side now"><span class="lbl">Now</span>PBKDF2-HMAC-SHA256 at 240,000 iterations, HMAC-signed session tokens, and identity taken from the session — never from the payload.</div>
+      </div>
+
+      <div class="entry">
+        <h3>Only one chain, and it was the wrong one<span class="tag">Closed</span></h3>
+        <div class="side"><span class="lbl">Before</span>Ethereum only. Indian cyber-fraud proceeds overwhelmingly move as USDT on Tron.</div>
+        <div class="side now"><span class="lbl">Now</span>Full TRC-20 support. Tokens are verified by <em>contract address</em>, never ticker — a forged "USDT" contract was caught trying to report a 7.5-trillion transfer.</div>
+      </div>
+
+      <div class="entry">
+        <h3>A document's integrity rested on our own database<span class="tag">Closed</span></h3>
+        <div class="side"><span class="lbl">Before</span>The dossier hash was recorded in the same system that produced the dossier. Circular, and a defence lawyer would say so.</div>
+        <div class="side now"><span class="lbl">Now</span>Optional on-chain anchoring of the digest, first-write-wins, recording block time, block number and sender. Receipts cached so the dossier can cite them offline.</div>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <p class="kicker">Guarantees under test</p>
+    <h2>What the 183 tests actually hold down</h2>
+    <ul class="plain">
+      <li><strong>No endpoint can file an STR.</strong> A test walks the OpenAPI schema and fails if any mutating route ever appears under a path segment like <code>file</code>, <code>submit</code> or <code>finnet</code>. FIU-IND has no public submission API and we are not a Reporting Entity.</li>
+      <li><strong>Every risk score reconciles to its indicators.</strong> Score equals the clamped sum of its cited rule points, or the test fails.</li>
+      <li><strong>The whole flow survives the AI being gone.</strong> One test deletes the key <em>and</em> the cache, then generates a full dossier from the deterministic template and heuristic mapper.</li>
+      <li><strong>The API still answers with the SPA mounted.</strong> FastAPI matches routes in registration order; a catch-all in the wrong place silently swallows <code>/api/health</code>.</li>
+      <li><strong>The printed hash matches the file on disk.</strong> For both the dossier and the STR draft.</li>
+      <li><strong>The private key never leaks.</strong> A test asserts the anchoring key appears in no receipt and no response.</li>
+      <li><strong>A date column is never read as money.</strong> Regression test: the mapper once claimed <code>Value Dt</code> as the transaction amount.</li>
+    </ul>
+  </section>
+
+  <section>
+    <p class="kicker">Stated limits</p>
+    <h2>What it does not claim</h2>
+    <p>These are in the README, the dossier and the deck. Volunteering them is cheaper than being caught by a judge who asks.</p>
+    <ul class="limits">
+      <li><b>The rule weights are not calibrated.</b> Seven rules with defensible reasoning and no empirical basis for +20 versus +15. They are explainable, which is the point; they are not validated against outcomes.</li>
+      <li><b>Bank clocks and block clocks are not the same clock.</b> Time-correlation inference across the two is a lead, not proof, and is drawn as a dashed edge for exactly that reason.</li>
+      <li><b>The narrative leaves the building.</b> Case facts are sent to Groq to draft prose. Acceptable for synthetic data; a real deployment needs that decision made deliberately, or the template path used.</li>
+      <li><b>Anchoring proves a document existed by a certain time.</b> It does not prove the document is true, and the dossier says so in those words.</li>
+      <li><b>The statutory wording is unreviewed.</b> Sec 63 BSA 2023 and Sec 94 BNSS references are drafted in good faith and have not been checked by a lawyer.</li>
+      <li><b>It is not affiliated with Chandigarh Police.</b> Stated in the README's first lines.</li>
+    </ul>
+  </section>
+
+  <section>
+    <p class="kicker">The deck</p>
+    <h2>Rebuilt against the software, not the plan</h2>
+    <p>Fifteen slides, validated and rendered through PowerPoint itself rather than a substitute renderer. Where a slide and the build disagreed, the slide was corrected — a competitor comparison table, an "OTC tracked 100%" figure and a Sec 63(4) tamper-proof claim were all removed because nothing in the code supports them.</p>
+    <ul class="plain">
+      <li>A new <strong>chain of custody</strong> slide showing the before and after, and naming the limit out loud: tampering is made <em>detectable</em>, not impossible.</li>
+      <li>The pipeline's ingest step now describes real merging into the case graph.</li>
+      <li>Evidence figures refreshed: 2 chains, 7 rules, 60% → 12%, works unplugged, 183 tests across 19 endpoints.</li>
+      <li>The line count now cites <span class="mono">8,499</span> — a plain <code>wc -l</code> over <code>backend/app</code> and <code>frontend/src</code>, so a judge can reproduce it in one command. The previous figure no longer reconciled with anything.</li>
+    </ul>
+  </section>
+
+  <section>
+    <p class="kicker">Open items · none are code</p>
+    <h2>Before 8 September</h2>
+    <ol class="schedule">
+      <li>
+        <div><b>Add a LICENSE</b><span class="who">Blocking</span>
+          <p>The repository is public with no licence, which legally means all rights reserved — directly contradicting the deck's claim that this is free for any police force to use. One file fixes it.</p>
+        </div>
+      </li>
+      <li>
+        <div><b>Get the statutory wording reviewed</b><span class="who">Your call</span>
+          <p>Anyone with a law background reading the Sec 63 BSA certificate and the Sec 94 BNSS reference in the STR draft. Currently flagged as unreviewed in four places.</p>
+        </div>
+      </li>
+      <li>
+        <div><b>Confirm the three live demo addresses</b>
+          <p>Cached and working. Re-run the pre-test on the day so the cache is warm against current chain state.</p>
+        </div>
+      </li>
+      <li>
+        <div><b>Rehearse five times, once with the wifi off</b>
+          <p>The offline path is tested but the presenter's nerve is not. The unplugged run is the one worth doing twice.</p>
+        </div>
+      </li>
+      <li>
+        <div><b>Projector test and pick the presenting laptop</b>
+          <p>The graph canvas fits its layout to the node count; verify at the real resolution, not yours.</p>
+        </div>
+      </li>
+    </ol>
+  </section>
+
+  <section>
+    <p class="kicker">If a judge hands over an address</p>
+    <h2>The answer is to paste it in</h2>
+    <p>That was the whole reason for the source abstraction. An Ethereum or Tron address typed into the seed field runs the same seven rules, the same bounded trace, the same custody log and the same dossier as the curated case — with propagation instead of dilution, and a caveat on screen saying why. If the venue's network fails, the three pre-cached addresses answer instantly.</p>
+    <p>The honest failure mode is worth rehearsing too: an address with no relevant activity returns a small graph and a low score. That is the system working. Say so rather than reaching for the demo case.</p>
+  </section>
+
+  <footer>
+    <span>Project Violet Milk · final build report</span>
+    <span>github.com/23f2001033/project-violet-milk</span>
+    <span>Head 8d3ecd9 · 183 tests green</span>
+  </footer>
+
+</div>
