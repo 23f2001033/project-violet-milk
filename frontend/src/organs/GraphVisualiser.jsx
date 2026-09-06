@@ -113,8 +113,14 @@ const STYLE = [
       label: 'data(caption)',
       'font-size': 8,
       'font-family': 'JetBrains Mono, monospace',
-      color: '#6b6579',
+      color: '#8b8496',
       'text-rotation': 'autorotate',
+      // Amounts sat directly on top of crossing edges and each other. A plate
+      // behind the text is what makes them readable on a busy graph.
+      'text-background-color': '#0d0b12',
+      'text-background-opacity': 0.82,
+      'text-background-padding': 2,
+      'text-background-shape': 'roundrectangle',
       'transition-property': 'opacity, line-color, width',
       'transition-duration': '160ms',
     },
@@ -201,9 +207,46 @@ function layoutFor(graph) {
     ...common,
     name: 'breadthfirst',
     directed: true,
-    spacingFactor: 1.4,
+    spacingFactor: 1.75,
+    // Without this the layout packs rows to the node circles and ignores the
+    // address captions hanging below them, which is what made the lower ranks
+    // read as a wall of overlapping text.
+    nodeDimensionsIncludeLabels: true,
+    avoidOverlap: true,
     ...(roots ? { roots } : {}),
   }
+}
+
+/**
+ * Second pass that turns the ranked rows into the spread an officer can read.
+ *
+ * Breadthfirst alone is the right STORY - victim at the top, money falling
+ * down the page - but it packs every entity at the same depth into one tight
+ * row, so on the demo case the lower two ranks collide and the amount labels
+ * pile on top of each other. A force pass started FROM those rows keeps the
+ * top-to-bottom order while pushing entities apart into open canvas.
+ *
+ * `randomize: false` is the load-bearing option: cose then refines the
+ * breadthfirst positions instead of seeding from Math.random, so the graph
+ * lands identically every single run. A demo that lays out differently each
+ * time cannot be rehearsed, and a forensic tool that draws the same case two
+ * ways invites the obvious question about what else is non-deterministic.
+ */
+const SPREAD = {
+  name: 'cose',
+  animate: false,
+  fit: true,
+  padding: 38,
+  randomize: false,
+  nodeDimensionsIncludeLabels: true,
+  idealEdgeLength: 125,
+  nodeRepulsion: 15000,
+  edgeElasticity: 110,
+  gravity: 0.28,
+  numIter: 1200,
+  initialTemp: 180,
+  coolingFactor: 0.95,
+  minTemp: 1.0,
 }
 
 /**
@@ -543,6 +586,13 @@ export default function GraphVisualiser({ graph, selected, onSelect, assets, ris
       minZoom: 0.2,
       maxZoom: 2.5,
     })
+
+    // Relax the ranked rows apart. Only for the case-sized graph: the live
+    // concentric layout is already readable and a force pass on 50+ hub-and-
+    // spoke nodes drifts into a hairball.
+    if (graph.elements.nodes.length <= 25) {
+      cy.layout(SPREAD).run()
+    }
 
     cy.on('tap', 'node', (evt) => {
       setShowCard(true)
