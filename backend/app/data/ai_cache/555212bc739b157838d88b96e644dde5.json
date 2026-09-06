@@ -1,0 +1,6 @@
+{
+  "content": "{\"utr\":\"Ref No./Cheque No.\",\"amount\":\"Debit\",\"timestamp\":\"Txn Date\",\"bank\":\"Bank Name\",\"description\":\"Narration\"}",
+  "meta": {
+    "model": "openai/gpt-oss-120b"
+  }
+}

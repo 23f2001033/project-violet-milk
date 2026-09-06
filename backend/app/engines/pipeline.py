@@ -36,6 +36,7 @@ class CaseAnalysis:
     edges: list[Edge]
     hop_depth: dict[str, int]
     truncated: bool
+    ingested_count: int
     dilution: DilutionResult
     illicit_ratio: dict[str, float]
     risk: dict[str, RiskAssessment]
@@ -55,6 +56,7 @@ class CaseAnalysis:
             traced_at=self.traced_at,
             source=self.source_name,
             truncated=self.truncated,
+            ingested_edges=self.ingested_count,
         )
 
     def graph(self) -> GraphResponse:
@@ -96,6 +98,44 @@ class CaseAnalysis:
         )
 
 
+def _ingested(case_id: str, known: set[str]) -> tuple[list[Node], list[Edge]]:
+    """Edges parsed from uploaded evidence, plus any nodes they introduce.
+
+    Imported here rather than at module scope: `db` imports config, and a
+    top-level import would make the engine package depend on storage.
+    """
+    from ..db import ingested_edges
+    from ..models import Asset, Chain, EvidenceType, NodeType
+
+    rows = ingested_edges(case_id)
+    if not rows:
+        return [], []
+
+    edges = [
+        Edge(
+            edge_id=r["edge_id"], case_id=case_id,
+            from_node=r["from_node"], to_node=r["to_node"],
+            amount=r["amount"], asset=Asset(r["asset"]),
+            timestamp=r["timestamp"],
+            evidence_type=EvidenceType(r["evidence_type"]),
+            utr=r["utr"], tx_hash=r["tx_hash"],
+            source_evidence_id=r["evidence_id"],
+        )
+        for r in rows
+    ]
+
+    # Anything the upload introduced that the bundled dataset did not already
+    # know about becomes an UNKNOWN node - never silently typed or labelled.
+    fresh = {e.from_node for e in edges} | {e.to_node for e in edges}
+    nodes = [
+        Node(node_id=nid, case_id=case_id, node_type=NodeType.UNKNOWN,
+             chain=Chain.ETHEREUM if nid.startswith("0x") else Chain.BANK_INR,
+             prior_balance=0.0)
+        for nid in sorted(fresh - known)
+    ]
+    return nodes, edges
+
+
 def make_source(case_id: str, data_mode: str = "synthetic") -> DataSource:
     if str(data_mode).lower() == "live":
         from ..sources.etherscan import EtherscanSource
@@ -120,11 +160,18 @@ def analyse(
         # Bundled dataset: the whole case is already in memory.
         all_nodes = src.all_nodes()
         all_edges = src.all_edges()
+        # Transfers parsed from evidence the officer uploaded are merged in, so
+        # an ingested file genuinely appears in the graph.
+        ing_nodes, ing_edges = _ingested(case_id, {n.node_id for n in all_nodes})
+        all_nodes += ing_nodes
+        all_edges += ing_edges
+        ingested_count = len(ing_edges)
     else:
         # Live source: it must walk the chain itself, because discovering the
         # neighbourhood costs API calls and only the source knows how to pace
         # them. It returns an already-bounded neighbourhood; the engines then
         # apply the case's own bounds on top.
+        ingested_count = 0
         all_nodes, all_edges = src.expand(
             seed, max_depth=max_depth, max_edges_per_node=max_edges_per_node
         )
@@ -173,6 +220,7 @@ def analyse(
         edges=edges,
         hop_depth=hop,
         truncated=truncated,
+        ingested_count=ingested_count,
         dilution=dilution,
         illicit_ratio=ratios,
         risk=risk,

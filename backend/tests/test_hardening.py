@@ -29,6 +29,30 @@ POOL = "0xd90f42a17c58e03b96d1f47a20c85e39b7f481ab"
 client = TestClient(app)
 
 
+def _reset_case():
+    from backend.app.engines.pipeline import clear_cache
+    with cursor() as conn:
+        conn.execute("DELETE FROM ingested_txn WHERE case_id = ?", (CASE,))
+        conn.execute(
+            "DELETE FROM evidence WHERE case_id = ? AND evidence_id != ?",
+            (CASE, "EV-8f3a2c17"))
+    clear_cache()
+
+
+@pytest.fixture(autouse=True, scope="module")
+def _pristine_case():
+    """These tests both depend on and mutate the reference case.
+
+    Every module shares one database, and now that uploads genuinely reach the
+    graph, an upload in ANY earlier suite leaves ingested transfers behind.
+    So reset on the way in as well as out - asserting on a globally-clean
+    database was the wrong assumption, not a flaw in the feature.
+    """
+    _reset_case()
+    yield
+    _reset_case()
+
+
 # ------------------------------------------------- 1. dilution on live data
 
 def _live_shaped_graph():
@@ -171,4 +195,99 @@ def test_details_are_canonical_json_so_the_digest_reproduces():
                   if e["audit_id"] == entry.audit_id)
     assert json.dumps(stored["details"], sort_keys=True) == \
         json.dumps({"z": 1, "a": 2}, sort_keys=True)
+    assert client.get(f"/api/cases/{CASE}/audit/verify").json()["intact"] is True
+
+
+# ------------------------------------------- 3. evidence reaches the trace
+
+def _upload(csv_bytes: bytes, name="upload.csv", **extra):
+    import hashlib
+    return client.post(
+        f"/api/cases/{CASE}/evidence",
+        files={"file": (name, csv_bytes, "text/csv")},
+        data={"sha256_client": hashlib.sha256(csv_bytes).hexdigest(),
+              "is_synthetic": "true", **extra},
+    )
+
+
+def test_pristine_case_has_no_ingested_edges():
+    """The bundled reference case must stay reproducible."""
+    stats = client.get(f"/api/cases/{CASE}/graph").json()["stats"]
+    assert stats["ingested_edges"] == 0
+    assert stats["nodes"] == 14 and stats["edges"] == 17
+
+
+def test_uploaded_transfers_appear_in_the_graph():
+    """Regression: the uploader hashed, stored and audited a file that the
+    trace then ignored entirely. A judge who uploaded data and asked to see
+    it in the graph would have found nothing."""
+    before = client.get(f"/api/cases/{CASE}/graph").json()["stats"]
+
+    csv = (b"from,to,amount,asset,timestamp\n"
+           b"0xa7f39c1d8e4b2a5f7c3d9e0a1b8c6d4e5f2a67e9,"
+           b"0xfeedfacefeedfacefeedfacefeedfacefeedface,900,USDT,"
+           b"2026-09-08T10:46:00+05:30\n")
+    r = _upload(csv, "wallet_export.csv")
+    assert r.status_code == 201
+    assert r.json()["ingestion"]["ingested"] == 1
+    assert r.json()["ingestion"]["shape"] == "transfer_list"
+
+    after = client.get(f"/api/cases/{CASE}/graph").json()
+    assert after["stats"]["edges"] == before["edges"] + 1
+    assert after["stats"]["ingested_edges"] == 1
+    ids = {n["data"]["id"] for n in after["elements"]["nodes"]}
+    assert "0xfeedfacefeedfacefeedfacefeedfacefeedface" in ids
+
+
+def test_unparseable_rows_are_skipped_and_reported():
+    """A partial import must be visible. Silently dropping half a file is
+    worse than refusing it."""
+    csv = (b"from,to,amount,asset,timestamp\n"
+           b"0xaaa,0xbbb,not-a-number,USDT,2026-09-08T10:00:00+05:30\n"
+           b"0xaaa,0xbbb,100,USDT,not-a-date\n"
+           b"0xaaa,0xccc,250,USDT,2026-09-08T10:05:00+05:30\n")
+    report = _upload(csv, "partial.csv").json()["ingestion"]
+    assert report["ingested"] == 1
+    assert report["skipped"] == 2
+    assert len(report["reasons"]) == 2
+
+
+def test_bank_statement_counterparty_is_never_invented():
+    """A statement is one account's ledger - it does not name the other side.
+    The counterparty is recorded as UTR-only, which is what the evidence
+    actually supports."""
+    csv = (b"Txn Date,Ref No./Cheque No.,Narration,Debit,Bank Name\n"
+           b"08-09-2026,420192830199,UPI/TRANSFER,\"1,20,000.00 Dr\",SBI\n")
+    r = _upload(csv, "stmt.csv", account_ref="SBI_XXXXXXXX8891")
+    report = r.json()["ingestion"]
+    assert report["shape"] == "bank_statement"
+    assert report["ingested"] == 1
+
+    graph = client.get(f"/api/cases/{CASE}/graph").json()
+    ids = {n["data"]["id"] for n in graph["elements"]["nodes"]}
+    assert "UTR:420192830199" in ids, "counterparty must be UTR-identified"
+    # and it must not be typed or labelled as anything we cannot support
+    node = next(n["data"] for n in graph["elements"]["nodes"]
+                if n["data"]["id"] == "UTR:420192830199")
+    assert node["type"] == "unknown"
+    assert node["label_confidence"] == "unknown"
+
+
+def test_indian_amount_and_date_formats_parse():
+    from backend.app.services.ingestion import parse_amount, parse_timestamp
+    assert parse_amount("4,70,000.00 Dr") == 470000.0
+    assert parse_amount("(1,200.50)") == 1200.5
+    assert parse_amount("INR 5,200") == 5200.0
+    assert parse_amount("rubbish") is None
+    # A naive date is IST, not UTC - reading it as UTC shifts every event by
+    # 5.5 hours and corrupts the timeline deltas.
+    assert parse_timestamp("08-09-2026").endswith("+05:30")
+    assert parse_timestamp("nonsense") is None
+
+
+def test_ingestion_is_audited_with_its_counts():
+    audit = client.get(f"/api/cases/{CASE}/audit").json()
+    uploads = [a for a in audit if a["action"] == "EVIDENCE_UPLOADED"
+               and "ingested" in a.get("details", {})]
+    assert uploads, "an ingestion must record what it actually ingested"
     assert client.get(f"/api/cases/{CASE}/audit/verify").json()["intact"] is True

@@ -16,8 +16,9 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 
 from ..db import cursor, row_to_evidence
+from ..engines.pipeline import clear_cache
 from ..models import AuditAction, Evidence
-from ..services import audit, column_mapper, hashing
+from ..services import audit, column_mapper, hashing, ingestion
 
 router = APIRouter(prefix="/api/cases", tags=["evidence"])
 
@@ -44,6 +45,7 @@ async def upload_evidence(
     sha256_client: str = Form(..., description="Web Crypto hash computed pre-upload"),
     is_synthetic: bool = Form(True),
     uploaded_by: str = Form("IO_SHARMA"),
+    account_ref: str = Form(""),
 ):
     with cursor() as conn:
         if not conn.execute(
@@ -117,9 +119,36 @@ async def upload_evidence(
              record.uploaded_at, record.uploaded_by),
         )
 
+    # Parse the file into transfers so the trace can actually see it. Until
+    # this existed the uploader hashed, stored and audited a file that the
+    # graph then ignored entirely.
+    ingest_report = None
+    if ext == "csv" and mapping:
+        parsed, ingest_report = ingestion.normalise_rows(
+            raw, mapping, case_id, record.evidence_id,
+            account_ref=account_ref or None,
+        )
+        if parsed:
+            with cursor() as conn:
+                conn.executemany(
+                    "INSERT INTO ingested_txn (edge_id, case_id, evidence_id, "
+                    "from_node, to_node, amount, asset, timestamp, "
+                    "evidence_type, utr, tx_hash) "
+                    "VALUES (:edge_id, :case_id, :evidence_id, :from_node, "
+                    ":to_node, :amount, :asset, :timestamp, :evidence_type, "
+                    ":utr, :tx_hash)",
+                    parsed,
+                )
+            # A new file changes the graph, so the memoised trace is stale.
+            clear_cache()
+
     audit.record(
         case_id, AuditAction.EVIDENCE_UPLOADED, record.filename,
         user_id=uploaded_by, target_hash=sha256_server,
-        details={"rows": row_count, "bytes": record.size_bytes},
+        details={"rows": row_count, "bytes": record.size_bytes,
+                 **({"ingested": ingest_report["ingested"],
+                     "skipped": ingest_report["skipped"],
+                     "shape": ingest_report["shape"]} if ingest_report else {})},
     )
+    record.ingestion = ingest_report
     return record

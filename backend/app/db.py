@@ -65,6 +65,24 @@ CREATE TABLE IF NOT EXISTS audit_log (
     entry_hash  TEXT NOT NULL DEFAULT ''
 );
 
+-- Transfers parsed out of uploaded evidence. Kept separate from the bundled
+-- dataset so the demo case stays reproducible and an ingestion can be
+-- attributed back to the exact file it came from.
+CREATE TABLE IF NOT EXISTS ingested_txn (
+    edge_id       TEXT PRIMARY KEY,
+    case_id       TEXT NOT NULL,
+    evidence_id   TEXT NOT NULL,
+    from_node     TEXT NOT NULL,
+    to_node       TEXT NOT NULL,
+    amount        REAL NOT NULL,
+    asset         TEXT NOT NULL,
+    timestamp     TEXT NOT NULL,
+    evidence_type TEXT NOT NULL,
+    utr           TEXT,
+    tx_hash       TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_ingested_case ON ingested_txn(case_id);
 CREATE INDEX IF NOT EXISTS idx_evidence_case ON evidence(case_id);
 CREATE INDEX IF NOT EXISTS idx_audit_case    ON audit_log(case_id, timestamp);
 """
@@ -111,6 +129,16 @@ def row_to_evidence(r: sqlite3.Row) -> dict:
     d["is_synthetic"] = bool(d["is_synthetic"])
     d["column_mapping"] = json.loads(d["column_mapping"]) if d["column_mapping"] else None
     return d
+
+
+def ingested_edges(case_id: str) -> list[dict]:
+    """Transfers parsed from evidence uploaded against this case."""
+    with cursor() as conn:
+        rows = conn.execute(
+            "SELECT * FROM ingested_txn WHERE case_id = ? ORDER BY timestamp",
+            (case_id,),
+        ).fetchall()
+    return [dict(r) for r in rows]
 
 
 def row_to_audit(r: sqlite3.Row) -> dict:

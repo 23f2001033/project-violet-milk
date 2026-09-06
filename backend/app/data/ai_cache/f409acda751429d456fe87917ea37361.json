@@ -1,0 +1,6 @@
+{
+  "content": "{\"from_account\":\"from\",\"to_account\":\"to\",\"asset\":\"asset\",\"amount\":\"amount\",\"timestamp\":\"timestamp\"}",
+  "meta": {
+    "model": "openai/gpt-oss-120b"
+  }
+}

@@ -22,6 +22,9 @@ from . import llm_client
 
 # Canonical fields the case schema needs from a bank statement.
 TARGETS = {
+    "from_account": "the sending account, wallet address or payer",
+    "to_account": "the receiving account, wallet address or payee",
+    "asset": "the currency or token symbol (INR, USDT, ETH)",
     "utr": "the UTR / RRN / transaction reference number",
     "amount": "the debited or transferred amount",
     "timestamp": "the transaction date or datetime",
@@ -38,13 +41,23 @@ TARGETS = {
 # column silently read as money. Classifying each header once, most-specific
 # rule first, removes that whole class of error.
 _RULES: tuple[tuple[str, str], ...] = (
-    # Dates first: they are the most commonly mis-claimed.
-    ("timestamp", r"\b(date|dt|time|timestamp|posted|txn[ _]?dt)\b"),
+    # Direction first. "from"/"to" are unambiguous, and leaving them until
+    # after the broader patterns lets "To Address" get claimed as something
+    # else - which would silently reverse the direction of every edge.
+    ("from_account",
+     r"\b(from|sender|payer|source|remitter|from[ _]?address|"
+     r"from[ _]?account|from[ _]?wallet)\b"),
+    ("to_account",
+     r"\b(to|receiver|payee|beneficiary|destination|to[ _]?address|"
+     r"to[ _]?account|to[ _]?wallet)\b"),
+    # Dates next: they are the most commonly mis-claimed.
+    ("timestamp", r"\b(date|dt|time|timestamp|datetime|posted|txn[ _]?dt)\b"),
     ("utr", r"\b(utr|rrn|ref(erence)?[ _]?(no|num|number|id)?|txn[ _]?id|"
             r"transaction[ _]?id|cheque|chq)\b"),
     # "balance" is deliberately excluded - a closing balance is not the
     # transferred amount.
-    ("amount", r"\b(amount|amt|debit|withdrawal|deposit|credit|inr|rs)\b"),
+    ("amount", r"\b(amount|amt|debit|withdrawal|deposit|credit|inr|rs|value)\b"),
+    ("asset", r"\b(asset|currency|token|symbol|ccy)\b"),
     ("bank", r"\b(bank|branch|ifsc|institution)\b"),
     # Plurals matter: "Transaction Remarks" must match, and \bremark\b does not.
     ("description", r"\b(desc|descriptions?|narrations?|remarks?|"

@@ -165,6 +165,12 @@ class Evidence(BaseModel):
     )
     uploaded_at: str
     uploaded_by: str
+    ingestion: dict[str, Any] | None = Field(
+        None,
+        description="How many transfers were parsed out of this file, how many "
+                    "rows were skipped and why. A partial import must be "
+                    "visible, not silent.",
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -238,6 +244,12 @@ class GraphStats(BaseModel):
     source: str = Field(..., description="DataSource.source_name()")
     truncated: bool = Field(
         False, description="True when traversal bounds clipped the graph."
+    )
+    ingested_edges: int = Field(
+        0,
+        description="Transfers merged in from uploaded evidence. Non-zero "
+                    "means the graph is no longer the pristine bundled case, "
+                    "so scores may differ from the reference figures.",
     )
 
 

@@ -295,6 +295,11 @@ export default function App() {
           <span>NCRP {kase.ncrp_ref}</span>
           <span className="text-risk-high">{inr(kase.victim_amount_inr)}</span>
           <span>{graph.stats.nodes} entities · {graph.stats.edges} transfers</span>
+          {graph.stats.ingested_edges > 0 && (
+            <span className="text-risk-high">
+              +{graph.stats.ingested_edges} ingested
+            </span>
+          )}
           <span>depth {graph.stats.max_depth_reached}</span>
           <span className="ml-auto">{graph.stats.source}</span>
         </div>

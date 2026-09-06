@@ -7,7 +7,8 @@
     "max_depth_reached": 3,
     "traced_at": "2026-09-08T10:35:18+05:30",
     "source": "SyntheticSource",
-    "truncated": false
+    "truncated": false,
+    "ingested_edges": 0
   },
   "elements": {
     "nodes": [

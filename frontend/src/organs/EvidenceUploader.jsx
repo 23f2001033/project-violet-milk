@@ -231,6 +231,41 @@ export default function EvidenceUploader({ caseId, evidence = [], onUploaded }) 
             {result.evidence_id} · {result.filename}
             {result.row_count != null && ` · ${result.row_count} rows`}
           </div>
+          {result.ingestion && (
+            <div className="mt-1.5 pt-1.5 border-t border-edge">
+              <div className="label mb-0.5">Merged into the case graph</div>
+              <div className="text-[11px] text-slate-300">
+                {result.ingestion.ingested} transfer
+                {result.ingestion.ingested === 1 ? '' : 's'} ingested
+                {result.ingestion.skipped > 0 && (
+                  <span className="text-risk-high">
+                    {' · '}{result.ingestion.skipped} row
+                    {result.ingestion.skipped === 1 ? '' : 's'} skipped
+                  </span>
+                )}
+                <span className="text-slate-600">
+                  {' · '}read as {result.ingestion.shape.replace('_', ' ')}
+                </span>
+              </div>
+              {result.ingestion.reasons?.length > 0 && (
+                <ul className="mt-1 space-y-0.5">
+                  {result.ingestion.reasons.map((r) => (
+                    <li key={r} className="text-[10px] text-slate-600 font-mono">
+                      {r}
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {result.ingestion.shape === 'bank_statement' && (
+                <p className="text-[10px] text-slate-500 mt-1 leading-relaxed">
+                  A statement names only one side of each transfer, so the
+                  counterparty is recorded by UTR alone. Identifying it requires
+                  a Section 94 BNSS production order.
+                </p>
+              )}
+            </div>
+          )}
+
           {result.column_mapping && (
             <div className="mt-1.5">
               <div className="label mb-0.5">Resolved column mapping</div>

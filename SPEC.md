@@ -260,7 +260,7 @@ A test asserts no STR-filing endpoint can ever exist in this codebase.
 | Dilution dead on live data | ✅ fixed — propagation mode |
 | Custody log editable without trace | ✅ fixed — hash-chained |
 | White screen on a render error | ✅ fixed — ErrorBoundary |
-| **Uploaded evidence never reaches the trace** | ⚠️ open — the graph always reads the bundled CSV |
+| Uploaded evidence never reaches the trace | ✅ fixed — parsed and merged; `stats.ingested_edges` reports how many |
 | **No authentication** — `uploaded_by` is client-supplied | ⚠️ open |
 | **Ethereum only** — most Indian USDT fraud is on Tron | ⚠️ open, architecturally ready |
 | Rule weights are uncalibrated | ⚠️ by design — that is what a pilot measures |
