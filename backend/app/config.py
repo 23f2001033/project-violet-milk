@@ -86,6 +86,22 @@ ANCHOR_CONTRACT_ADDRESS = os.getenv("ANCHOR_CONTRACT_ADDRESS", "").strip()
 ANCHOR_CHAIN_ID = _int("ANCHOR_CHAIN_ID", 11155111)   # Sepolia
 ANCHOR_TIMEOUT_SECONDS = _int("ANCHOR_TIMEOUT_SECONDS", 30)
 
+# Stage mode. When true, a live trace serves any address already present in
+# data/live_cache/ straight from disk instead of calling the explorer.
+#
+# This exists for one reason: venue wifi that is slow but not dead. A dead
+# network trips the circuit breaker and falls through to cache in about a
+# second, but a network answering in eight seconds per call is the worst case
+# and nothing detects it. Pre-test the addresses, set this, and every one of
+# them returns instantly.
+#
+# It is OFF by default, so an investigator always gets fresh chain data. When
+# it is on, the source reports itself as "EtherscanSource (cached)" and the UI
+# shows that - a replay is never presented as a live pull.
+LIVE_CACHE_FIRST = os.getenv("LIVE_CACHE_FIRST", "false").strip().lower() in {
+    "1", "true", "yes",
+}
+
 # --- Derived flags ---------------------------------------------------------
 LLM_CONFIGURED = bool(LLM_API_KEY and LLM_BASE_URL and LLM_MODEL)
 ETHERSCAN_CONFIGURED = bool(ETHERSCAN_API_KEY)

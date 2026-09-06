@@ -162,6 +162,13 @@ class EtherscanSource(DataSource):
             self.used_cache = True
             return self._read_cache(cache)
 
+        # Stage mode: replay a pre-tested address rather than gamble on venue
+        # wifi. Only ever serves a file that is actually there - an address
+        # nobody pre-tested still goes to the network.
+        if config.LIVE_CACHE_FIRST and cache.exists():
+            self.used_cache = True
+            return self._read_cache(cache)
+
         params = {
             "chainid": self.chain_id, "module": "account", "action": action,
             "address": address, "page": 1, "offset": offset, "sort": "desc",

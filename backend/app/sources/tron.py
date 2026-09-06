@@ -137,6 +137,15 @@ class TronSource(DataSource):
         path = (f"/v1/accounts/{address}/transactions/trc20"
                 if kind == "trc20" else f"/v1/accounts/{address}/transactions")
 
+        # Stage mode - see config.LIVE_CACHE_FIRST. Same contract as the
+        # Etherscan source: replay only what was actually pre-tested.
+        if config.LIVE_CACHE_FIRST and cache.exists():
+            self.used_cache = True
+            try:
+                return json.loads(cache.read_text(encoding="utf-8"))
+            except json.JSONDecodeError:
+                return []
+
         headers = {}
         if config.TRONGRID_API_KEY:
             headers["TRON-PRO-API-KEY"] = config.TRONGRID_API_KEY
