@@ -17,6 +17,7 @@ import {
   getCase,
   getDilution,
   getAnomaly,
+  getAssets,
   getGraph,
   getRisk,
   getTimeline,
@@ -39,12 +40,14 @@ import DilutionPanel from './organs/DilutionPanel'
 import FlagAgent from './organs/FlagAgent'
 import ReportExport from './organs/ReportExport'
 import AuditLog from './organs/AuditLog'
+import AssetLedger from './organs/AssetLedger'
 
 const ORGANS = [
   { id: 'command', label: 'Command Center', icon: '▣' },
   { id: 'intake', label: 'Case Intake', icon: '▤' },
   { id: 'evidence', label: 'Evidence Ingestion', icon: '▥' },
   { id: 'graph', label: 'Graph Visualiser', icon: '◈' },
+  { id: 'assets', label: 'Asset Ledger', icon: '₹' },
   { id: 'timeline', label: 'Timeline', icon: '◷' },
   { id: 'risk', label: 'Risk Inspector', icon: '◉' },
   { id: 'dilution', label: 'Dilution Calculator', icon: '◐' },
@@ -105,13 +108,16 @@ export default function App() {
       // missing panel, not a broken dashboard.
       getAnomaly(DEMO_CASE_ID).catch(() => null),
       verifyAudit(DEMO_CASE_ID).catch(() => null),
+      // Same rule as the Flag Agent: the asset ledger is a derived view, so a
+      // failure here is a missing panel, never a broken case.
+      getAssets(DEMO_CASE_ID).catch(() => null),
     ])
       .then(
         ([kase, graph, dilution, timeline, audit, evidence, anomaly,
-          verification]) =>
+          verification, assets]) =>
           setData({
             loading: false, kase, graph, dilution, timeline, audit, evidence,
-            anomaly, verification,
+            anomaly, verification, assets,
           })
       )
       .catch((e) => {
@@ -208,6 +214,11 @@ export default function App() {
           </div>
         </div>
       </div>
+    ),
+    assets: (
+      <AssetLedger
+        assets={data.assets} selected={selected} nodesById={nodesById}
+      />
     ),
     timeline: <Timeline timeline={timeline} selected={selected} onSelect={setSelected} />,
     risk: (

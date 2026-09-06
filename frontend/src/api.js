@@ -271,3 +271,13 @@ export const generateSTR = (caseId) =>
   USE_MOCKS
     ? Promise.reject(new Error('STR generation requires the backend'))
     : req(`/api/cases/${caseId}/str`, { method: 'POST' })
+
+/* ------------------------------------------------------------ asset ledger */
+
+/* Which currency moved, at which layer, and what it is in rupees.
+   Never blocks the case view - App treats a failure here as a missing panel. */
+export const getAssets = (caseId) =>
+  USE_MOCKS ? mock(null) : req(`/api/cases/${caseId}/assets`)
+
+export const getNodeAssets = (caseId, nodeId) =>
+  USE_MOCKS ? mock(null) : req(`/api/cases/${caseId}/assets/nodes/${nodeId}`)
