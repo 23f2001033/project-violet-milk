@@ -298,7 +298,9 @@ function AssetLine({ rows, empty }) {
   )
 }
 
-function WalletCard({ node, assets, risk, path, onClose, onFollow, following }) {
+function WalletCard({
+  node, assets, risk, path, onClose, onFollow, following, maxHeight,
+}) {
   const [copied, setCopied] = useState(false)
   const explorer = explorerFor(node.id, node.chain)
   const ledger = assets?.nodes?.find(
@@ -317,7 +319,8 @@ function WalletCard({ node, assets, risk, path, onClose, onFollow, following }) 
 
   return (
     <div
-      className="absolute top-2 left-2 w-[292px] max-h-[calc(100%-1rem)] overflow-y-auto
+      style={{ maxHeight }}
+      className="absolute top-2 left-2 w-[292px] overflow-y-auto
                  rounded border border-edge bg-panel/97 backdrop-blur shadow-xl
                  text-slate-300"
     >
@@ -492,6 +495,13 @@ export default function GraphVisualiser({ graph, selected, onSelect, assets, ris
   const [following, setFollowing] = useState(false)
   const [minRisk, setMinRisk] = useState(0)
   const [showCard, setShowCard] = useState(true)
+  const [legendOpen, setLegendOpen] = useState(true)
+
+  /* The legend used to span the full width at the bottom, so an open entity
+     card ran underneath it and its last rows - chain, layer, attribution -
+     were unreadable. Everything anchored to the bottom now measures from one
+     number, and the card is bounded by it rather than overlapping it. */
+  const legendH = legendOpen ? 78 : 32
 
   const nodesById = useMemo(() => {
     const m = {}
@@ -671,6 +681,7 @@ export default function GraphVisualiser({ graph, selected, onSelect, assets, ris
           following={following}
           onFollow={() => setFollowing((v) => !v)}
           onClose={() => setShowCard(false)}
+          maxHeight={`calc(100% - ${legendH + 20}px)`}
         />
       )}
 
@@ -760,43 +771,70 @@ export default function GraphVisualiser({ graph, selected, onSelect, assets, ris
       </div>
 
       {following && path && (
-        <div className="absolute bottom-14 left-2 px-3 py-1.5 rounded border
-                        border-fuchsia-400/50 bg-panel/95 text-[10px]
-                        text-fuchsia-300 font-mono">
+        <div
+          style={{ bottom: legendH + 10 }}
+          className="absolute left-2 px-3 py-1.5 rounded border
+                     border-fuchsia-400/50 bg-panel/95 text-[10px]
+                     text-fuchsia-300 font-mono"
+        >
           Route from complainant · {path.nodes.length} entities ·{' '}
           {path.edges.length} transfers
         </div>
       )}
 
-      <div className="absolute bottom-2 left-2 right-2 flex flex-wrap gap-x-4 gap-y-1
-                      px-3 py-2 rounded bg-panel/95 border border-edge text-[10px]">
-        {Object.entries({
-          Victim: NODE_COLOR.victim,
-          Bank: NODE_COLOR.bank_account,
-          Exchange: NODE_COLOR.exchange,
-          Wallet: NODE_COLOR.wallet,
-          Mixer: NODE_COLOR.mixer,
-          Bridge: NODE_COLOR.bridge,
-        }).map(([k, v]) => (
-          <span key={k} className="flex items-center gap-1.5 text-slate-400">
-            <i className="w-2 h-2 rounded-full" style={{ background: v }} />
-            {k}
+      {legendOpen ? (
+        <div className="absolute bottom-2 left-2 right-2 flex flex-wrap items-center
+                        gap-x-4 gap-y-1 pl-3 pr-1 py-2 rounded bg-panel/95
+                        border border-edge text-[10px]">
+          {Object.entries({
+            Victim: NODE_COLOR.victim,
+            Bank: NODE_COLOR.bank_account,
+            Exchange: NODE_COLOR.exchange,
+            Wallet: NODE_COLOR.wallet,
+            Mixer: NODE_COLOR.mixer,
+            Bridge: NODE_COLOR.bridge,
+          }).map(([k, v]) => (
+            <span key={k} className="flex items-center gap-1.5 text-slate-400">
+              <i className="w-2 h-2 rounded-full" style={{ background: v }} />
+              {k}
+            </span>
+          ))}
+          <span className="flex items-center gap-1.5 text-slate-400 ml-auto">
+            <i className="w-5 h-px bg-slate-500" /> confirmed
           </span>
-        ))}
-        <span className="flex items-center gap-1.5 text-slate-400 ml-auto">
-          <i className="w-5 h-px bg-slate-500" /> confirmed
-        </span>
-        <span className="flex items-center gap-1.5 text-[#d9b21c]">
-          <i
-            className="w-5 h-px"
-            style={{
-              backgroundImage:
-                'repeating-linear-gradient(90deg,#d9b21c 0 3px,transparent 3px 6px)',
-            }}
-          />
-          inferred
-        </span>
-      </div>
+          <span className="flex items-center gap-1.5 text-[#d9b21c]">
+            <i
+              className="w-5 h-px"
+              style={{
+                backgroundImage:
+                  'repeating-linear-gradient(90deg,#d9b21c 0 3px,transparent 3px 6px)',
+              }}
+            />
+            inferred
+          </span>
+          <button
+            onClick={() => setLegendOpen(false)}
+            aria-label="Hide legend"
+            title="Hide legend"
+            className="ml-1 px-1.5 py-0.5 rounded text-slate-500 hover:text-slate-100
+                       hover:bg-panel2 text-[11px] leading-none"
+          >
+            ▾
+          </button>
+        </div>
+      ) : (
+        <button
+          onClick={() => setLegendOpen(true)}
+          aria-label="Show legend"
+          title="Show legend"
+          className="absolute bottom-2 left-2 px-2 py-1 rounded border border-edge
+                     bg-panel/90 text-[10px] font-mono text-slate-400
+                     hover:text-slate-100 flex items-center gap-1.5"
+        >
+          <i className="w-2 h-2 rounded-full" style={{ background: NODE_COLOR.wallet }} />
+          LEGEND ▴
+        </button>
+      )}
     </div>
   )
 }
