@@ -546,3 +546,56 @@ class HealthResponse(BaseModel):
     data_mode: DataMode
     components: ComponentHealth
     version: str = "0.1.0"
+
+
+# ---------------------------------------------------------------------------
+# Asset ledger  ·  Phase 8 (additive)
+#
+# Which currency moved, at which layer of the trace, and what that is worth in
+# rupees. An Indian investigating officer works in rupees and writes rupees
+# into a chargesheet, but the chain reports native units - so every figure here
+# carries its own conversion status rather than a silently assumed rate.
+# ---------------------------------------------------------------------------
+
+class AssetAmount(BaseModel):
+    asset: Asset
+    transfer_count: int
+    total_amount: float = Field(..., description="Sum in the asset's own units")
+    inr_equivalent: float | None = Field(
+        None, description="None when no rate exists for this asset")
+    inr_formatted: str | None = Field(
+        None, description="Indian digit grouping, e.g. '4,70,000'")
+    convertible: bool = Field(
+        ..., description="False for assets with no rate in this build")
+
+
+class LayerAssets(BaseModel):
+    """One hop-depth band of the trace.
+
+    `depth` is the hop distance of the receiving node, so a layer answers
+    'what arrived here'. Layer 0 is the seed itself.
+    """
+    depth: int
+    node_count: int
+    transfer_count: int
+    assets: list[AssetAmount]
+
+
+class NodeAssets(BaseModel):
+    node_id: str
+    depth: int
+    node_type: NodeType
+    label: str | None = None
+    received: list[AssetAmount] = []
+    sent: list[AssetAmount] = []
+
+
+class AssetBreakdown(BaseModel):
+    case_id: str
+    computed_at: str
+    inr_per_usdt: float
+    convertible_assets: list[Asset]
+    caveat: str
+    totals: list[AssetAmount]
+    layers: list[LayerAssets]
+    nodes: list[NodeAssets]

@@ -4,9 +4,11 @@ from fastapi import APIRouter, HTTPException
 
 from ..config import MAX_EDGES_PER_NODE, MAX_TRACE_DEPTH
 from ..db import cursor
+from ..engines import assets as assets_engine
 from ..engines.pipeline import get_analysis
 from ..models import (
-    AuditAction, GraphResponse, Label, TraceRequest, TraceResult,
+    AssetBreakdown, AuditAction, GraphResponse, Label, LayerAssets,
+    NodeAssets, TraceRequest, TraceResult,
 )
 from ..models import AuthUser
 from ..services import audit
@@ -121,3 +123,40 @@ def get_label(address: str):
     if not found:
         raise HTTPException(404, f"No label on record for {address}")
     return found
+
+
+# ---------------------------------------------------------------- asset ledger
+# Reuses _seed_for above - do not redefine it here; a second definition would
+# silently shadow the first and change its 404 message.
+
+def _breakdown(case_id: str) -> AssetBreakdown:
+    a = get_analysis(case_id, _seed_for(case_id))
+    return assets_engine.build(case_id, a.nodes, a.edges, a.hop_depth)
+
+
+@router.get("/cases/{case_id}/assets", response_model=AssetBreakdown,
+            summary="Currency composition overall, per layer and per entity")
+def get_assets(case_id: str):
+    """Which currency moved, at which layer, and what it is worth in rupees.
+
+    Writes no audit row - like dilution this is a derived view the dashboard
+    recomputes on render, and auditing it would bury real custody events.
+    """
+    return _breakdown(case_id)
+
+
+@router.get("/cases/{case_id}/assets/layers", response_model=list[LayerAssets],
+            summary="Currency composition by hop depth")
+def get_asset_layers(case_id: str):
+    """Layer 0 is the seed. Each layer reports what ARRIVED at that depth."""
+    return _breakdown(case_id).layers
+
+
+@router.get("/cases/{case_id}/assets/nodes/{node_id}",
+            response_model=NodeAssets,
+            summary="Currency received and sent by one entity")
+def get_node_assets(case_id: str, node_id: str):
+    for row in _breakdown(case_id).nodes:
+        if row.node_id.lower() == node_id.lower():
+            return row
+    raise HTTPException(404, f"Node {node_id} not found in case {case_id}")
