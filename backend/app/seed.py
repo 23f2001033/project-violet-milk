@@ -57,8 +57,32 @@ _AUDIT = [
 ]
 
 
+def seed_officer() -> None:
+    """Create the demo investigating officer if absent.
+
+    The password comes from DEMO_OFFICER_PASSWORD. Left at the documented
+    default, /health and the UI both say so - an instance on the default must
+    never be mistaken for a secured one.
+    """
+    from . import config
+    from .services import auth
+
+    init_db()
+    with cursor() as conn:
+        exists = conn.execute(
+            "SELECT 1 FROM users WHERE user_id = ?", (config.DEFAULT_IO_NAME,)
+        ).fetchone()
+    if exists:
+        return
+    auth.create_user(
+        config.DEFAULT_IO_NAME, "Investigating Officer",
+        "Sub-Inspector, Cyber Crime Unit", config.DEMO_OFFICER_PASSWORD,
+    )
+
+
 def seed_demo_case() -> None:
     init_db()
+    seed_officer()
     with cursor() as conn:
         exists = conn.execute(
             "SELECT 1 FROM cases WHERE case_id = ?", (DEMO_CASE_ID,)

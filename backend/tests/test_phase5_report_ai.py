@@ -18,10 +18,12 @@ from backend.app.engines.pipeline import get_analysis
 from backend.app.main import app
 from backend.app.services import column_mapper, llm_client, narrative
 
+from ._client import make_client
+
 CASE = "CP-CYBER-2026-001"
 SEED = "0xa7f39c1d8e4b2a5f7c3d9e0a1b8c6d4e5f2a67e9"
 
-client = TestClient(app)
+client = make_client()
 
 
 # ----------------------------------------------------------------- dossier

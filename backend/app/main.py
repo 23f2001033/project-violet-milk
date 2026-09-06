@@ -17,7 +17,10 @@ import logging
 from . import config, db
 from .config import ROOT
 from .models import ComponentHealth, DataMode, HealthResponse
-from .routers import audit, cases, evidence, graph, report, risk, timeline
+from .routers import (
+    audit, auth, cases, evidence, graph, report, risk, timeline,
+)
+from .routers.auth import RequireUser
 from .seed import seed_demo_case
 
 log = logging.getLogger(__name__)
@@ -45,8 +48,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(auth.router)
+
+# Everything touching case data requires a verified session. Health and login
+# stay open so an operator can check the service and sign in.
 for r in (cases, evidence, graph, risk, timeline, audit, report):
-    app.include_router(r.router)
+    app.include_router(r.router, dependencies=[RequireUser])
 
 # Initialise and seed at import rather than on a startup event. A startup hook
 # does not fire for a module-level TestClient, which silently left the schema
@@ -75,6 +82,14 @@ async def unhandled(request: Request, exc: Exception):
     )
 
 
+def _default_password() -> bool:
+    try:
+        from .services.auth import using_default_password
+        return using_default_password()
+    except Exception:  # noqa: BLE001 - health must never fail
+        return False
+
+
 @app.get("/api/health", response_model=HealthResponse, tags=["system"],
          summary="System status")
 def health():
@@ -85,6 +100,8 @@ def health():
         llm_configured=config.LLM_CONFIGURED,
         etherscan_configured=config.ETHERSCAN_CONFIGURED,
         anchoring_configured=config.ANCHOR_CONFIGURED,
+        auth_enabled=True,
+        using_default_password=_default_password(),
     )
     healthy = components.database and components.graph_engine
     return HealthResponse(

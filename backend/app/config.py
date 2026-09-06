@@ -57,6 +57,18 @@ TIME_WINDOW_HOURS = _int("TIME_WINDOW_HOURS", 72)
 DEMO_INR_PER_USDT = _float("DEMO_INR_PER_USDT", 90.38)
 DEMO_CASE_ID = "CP-CYBER-2026-001"
 
+# --- Authentication --------------------------------------------------------
+# AUTH_SECRET signs session tokens. Unset, a random one is generated per
+# process: sessions then do not survive a restart, which is safe but means
+# everyone is logged out when the server restarts. Set it in .env for a
+# stable deployment.
+import secrets as _secrets  # noqa: E402
+
+AUTH_SECRET = os.getenv("AUTH_SECRET", "").strip() or _secrets.token_hex(32)
+AUTH_SECRET_IS_EPHEMERAL = not os.getenv("AUTH_SECRET", "").strip()
+AUTH_TOKEN_HOURS = _int("AUTH_TOKEN_HOURS", 12)
+DEMO_OFFICER_PASSWORD = os.getenv("DEMO_OFFICER_PASSWORD", "violet-demo-2026")
+
 # --- Tron (TRC-20) ---------------------------------------------------------
 # The dominant rail for Indian fraud proceeds. TronGrid needs no key for read
 # access; a key only raises the rate limit.

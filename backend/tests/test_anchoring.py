@@ -21,10 +21,12 @@ from backend.app import config
 from backend.app.main import app
 from backend.app.services import anchor
 
+from ._client import make_client
+
 CASE = "CP-CYBER-2026-001"
 DIGEST = "b" * 64
 
-client = TestClient(app)
+client = make_client()
 
 
 # --------------------------------------------------------- degradation

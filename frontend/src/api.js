@@ -35,11 +35,55 @@ const mock = (data) =>
     setTimeout(() => resolve(structuredClone(data)), LATENCY_MS)
   )
 
+/* ------------------------------------------------------------------- auth */
+
+// Kept in sessionStorage, not localStorage: a shared workstation should not
+// leave an officer signed in after the browser closes.
+const TOKEN_KEY = 'vm.token'
+
+export const getToken = () => {
+  try { return sessionStorage.getItem(TOKEN_KEY) } catch { return null }
+}
+const setToken = (t) => {
+  try { t ? sessionStorage.setItem(TOKEN_KEY, t) : sessionStorage.removeItem(TOKEN_KEY) }
+  catch { /* private mode */ }
+}
+
+export const authHeader = () => {
+  const t = getToken()
+  return t ? { Authorization: `Bearer ${t}` } : {}
+}
+
+export async function login(userId, password) {
+  const res = await fetch('/api/auth/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ user_id: userId, password }),
+  })
+  if (!res.ok) {
+    const detail = (await res.json().catch(() => ({}))).detail
+    throw new Error(detail ?? 'Sign-in failed')
+  }
+  const body = await res.json()
+  setToken(body.token)
+  return body
+}
+
+export const logout = () => setToken(null)
+
+export const whoami = () => req('/api/auth/me')
+
 async function req(path, options = {}) {
   const res = await fetch(path, {
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...authHeader() },
     ...options,
   })
+  if (res.status === 401) {
+    // The session is gone. Clear it so the shell shows the sign-in screen
+    // rather than a wall of failed panels.
+    setToken(null)
+    throw new Error('SESSION_EXPIRED')
+  }
   if (!res.ok) {
     let detail = `${res.status} ${res.statusText}`
     try {
@@ -95,7 +139,10 @@ export async function uploadEvidence(
   form.append('uploaded_by', uploadedBy ?? 'IO_SHARMA')
   const res = await fetch(`/api/cases/${caseId}/evidence`, {
     method: 'POST',
-    body: form, // no Content-Type: the browser sets the multipart boundary
+    // No Content-Type: the browser sets the multipart boundary. The auth
+    // header still has to go on explicitly.
+    headers: authHeader(),
+    body: form,
   })
   if (!res.ok) throw new Error((await res.json()).detail ?? 'Upload failed')
   return res.json()

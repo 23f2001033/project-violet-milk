@@ -21,10 +21,14 @@ import {
   getRisk,
   getTimeline,
   inr,
+  getToken,
   listEvidence,
+  logout,
   verifyAudit,
+  whoami,
 } from './api'
 import { Button, ErrorBox, RiskPill, Spinner, short } from './components/ui'
+import Login from './components/Login'
 import CommandCenter from './organs/CommandCenter'
 import CaseIntake from './organs/CaseIntake'
 import EvidenceUploader from './organs/EvidenceUploader'
@@ -74,8 +78,21 @@ export default function App() {
                                      graph: null, error: null })
   const [inspectorTab, setInspectorTab] = useState('risk')
   const [data, setData] = useState({ loading: true })
+  // null = not signed in, undefined = still checking a stored token
+  const [session, setSession] = useState(getToken() ? undefined : null)
+
+  // A stored token may have expired while the tab was closed. Confirm it
+  // before rendering the workspace, so we never show a shell that then fails
+  // every request.
+  useEffect(() => {
+    if (session !== undefined) return
+    whoami()
+      .then((user) => setSession({ user }))
+      .catch(() => setSession(null))
+  }, [session])
 
   const load = useCallback(() => {
+    if (!session) return
     setData({ loading: true })
     Promise.all([
       getCase(DEMO_CASE_ID),
@@ -97,8 +114,14 @@ export default function App() {
             anomaly, verification,
           })
       )
-      .catch((e) => setData({ loading: false, error: e.message }))
-  }, [])
+      .catch((e) => {
+        if (e.message === 'SESSION_EXPIRED') {
+          setSession(null)
+          return
+        }
+        setData({ loading: false, error: e.message })
+      })
+  }, [session])
 
   useEffect(load, [load])
 
@@ -119,6 +142,10 @@ export default function App() {
       .catch(() => {})
   }, [selected, riskCache])
 
+  if (session === undefined) return <Spinner label="Restoring session…" />
+  if (session === null) {
+    return <Login onSignedIn={(s) => setSession(s)} />
+  }
   if (data.loading) return <Spinner label="Loading case…" />
   if (data.error) return <ErrorBox error={data.error} onRetry={load} />
 
@@ -206,6 +233,14 @@ export default function App() {
   return (
     <div className="h-screen flex flex-col overflow-hidden">
       <Banner />
+      {session.warning && (
+        <div className="shrink-0 bg-risk-critical/15 border-b
+                        border-risk-critical/40 px-4 py-1 text-[10px]
+                        text-risk-critical">
+          <span className="font-bold">⚠ DEFAULT PASSWORD IN USE</span>
+          <span className="ml-2 text-risk-critical/80">{session.warning}</span>
+        </div>
+      )}
 
       <header className="shrink-0 border-b border-edge bg-panel">
         <div className="px-4 py-2.5 flex items-center gap-3 flex-wrap">
@@ -228,9 +263,25 @@ export default function App() {
           >
             {graph.stats.source === 'SyntheticSource' ? 'SYNTHETIC' : 'LIVE MAINNET'}
           </span>
-          <div className="ml-auto flex items-center gap-2">
+          <div className="ml-auto flex items-center gap-3">
+            <div className="text-right leading-tight hidden sm:block">
+              <div className="text-[11px] text-slate-300">
+                {session.user?.display_name ?? session.user?.user_id}
+              </div>
+              <div className="text-[9px] text-slate-600">
+                {session.user?.rank || session.user?.user_id}
+              </div>
+            </div>
             <Button variant="primary" onClick={() => setOrgan('dossier')}>
               Export Court Dossier
+            </Button>
+            <Button
+              onClick={() => {
+                logout()
+                setSession(null)
+              }}
+            >
+              Sign out
             </Button>
           </div>
         </div>

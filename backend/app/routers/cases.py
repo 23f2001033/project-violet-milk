@@ -5,7 +5,8 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, HTTPException
 
 from ..db import cursor, row_to_case
-from ..models import AuditAction, Case, CaseCreate, CaseUpdate
+from ..models import AuditAction, AuthUser, Case, CaseCreate, CaseUpdate
+from .auth import RequireUser
 from ..services import audit
 
 router = APIRouter(prefix="/api/cases", tags=["cases"])
@@ -34,7 +35,7 @@ def list_cases():
 
 
 @router.post("", response_model=Case, status_code=201, summary="Create a case")
-def create_case(payload: CaseCreate):
+def create_case(payload: CaseCreate, user: AuthUser = RequireUser):
     case_id = _next_case_id()
     now = _now()
     record = {**payload.model_dump(), "case_id": case_id, "status": "active",
@@ -52,7 +53,7 @@ def create_case(payload: CaseCreate):
         )
 
     audit.record(case_id, AuditAction.CASE_CREATED, case_id,
-                 user_id=payload.io_name, details={"fir_ref": payload.fir_ref})
+                 user_id=user.user_id, details={"fir_ref": payload.fir_ref})
     return record
 
 
@@ -69,7 +70,8 @@ def get_case(case_id: str):
 
 @router.put("/{case_id}", response_model=Case,
             summary="Update case notes, status, seed or data mode")
-def update_case(case_id: str, payload: CaseUpdate):
+def update_case(case_id: str, payload: CaseUpdate,
+                user: AuthUser = RequireUser):
     changes = {
         k: (v.value if hasattr(v, "value") else v)
         for k, v in payload.model_dump().items()
@@ -94,6 +96,6 @@ def update_case(case_id: str, payload: CaseUpdate):
 
     action = (AuditAction.MODE_SWITCHED if "data_mode" in changes
               else AuditAction.CASE_UPDATED)
-    audit.record(case_id, action, case_id,
+    audit.record(case_id, action, case_id, user_id=user.user_id,
                  details={k: v for k, v in changes.items() if k != "updated_at"})
     return row_to_case(row)

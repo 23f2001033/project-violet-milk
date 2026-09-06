@@ -22,11 +22,13 @@ from backend.app.main import app
 from backend.app.models import Chain, Edge, EvidenceType, Node, NodeType, Asset
 from backend.app.services import audit as audit_service
 
+from ._client import make_client
+
 CASE = "CP-CYBER-2026-001"
 SEED = "0xa7f39c1d8e4b2a5f7c3d9e0a1b8c6d4e5f2a67e9"
 POOL = "0xd90f42a17c58e03b96d1f47a20c85e39b7f481ab"
 
-client = TestClient(app)
+client = make_client()
 
 
 def _reset_case():

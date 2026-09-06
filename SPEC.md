@@ -226,6 +226,32 @@ Only an append-only store or external notarisation prevents it.
 
 ---
 
+## 8b2. Authentication — why the custody log is now meaningful
+
+`uploaded_by` used to be a form field the client filled in, and the frontend
+hard-coded `IO_SHARMA`. Anyone on the network could file evidence as any
+officer, which made the custody log worthless in precisely the way that
+matters.
+
+- Every `/api/cases/*` route requires a Bearer session. `/health` and
+  `/auth/login` stay open so an operator can check the service and sign in.
+- **Custody entries take their identity from the verified session, never from
+  the request body.** A test posts `uploaded_by=IO_IMPOSTER` and asserts it is
+  ignored.
+- PBKDF2-HMAC-SHA256, 240k iterations, per-user salt. Constant-time compare on
+  both password and token signature.
+- Login returns one message for wrong-user and wrong-password, and hashes
+  either way, so it cannot be used to enumerate accounts.
+- Sessions live in `sessionStorage` — a shared workstation should not stay
+  signed in after the browser closes.
+
+**Limits, stated rather than implied:** this is single-tenant password auth for
+a pilot workstation. It is not SSO, MFA or a directory integration; a real
+deployment would use the force's own identity provider. An instance on the
+documented demo password says so in `/health` and in a red banner.
+
+---
+
 ## 8c. Blockchain evidence anchoring
 
 The SHA-256 of each ingested file is published to a public chain
@@ -319,7 +345,7 @@ A test asserts no STR-filing endpoint can ever exist in this codebase.
 | Custody log editable without trace | ✅ fixed — hash-chained |
 | White screen on a render error | ✅ fixed — ErrorBoundary |
 | Uploaded evidence never reaches the trace | ✅ fixed — parsed and merged; `stats.ingested_edges` reports how many |
-| **No authentication** — `uploaded_by` is client-supplied | ⚠️ open |
+| No authentication — `uploaded_by` client-supplied | ✅ fixed — Bearer sessions; custody identity from the token |
 | Ethereum only — most Indian USDT fraud is on Tron | ✅ fixed — `TronSource`, routed by address format |
 | Rule weights are uncalibrated | ⚠️ by design — that is what a pilot measures |
 | Bank clock vs block clock | ⚠️ say "same minute", not "+13 seconds" |

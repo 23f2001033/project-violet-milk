@@ -11,7 +11,9 @@ from fastapi.testclient import TestClient
 
 from backend.app.main import FRONTEND_BUILT, app
 
-client = TestClient(app)
+from ._client import make_client
+
+client = make_client()
 
 
 def test_api_still_answers_with_the_spa_mounted():

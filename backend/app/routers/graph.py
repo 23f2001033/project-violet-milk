@@ -8,7 +8,9 @@ from ..engines.pipeline import get_analysis
 from ..models import (
     AuditAction, GraphResponse, Label, TraceRequest, TraceResult,
 )
+from ..models import AuthUser
 from ..services import audit
+from .auth import RequireUser
 from ..sources.synthetic import SyntheticSource
 
 router = APIRouter(prefix="/api", tags=["graph"])
@@ -26,7 +28,8 @@ def _seed_for(case_id: str) -> str:
 
 @router.post("/cases/{case_id}/trace", response_model=TraceResult,
              summary="Run a bounded trace from a seed address")
-def run_trace(case_id: str, payload: TraceRequest):
+def run_trace(case_id: str, payload: TraceRequest,
+              user: AuthUser = RequireUser):
     if payload.max_depth > MAX_TRACE_DEPTH:
         raise HTTPException(
             400,
@@ -57,7 +60,7 @@ def run_trace(case_id: str, payload: TraceRequest):
         )
 
     audit.record(
-        case_id, AuditAction.TRACE_RUN, payload.seed,
+        case_id, AuditAction.TRACE_RUN, payload.seed, user_id=user.user_id,
         details={"max_depth": payload.max_depth, "nodes": len(a.nodes),
                  "edges": len(a.edges), "source": a.source_name,
                  "truncated": a.truncated, "data_mode": mode},

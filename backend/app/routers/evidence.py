@@ -15,6 +15,9 @@ from datetime import datetime, timezone
 
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 
+from ..models import AuthUser
+from .auth import RequireUser
+
 from ..db import cursor, row_to_evidence
 from ..engines.pipeline import clear_cache
 from ..models import AuditAction, Evidence
@@ -44,9 +47,12 @@ async def upload_evidence(
     file: UploadFile = File(...),
     sha256_client: str = Form(..., description="Web Crypto hash computed pre-upload"),
     is_synthetic: bool = Form(True),
-    uploaded_by: str = Form("IO_SHARMA"),
     account_ref: str = Form(""),
+    user: AuthUser = RequireUser,
 ):
+    # Identity comes from the verified session. It used to be a form field,
+    # which meant anyone could file evidence as any officer.
+    uploaded_by = user.user_id
     with cursor() as conn:
         if not conn.execute(
             "SELECT 1 FROM cases WHERE case_id = ?", (case_id,)

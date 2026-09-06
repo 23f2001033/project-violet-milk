@@ -508,6 +508,28 @@ class AnchorRecord(BaseModel):
     )
 
 
+class LoginRequest(BaseModel):
+    user_id: str
+    password: str
+
+
+class AuthUser(BaseModel):
+    user_id: str
+    display_name: str
+    rank: str = ""
+
+
+class LoginResponse(BaseModel):
+    token: str
+    expires_at: str
+    user: AuthUser
+    warning: str | None = Field(
+        None,
+        description="Set when this instance is still on the documented demo "
+                    "password, so a default install cannot look secured.",
+    )
+
+
 class ComponentHealth(BaseModel):
     database: bool
     graph_engine: bool
@@ -515,6 +537,8 @@ class ComponentHealth(BaseModel):
     llm_configured: bool
     etherscan_configured: bool
     anchoring_configured: bool = False
+    auth_enabled: bool = True
+    using_default_password: bool = False
 
 
 class HealthResponse(BaseModel):

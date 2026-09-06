@@ -65,6 +65,16 @@ CREATE TABLE IF NOT EXISTS audit_log (
     entry_hash  TEXT NOT NULL DEFAULT ''
 );
 
+CREATE TABLE IF NOT EXISTS users (
+    user_id       TEXT PRIMARY KEY,
+    display_name  TEXT NOT NULL,
+    rank          TEXT NOT NULL DEFAULT '',
+    password_hash TEXT NOT NULL,
+    salt          TEXT NOT NULL,
+    created_at    TEXT NOT NULL,
+    active        INTEGER NOT NULL DEFAULT 1
+);
+
 -- Transfers parsed out of uploaded evidence. Kept separate from the bundled
 -- dataset so the demo case stays reproducible and an ingestion can be
 -- attributed back to the exact file it came from.

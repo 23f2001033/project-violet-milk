@@ -22,11 +22,13 @@ from backend.app.engines.anomaly import (
 from backend.app.engines.pipeline import analyse, get_analysis
 from backend.app.main import app
 
+from ._client import make_client
+
 CASE = "CP-CYBER-2026-001"
 SEED = "0xa7f39c1d8e4b2a5f7c3d9e0a1b8c6d4e5f2a67e9"
 VICTIM = "VICTIM_4471"
 
-client = TestClient(app)
+client = make_client()
 
 
 @pytest.fixture(scope="module")
