@@ -16,6 +16,7 @@ import {
   getAudit,
   getCase,
   getDilution,
+  getAnomaly,
   getGraph,
   getRisk,
   getTimeline,
@@ -30,6 +31,7 @@ import GraphVisualiser from './organs/GraphVisualiser'
 import Timeline from './organs/Timeline'
 import RiskInspector from './organs/RiskInspector'
 import DilutionPanel from './organs/DilutionPanel'
+import FlagAgent from './organs/FlagAgent'
 import ReportExport from './organs/ReportExport'
 import AuditLog from './organs/AuditLog'
 
@@ -41,6 +43,7 @@ const ORGANS = [
   { id: 'timeline', label: 'Timeline', icon: '◷' },
   { id: 'risk', label: 'Risk Inspector', icon: '◉' },
   { id: 'dilution', label: 'Dilution Calculator', icon: '◐' },
+  { id: 'flag', label: 'Flag Agent (ML)', icon: '⚑' },
   { id: 'dossier', label: 'Sec 63 BSA Dossier', icon: '▦' },
   { id: 'audit', label: 'Chain of Custody', icon: '⛓' },
 ]
@@ -80,10 +83,14 @@ export default function App() {
       getTimeline(DEMO_CASE_ID),
       getAudit(DEMO_CASE_ID),
       listEvidence(DEMO_CASE_ID),
+      // The Flag Agent must never block the case view: a model failure is a
+      // missing panel, not a broken dashboard.
+      getAnomaly(DEMO_CASE_ID).catch(() => null),
     ])
-      .then(([kase, graph, dilution, timeline, audit, evidence]) =>
+      .then(([kase, graph, dilution, timeline, audit, evidence, anomaly]) =>
         setData({
           loading: false, kase, graph, dilution, timeline, audit, evidence,
+          anomaly,
         })
       )
       .catch((e) => setData({ loading: false, error: e.message }))
@@ -179,6 +186,14 @@ export default function App() {
     ),
     dilution: (
       <DilutionPanel dilution={dilution} selected={selected} onSelect={setSelected} />
+    ),
+    flag: (
+      <FlagAgent
+        anomaly={data.anomaly}
+        nodes={graph.elements.nodes.map((n) => n.data)}
+        selected={selected}
+        onSelect={selectNode}
+      />
     ),
     dossier: <ReportExport kase={kase} />,
     audit: <AuditLog audit={audit} />,

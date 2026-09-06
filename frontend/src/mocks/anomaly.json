@@ -1,0 +1,53 @@
+{
+  "case_id": "CP-CYBER-2026-001",
+  "version": "anomaly-1.0",
+  "trained": true,
+  "reason": "",
+  "method": "IsolationForest + DBSCAN over behavioural graph features",
+  "advisory": "Unsupervised lead generation only. These findings do not contribute to any risk score and carry no evidentiary weight. An entity may be anomalous for entirely lawful reasons - the complainant is usually an outlier because they moved the largest single amount.",
+  "findings": [
+    {
+      "node_id": "0xa7f39c1d8e4b2a5f7c3d9e0a1b8c6d4e5f2a67e9",
+      "score": -0.069,
+      "cluster": 0,
+      "explanation": "outbound count is unusually above the peer average for this case (5.00)"
+    },
+    {
+      "node_id": "0x3f1a7d92c04e8b56af10d3e7b829c45d6e0a71bc",
+      "score": -0.0683,
+      "cluster": -1,
+      "explanation": "inbound value is unusually above the peer average for this case (470,000.00)"
+    },
+    {
+      "node_id": "0x8589f2c47b1d0a63e95482f7ca1b3d6e0f4a0b6f",
+      "score": -0.0583,
+      "cluster": -1,
+      "explanation": "inbound count is unusually above the peer average for this case (3.00)"
+    },
+    {
+      "node_id": "0x9c04a7e3b21d5f86c0a94e7d2b83f150c6ead21e",
+      "score": -0.0707,
+      "cluster": 0,
+      "explanation": "outbound count is unusually above the peer average for this case (6.00)"
+    },
+    {
+      "node_id": "SBI_XXXXXXXX8891",
+      "score": -0.1204,
+      "cluster": -1,
+      "explanation": "inbound value is unusually above the peer average for this case (470,000.00)"
+    },
+    {
+      "node_id": "VICTIM_4471",
+      "score": -0.1053,
+      "cluster": -1,
+      "explanation": "outbound value is unusually above the peer average for this case (470,000.00)"
+    }
+  ],
+  "cluster_sizes": {
+    "0": 2,
+    "-1": 4,
+    "1": 3,
+    "2": 2,
+    "3": 3
+  }
+}

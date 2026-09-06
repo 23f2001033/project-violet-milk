@@ -22,7 +22,8 @@ Built for the **Chandigarh Police Hackathon, 8 September 2026**.
 | **P4** | Integration | ✅ done |
 | P5 | Sec 63 BSA dossier + AI layer | ✅ |
 | P6 | Live mainnet mode | ✅ |
-| P7 | Harden, correct the deck, rehearse | ⬜ next |
+| **P7** | Single-port serving, Flag Agent + STR in UI | ✅ done |
+| — | Correct slides 12 & 13, rehearse | ⬜ remaining |
 
 The full specification lives in **`SPEC.md`**. Read it before writing code.
 

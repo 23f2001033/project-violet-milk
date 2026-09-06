@@ -192,7 +192,30 @@ Our output is the annexure that justifies that order.
 | P4 | Integration | ✅ |
 | P5 | Sec 63 BSA dossier + AI layer | ✅ |
 | P6 | Live mainnet mode | ✅ |
-| P7 | Harden, correct the deck, rehearse | ⬜ next |
+| P7 | Single-port serving, Flag Agent + STR in UI | ✅ |
+| — | Correct slides 12 & 13, rehearse | ⬜ remaining |
+
+---
+
+## 10b. What the deck claims vs what exists
+
+| Slide | Claim | Status |
+|---|---|---|
+| 7 | Track / Percentage / Map Agent | ✅ built |
+| 7, 8 | Isolation Forest + DBSCAN | ✅ built — secondary lead signal, never a score |
+| 7, 8 | scikit-learn in the stack | ✅ true now |
+| 7, 11 | FIU-IND STR generator | ✅ built as a **draft** |
+| 8 | Etherscan API, wallet labels DB | ✅ built |
+| 8 | Backend: Flask | ❌ FastAPI — fix the slide |
+| 8 | Neo4j | ❌ NetworkX — deliberate |
+| 8 | Bitquery, Blockchain.com | ❌ not wired (needs a key / is Bitcoin) |
+| 8 | XGBoost | ❌ **supervised — no labelled fraud set exists** |
+| 11 | "FILE STR WITH FIU-IND" | ❌ **impossible** — FINnet has no public API; filing needs registered-entity status |
+| 12 | Chainalysis/TRM lack multi-hop tracing | ❌ **false** — it is their core product |
+| 13 | "OTC Tracked 100%" | ❌ **impossible** — OTC settles off-chain |
+| 13 | "22/year → 100+", "Weeks → Hours" | ❌ no baseline, no deployment, not measured |
+
+A test asserts no STR-filing endpoint can ever exist in this codebase.
 
 ---
 

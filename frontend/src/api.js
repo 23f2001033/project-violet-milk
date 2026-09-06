@@ -20,6 +20,7 @@ import dilutionMock from './mocks/dilution.json'
 import evidenceMock from './mocks/evidence.json'
 import auditMock from './mocks/audit.json'
 import healthMock from './mocks/health.json'
+import anomalyMock from './mocks/anomaly.json'
 
 const LATENCY_MS = 220 // keeps loading states honest while mocking
 
@@ -198,3 +199,18 @@ export const inr = (n) =>
     currency: 'INR',
     maximumFractionDigits: 0,
   }).format(n)
+
+/* ------------------------------------------- flag agent (ML) / STR draft */
+
+/**
+ * Unsupervised anomaly findings. Deliberately a SEPARATE call from getRisk:
+ * a model finding must never be rendered as a statutory risk score.
+ */
+export const getAnomaly = (caseId) =>
+  USE_MOCKS ? mock(anomalyMock) : req(`/api/cases/${caseId}/anomaly`)
+
+/** Generates a DRAFT STR. There is no filing endpoint, by design. */
+export const generateSTR = (caseId) =>
+  USE_MOCKS
+    ? Promise.reject(new Error('STR generation requires the backend'))
+    : req(`/api/cases/${caseId}/str`, { method: 'POST' })

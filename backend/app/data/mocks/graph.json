@@ -41,20 +41,6 @@
       },
       {
         "data": {
-          "id": "0x2d81b6f09c3a7e54d21b8f60a93c7e15d40b7f43",
-          "label": "Dispersal Wallet 2",
-          "type": "wallet",
-          "chain": "ethereum",
-          "risk_score": 20,
-          "risk_level": "LOW",
-          "illicit_ratio": 0.6,
-          "balance": 1000.0,
-          "is_seed": false,
-          "label_confidence": "unknown"
-        }
-      },
-      {
-        "data": {
           "id": "0x8589f2c47b1d0a63e95482f7ca1b3d6e0f4a0b6f",
           "label": "Mixer Contract (synthetic)",
           "type": "mixer",
@@ -77,6 +63,20 @@
           "risk_level": "CRITICAL",
           "illicit_ratio": 1.0,
           "balance": 0.0,
+          "is_seed": false,
+          "label_confidence": "unknown"
+        }
+      },
+      {
+        "data": {
+          "id": "0x2d81b6f09c3a7e54d21b8f60a93c7e15d40b7f43",
+          "label": "Dispersal Wallet 2",
+          "type": "wallet",
+          "chain": "ethereum",
+          "risk_score": 20,
+          "risk_level": "LOW",
+          "illicit_ratio": 0.6,
+          "balance": 1000.0,
           "is_seed": false,
           "label_confidence": "unknown"
         }
@@ -125,20 +125,6 @@
       },
       {
         "data": {
-          "id": "0xd90f42a17c58e03b96d1f47a20c85e39b7f481ab",
-          "label": "High-Liquidity Pool (clean)",
-          "type": "wallet",
-          "chain": "ethereum",
-          "risk_score": 15,
-          "risk_level": "LOW",
-          "illicit_ratio": 0.12,
-          "balance": 10000.0,
-          "is_seed": false,
-          "label_confidence": "inferred"
-        }
-      },
-      {
-        "data": {
           "id": "0x7a2fe80c14d3b96a05e72f18c4d60b39a7e2b115",
           "label": "Dispersal Wallet 5",
           "type": "wallet",
@@ -167,6 +153,20 @@
       },
       {
         "data": {
+          "id": "0xe38b17d02c95a4f61b83d07e29c5a4f18b6039da",
+          "label": "Dispersal Wallet 7",
+          "type": "wallet",
+          "chain": "ethereum",
+          "risk_score": 15,
+          "risk_level": "LOW",
+          "illicit_ratio": 1.0,
+          "balance": 200.0,
+          "is_seed": false,
+          "label_confidence": "unknown"
+        }
+      },
+      {
+        "data": {
           "id": "0xbb17d4a09e26c35f81b0d7a94e13c68f05b2c530",
           "label": "Cross-Chain Bridge (synthetic)",
           "type": "bridge",
@@ -181,16 +181,16 @@
       },
       {
         "data": {
-          "id": "0xe38b17d02c95a4f61b83d07e29c5a4f18b6039da",
-          "label": "Dispersal Wallet 7",
+          "id": "0xd90f42a17c58e03b96d1f47a20c85e39b7f481ab",
+          "label": "High-Liquidity Pool (clean)",
           "type": "wallet",
           "chain": "ethereum",
           "risk_score": 15,
           "risk_level": "LOW",
-          "illicit_ratio": 1.0,
-          "balance": 200.0,
+          "illicit_ratio": 0.12,
+          "balance": 10000.0,
           "is_seed": false,
-          "label_confidence": "unknown"
+          "label_confidence": "inferred"
         }
       },
       {

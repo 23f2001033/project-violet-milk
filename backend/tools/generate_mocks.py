@@ -88,7 +88,32 @@ def build() -> dict:
                        "etherscan_configured": False},
     }
 
+    anomaly = {
+        "case_id": CASE_ID,
+        "version": a.anomaly.version if a.anomaly else "anomaly-1.0",
+        "trained": bool(a.anomaly and a.anomaly.trained),
+        "reason": a.anomaly.reason if a.anomaly else "",
+        "method": "IsolationForest + DBSCAN over behavioural graph features",
+        "advisory": (
+            "Unsupervised lead generation only. These findings do not "
+            "contribute to any risk score and carry no evidentiary weight. An "
+            "entity may be anomalous for entirely lawful reasons - the "
+            "complainant is usually an outlier because they moved the largest "
+            "single amount."
+        ),
+        "findings": [
+            {"node_id": nid,
+             "score": a.anomaly.scores.get(nid, 0.0),
+             "cluster": a.anomaly.clusters.get(nid, -1),
+             "explanation": a.anomaly.explanations.get(nid, "")}
+            for nid in (a.anomaly.outliers if a.anomaly else [])
+        ],
+        "cluster_sizes": {str(k): v for k, v in
+                          (a.anomaly.cluster_sizes if a.anomaly else {}).items()},
+    }
+
     return {
+        "anomaly.json": anomaly,
         "graph.json": graph,
         "case.json": case,
         "cases.json": [case],

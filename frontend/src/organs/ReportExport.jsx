@@ -8,7 +8,7 @@
 
 import { useState } from 'react'
 import { Button } from '../components/ui'
-import { generateReport } from '../api'
+import { generateReport, generateSTR } from '../api'
 
 const SECTIONS = [
   ['Agency header & case metadata', 'FIR / NCRP reference, IO, incident time'],
@@ -22,6 +22,18 @@ const SECTIONS = [
 
 export default function ReportExport({ kase }) {
   const [state, setState] = useState({ status: 'idle' })
+  const [str, setStr] = useState({ status: 'idle' })
+
+  async function runStr() {
+    setStr({ status: 'working' })
+    try {
+      const r = await generateSTR(kase.case_id)
+      setStr({ status: 'done', result: r })
+      window.open(r.download_url, '_blank', 'noopener')
+    } catch (e) {
+      setStr({ status: 'error', error: e.message })
+    }
+  }
 
   async function run() {
     setState({ status: 'working' })
@@ -131,6 +143,70 @@ export default function ReportExport({ kase }) {
           of the evidence handled. It does not establish guilt and does not
           identify an account holder.
         </p>
+
+        {/* ------------------------------------------- FIU-IND STR draft */}
+        <div className="pt-4 mt-2 border-t border-edge space-y-3">
+          <div>
+            <div className="label mb-1">FIU-IND Suspicious Transaction Report</div>
+            <p className="text-[11px] text-slate-400 leading-relaxed">
+              Generates the STR field set as a reviewable draft, with the
+              grounds of suspicion carried straight from the deterministic
+              indicators.
+            </p>
+          </div>
+
+          <div className="rounded border border-risk-critical/40
+                          bg-risk-critical/10 px-3 py-2">
+            <div className="text-[10px] font-bold uppercase tracking-wider
+                            text-risk-critical mb-1">
+              Draft only — this software cannot file
+            </div>
+            <p className="text-[10px] text-slate-400 leading-relaxed">
+              FIU-IND's FINnet portal has no public submission API, and filing
+              requires the submitting organisation to be a registered Reporting
+              Entity whose Principal Officer signs the report. The draft must be
+              reviewed and lodged by that entity. There is deliberately no
+              &ldquo;file&rdquo; action anywhere in this system.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3 flex-wrap">
+            <Button onClick={runStr} disabled={str.status === 'working'}>
+              {str.status === 'working' ? 'Generating…' : 'Generate draft STR'}
+            </Button>
+            {str.status === 'error' && (
+              <span className="text-[11px] text-risk-high font-mono">
+                {str.error}
+              </span>
+            )}
+          </div>
+
+          {str.status === 'done' && (
+            <div className="organ p-3 space-y-2">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-mono text-[10px] font-bold px-1.5 py-0.5
+                                 rounded bg-risk-critical/20 text-risk-critical">
+                  {str.result.status} · NOT FILED
+                </span>
+                <span className="font-mono text-[10px] text-slate-500">
+                  {str.result.str_reference}
+                </span>
+              </div>
+              <p className="text-[10px] text-slate-500 leading-relaxed">
+                {str.result.filing_instruction}
+              </p>
+              <a
+                href={str.result.download_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block text-[11px] text-violet hover:underline
+                           font-mono"
+              >
+                {str.result.filename} ↗
+              </a>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )
