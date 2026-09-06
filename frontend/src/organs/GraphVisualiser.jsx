@@ -6,9 +6,18 @@
  * a UPI debit and an exchange deposit 13 seconds apart - not a proven transfer.
  * Drawing the two identically would overstate the evidence, which is exactly
  * the failure a defence lawyer looks for.
+ *
+ * WHAT THE CARD IS FOR
+ * --------------------
+ * An officer looking at a wallet needs four things they can act on the same
+ * morning: the full address to paste into a Section 94 BNSS notice, a link to
+ * verify it on a public explorer without taking our word for anything, the
+ * illicit share to attach to a freeze request, and the amounts by currency.
+ * A hex string floating on a canvas is a picture; the card is the part that
+ * does police work.
  */
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import cytoscape from 'cytoscape'
 import { riskColor } from '../api'
 
@@ -24,11 +33,49 @@ const NODE_COLOR = {
   unknown: '#6b6579',
 }
 
+// Shape carries entity type independently of colour, so the graph still reads
+// on a projector that washes colour out, and for anyone colour-blind.
+const NODE_SHAPE = {
+  victim: 'star',
+  bank_account: 'round-rectangle',
+  upi_handle: 'round-rectangle',
+  exchange: 'diamond',
+  mixer: 'hexagon',
+  bridge: 'hexagon',
+  wallet: 'ellipse',
+  contract: 'round-rectangle',
+  unknown: 'ellipse',
+}
+
+const TYPE_LABEL = {
+  victim: 'Complainant',
+  bank_account: 'Bank account',
+  upi_handle: 'UPI handle',
+  exchange: 'Exchange',
+  wallet: 'Wallet',
+  mixer: 'Mixer',
+  bridge: 'Bridge',
+  contract: 'Contract',
+  unknown: 'Unknown',
+}
+
+/* An officer must be able to check our claim against a public source. Only
+   chains we actually trace get a link - never a guessed explorer URL. */
+function explorerFor(id, chain) {
+  if (chain === 'ethereum') return `https://etherscan.io/address/${id}`
+  if (chain === 'tron') return `https://tronscan.org/#/address/${id}`
+  return null
+}
+
+const shortId = (id) =>
+  id.startsWith('0x') ? `${id.slice(0, 8)}…${id.slice(-6)}` : id
+
 const STYLE = [
   {
     selector: 'node',
     style: {
       'background-color': (n) => NODE_COLOR[n.data('type')] ?? '#6b6579',
+      shape: (n) => NODE_SHAPE[n.data('type')] ?? 'ellipse',
       label: 'data(short)',
       color: '#cbd5e1',
       'font-size': 9,
@@ -42,6 +89,8 @@ const STYLE = [
       height: (n) => 18 + (n.data('risk_score') / 100) * 22,
       'border-width': 2,
       'border-color': (n) => riskColor(n.data('risk_level')),
+      'transition-property': 'opacity, border-width',
+      'transition-duration': '160ms',
     },
   },
   {
@@ -66,6 +115,8 @@ const STYLE = [
       'font-family': 'JetBrains Mono, monospace',
       color: '#6b6579',
       'text-rotation': 'autorotate',
+      'transition-property': 'opacity, line-color, width',
+      'transition-duration': '160ms',
     },
   },
   {
@@ -85,6 +136,31 @@ const STYLE = [
   {
     selector: 'edge:selected',
     style: { 'line-color': '#c4b5fd', 'target-arrow-color': '#c4b5fd' },
+  },
+
+  /* ---- follow-the-money highlighting -------------------------------- */
+  {
+    selector: '.dimmed',
+    style: { opacity: 0.12, 'text-opacity': 0 },
+  },
+  {
+    selector: 'node.on-path',
+    style: { 'border-width': 4, 'border-color': '#f0abfc', opacity: 1 },
+  },
+  {
+    selector: 'edge.on-path',
+    style: {
+      'line-color': '#f0abfc',
+      'target-arrow-color': '#f0abfc',
+      color: '#f0abfc',
+      width: 3.5,
+      opacity: 1,
+      'z-index': 20,
+    },
+  },
+  {
+    selector: 'node.hovered',
+    style: { 'border-width': 5, 'border-color': '#e9d5ff' },
   },
 ]
 
@@ -130,9 +206,303 @@ function layoutFor(graph) {
   }
 }
 
-export default function GraphVisualiser({ graph, selected, onSelect }) {
+/**
+ * Shortest route the money took from the complainant (or the seed, on a live
+ * trace where there is no complainant) to the selected entity.
+ *
+ * Breadth-first along edge DIRECTION - the answer to "how did funds get here",
+ * which is not the same question as "what is this connected to".
+ */
+function pathTo(graph, targetId) {
+  if (!targetId) return null
+  const nodes = graph.elements.nodes
+  const start =
+    nodes.find((n) => n.data.type === 'victim')?.data.id ??
+    nodes.find((n) => n.data.is_seed)?.data.id
+  if (!start || start === targetId) return null
+
+  const out = new Map()
+  for (const e of graph.elements.edges) {
+    if (!out.has(e.data.source)) out.set(e.data.source, [])
+    out.get(e.data.source).push(e.data)
+  }
+
+  const prev = new Map()
+  const seen = new Set([start])
+  let frontier = [start]
+
+  while (frontier.length) {
+    const next = []
+    for (const id of frontier) {
+      for (const e of out.get(id) ?? []) {
+        if (seen.has(e.target)) continue
+        seen.add(e.target)
+        prev.set(e.target, { from: id, edge: e.id })
+        if (e.target === targetId) {
+          const nodeIds = [targetId]
+          const edgeIds = []
+          let cur = targetId
+          while (prev.has(cur)) {
+            const step = prev.get(cur)
+            edgeIds.push(step.edge)
+            nodeIds.push(step.from)
+            cur = step.from
+          }
+          return { nodes: nodeIds.reverse(), edges: edgeIds.reverse() }
+        }
+        next.push(e.target)
+      }
+    }
+    frontier = next
+  }
+  return null
+}
+
+/* ------------------------------------------------------------------ card */
+
+function Row({ k, v, mono = false, tone = 'text-slate-200' }) {
+  return (
+    <div className="flex items-baseline justify-between gap-3 py-[3px]">
+      <span className="text-[9.5px] uppercase tracking-wider text-slate-500 shrink-0">
+        {k}
+      </span>
+      <span className={`text-[11px] text-right ${tone} ${mono ? 'font-mono' : ''}`}>
+        {v}
+      </span>
+    </div>
+  )
+}
+
+function AssetLine({ rows, empty }) {
+  if (!rows?.length) {
+    return <div className="text-[10px] text-slate-600 italic">{empty}</div>
+  }
+  return (
+    <div className="flex flex-col gap-[2px]">
+      {rows.map((r) => (
+        <div key={r.asset} className="flex items-baseline justify-between gap-2">
+          <span className="text-[10px] font-mono text-slate-400">{r.asset}</span>
+          <span className="text-[10.5px] font-mono text-slate-200 tabular-nums">
+            {r.total_amount.toLocaleString('en-IN', {
+              maximumFractionDigits: r.asset === 'INR' ? 0 : 2,
+            })}
+            {r.convertible && r.inr_formatted ? (
+              <span className="text-slate-500"> · ₹{r.inr_formatted}</span>
+            ) : (
+              <span className="text-slate-600 italic"> · no rate</span>
+            )}
+          </span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function WalletCard({ node, assets, risk, path, onClose, onFollow, following }) {
+  const [copied, setCopied] = useState(false)
+  const explorer = explorerFor(node.id, node.chain)
+  const ledger = assets?.nodes?.find(
+    (n) => n.node_id.toLowerCase() === node.id.toLowerCase()
+  )
+
+  const copy = () => {
+    navigator.clipboard?.writeText(node.id).then(
+      () => {
+        setCopied(true)
+        setTimeout(() => setCopied(false), 1600)
+      },
+      () => setCopied(false)
+    )
+  }
+
+  return (
+    <div
+      className="absolute top-2 left-2 w-[292px] max-h-[calc(100%-1rem)] overflow-y-auto
+                 rounded border border-edge bg-panel/97 backdrop-blur shadow-xl
+                 text-slate-300"
+    >
+      {/* header */}
+      <div className="flex items-start gap-2 px-3 pt-2.5 pb-2 border-b border-edge">
+        <i
+          className="w-2.5 h-2.5 rounded-full mt-1 shrink-0"
+          style={{ background: NODE_COLOR[node.type] ?? '#6b6579' }}
+        />
+        <div className="min-w-0 flex-1">
+          <div className="text-[11px] text-slate-100 font-medium leading-tight">
+            {node.label || TYPE_LABEL[node.type] || 'Unknown entity'}
+          </div>
+          <div className="text-[9.5px] text-slate-500 uppercase tracking-wider mt-0.5">
+            {TYPE_LABEL[node.type] ?? node.type}
+            {node.is_seed && ' · case seed'}
+          </div>
+        </div>
+        <button
+          onClick={onClose}
+          aria-label="Close entity card"
+          className="text-slate-500 hover:text-slate-200 text-[13px] leading-none px-1"
+        >
+          ×
+        </button>
+      </div>
+
+      {/* address */}
+      <div className="px-3 py-2 border-b border-edge">
+        <div className="text-[9.5px] uppercase tracking-wider text-slate-500 mb-1">
+          Address
+        </div>
+        <div className="font-mono text-[10px] text-slate-200 break-all leading-relaxed">
+          {node.id}
+        </div>
+        <div className="flex gap-1.5 mt-2">
+          <button
+            onClick={copy}
+            className="px-2 py-1 text-[9.5px] font-mono rounded border border-edge
+                       text-slate-300 hover:text-slate-100 hover:border-violet/60"
+          >
+            {copied ? '✓ COPIED' : 'COPY'}
+          </button>
+          {explorer && (
+            <a
+              href={explorer}
+              target="_blank"
+              rel="noreferrer noopener"
+              className="px-2 py-1 text-[9.5px] font-mono rounded border border-edge
+                         text-slate-300 hover:text-slate-100 hover:border-violet/60"
+            >
+              VERIFY ↗
+            </a>
+          )}
+          <button
+            onClick={onFollow}
+            disabled={!path}
+            title={path ? 'Highlight the route funds took to reach here'
+                        : 'No inbound route from the complainant'}
+            className={`px-2 py-1 text-[9.5px] font-mono rounded border
+              ${following
+                ? 'border-fuchsia-400/70 text-fuchsia-300'
+                : 'border-edge text-slate-300 hover:text-slate-100 hover:border-violet/60'}
+              disabled:opacity-35 disabled:cursor-not-allowed`}
+          >
+            {following ? 'TRACKING' : 'FOLLOW'}
+          </button>
+        </div>
+      </div>
+
+      {/* assessment */}
+      <div className="px-3 py-2 border-b border-edge">
+        <div className="flex items-center gap-3">
+          <div
+            className="w-11 h-11 rounded-full grid place-items-center shrink-0
+                       border-2 font-mono"
+            style={{ borderColor: riskColor(node.risk_level) }}
+          >
+            <span className="text-[14px] text-slate-100 leading-none">
+              {node.risk_score}
+            </span>
+          </div>
+          <div className="min-w-0">
+            <div
+              className="text-[11px] font-medium"
+              style={{ color: riskColor(node.risk_level) }}
+            >
+              {node.risk_level}
+            </div>
+            <div className="text-[9.5px] text-slate-500">
+              deterministic · 7 rules
+            </div>
+          </div>
+          <div className="ml-auto text-right">
+            <div className="text-[9.5px] uppercase tracking-wider text-slate-500">
+              Illicit
+            </div>
+            <div className="text-[14px] font-mono text-slate-100">
+              {Math.round((node.illicit_ratio ?? 0) * 100)}%
+            </div>
+          </div>
+        </div>
+
+        {risk?.indicators?.length > 0 && (
+          <div className="mt-2 flex flex-col gap-1">
+            {risk.indicators.map((i) => (
+              <div key={i.rule_id} className="flex gap-1.5 items-baseline">
+                <span className="text-[9px] font-mono text-violet shrink-0">
+                  {i.rule_id}
+                </span>
+                <span className="text-[9px] font-mono text-amber-300 shrink-0">
+                  +{i.points}
+                </span>
+                <span className="text-[9.5px] text-slate-400 leading-snug">
+                  {i.name}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+        {risk && risk.indicators?.length === 0 && (
+          <div className="mt-2 text-[9.5px] text-slate-500 italic">
+            No rule fired on this entity.
+          </div>
+        )}
+      </div>
+
+      {/* money */}
+      <div className="px-3 py-2 border-b border-edge">
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <div className="text-[9.5px] uppercase tracking-wider text-slate-500 mb-1">
+              Received
+            </div>
+            <AssetLine rows={ledger?.received} empty="nothing inbound" />
+          </div>
+          <div>
+            <div className="text-[9.5px] uppercase tracking-wider text-slate-500 mb-1">
+              Sent
+            </div>
+            <AssetLine rows={ledger?.sent} empty="nothing outbound" />
+          </div>
+        </div>
+      </div>
+
+      {/* provenance */}
+      <div className="px-3 py-2">
+        <Row k="Chain" v={node.chain} mono />
+        {ledger && <Row k="Layer" v={`depth ${ledger.depth}`} mono />}
+        <Row
+          k="Attribution"
+          v={node.label ? node.label_confidence : 'unknown'}
+          mono
+          tone={node.label ? 'text-slate-200' : 'text-slate-500'}
+        />
+        {!node.label && (
+          <p className="text-[9px] text-slate-600 leading-relaxed mt-1">
+            No label on record. Unlabelled is <em>unknown</em>, not clean.
+          </p>
+        )}
+      </div>
+    </div>
+  )
+}
+
+/* ----------------------------------------------------------------- organ */
+
+export default function GraphVisualiser({ graph, selected, onSelect, assets, risk }) {
   const boxRef = useRef(null)
   const cyRef = useRef(null)
+  const [hover, setHover] = useState(null)
+  const [following, setFollowing] = useState(false)
+  const [minRisk, setMinRisk] = useState(0)
+  const [showCard, setShowCard] = useState(true)
+
+  const nodesById = useMemo(() => {
+    const m = {}
+    for (const n of graph?.elements?.nodes ?? []) m[n.data.id] = n.data
+    return m
+  }, [graph])
+
+  const path = useMemo(
+    () => (graph && selected ? pathTo(graph, selected) : null),
+    [graph, selected]
+  )
 
   useEffect(() => {
     if (!boxRef.current || !graph) return
@@ -164,10 +534,15 @@ export default function GraphVisualiser({ graph, selected, onSelect }) {
       maxZoom: 2.5,
     })
 
-    cy.on('tap', 'node', (evt) => onSelect?.(evt.target.id()))
+    cy.on('tap', 'node', (evt) => {
+      setShowCard(true)
+      onSelect?.(evt.target.id())
+    })
     cy.on('tap', (evt) => {
       if (evt.target === cy) onSelect?.(null)
     })
+    cy.on('mouseover', 'node', (evt) => setHover(evt.target.id()))
+    cy.on('mouseout', 'node', () => setHover(null))
 
     // Cytoscape measures its container at construction time. Inside a CSS grid
     // the final width is not settled yet, so the first layout is computed
@@ -226,33 +601,172 @@ export default function GraphVisualiser({ graph, selected, onSelect }) {
     if (!inView) cy.animate({ center: { eles: node } }, { duration: 220 })
   }, [selected])
 
+  // Hover emphasis, kept out of the constructor so it never re-runs a layout.
+  useEffect(() => {
+    const cy = cyRef.current
+    if (!cy) return
+    cy.batch(() => {
+      cy.nodes().removeClass('hovered')
+      if (hover) cy.getElementById(hover).addClass('hovered')
+    })
+  }, [hover])
+
+  /* Follow-the-money and the risk filter both work by dimming, never by
+     removing elements. Hiding a node would quietly change the picture an
+     officer is reading; dimming keeps the whole graph on screen and honest. */
+  useEffect(() => {
+    const cy = cyRef.current
+    if (!cy) return
+
+    cy.batch(() => {
+      cy.elements().removeClass('dimmed on-path')
+
+      if (following && path) {
+        const keepN = new Set(path.nodes)
+        const keepE = new Set(path.edges)
+        cy.nodes().forEach((n) => {
+          if (keepN.has(n.id())) n.addClass('on-path')
+          else n.addClass('dimmed')
+        })
+        cy.edges().forEach((e) => {
+          if (keepE.has(e.id())) e.addClass('on-path')
+          else e.addClass('dimmed')
+        })
+        return
+      }
+
+      if (minRisk > 0) {
+        cy.nodes().forEach((n) => {
+          if ((n.data('risk_score') ?? 0) < minRisk && !n.data('is_seed')) {
+            n.addClass('dimmed')
+          }
+        })
+        cy.edges().forEach((e) => {
+          const a = cy.getElementById(e.data('source'))
+          const b = cy.getElementById(e.data('target'))
+          if (a.hasClass('dimmed') || b.hasClass('dimmed')) e.addClass('dimmed')
+        })
+      }
+    })
+  }, [following, path, minRisk, graph])
+
+  // A path that no longer exists must not leave the canvas dimmed.
+  useEffect(() => {
+    if (!path) setFollowing(false)
+  }, [path])
+
+  const node = selected ? nodesById[selected] : null
+  const hovered = hover ? nodesById[hover] : null
+
   return (
     <div className="relative h-full min-h-[340px]">
       <div ref={boxRef} className="absolute inset-0" />
 
-      <div className="absolute top-2 right-2 flex gap-1.5">
-        <button
-          onClick={() => cyRef.current?.fit(undefined, 30)}
-          className="px-2 py-1 text-[10px] font-mono rounded border border-edge
-                     bg-panel/90 text-slate-400 hover:text-slate-100"
-        >
-          FIT
-        </button>
-        <button
-          onClick={() => cyRef.current?.zoom(cyRef.current.zoom() * 1.25)}
-          className="px-2 py-1 text-[10px] font-mono rounded border border-edge
-                     bg-panel/90 text-slate-400 hover:text-slate-100"
-        >
-          +
-        </button>
-        <button
-          onClick={() => cyRef.current?.zoom(cyRef.current.zoom() * 0.8)}
-          className="px-2 py-1 text-[10px] font-mono rounded border border-edge
-                     bg-panel/90 text-slate-400 hover:text-slate-100"
-        >
-          −
-        </button>
+      {node && showCard && (
+        <WalletCard
+          node={node}
+          assets={assets}
+          risk={risk}
+          path={path}
+          following={following}
+          onFollow={() => setFollowing((v) => !v)}
+          onClose={() => setShowCard(false)}
+        />
+      )}
+
+      {/* Hover read-out. Deliberately not a floating tooltip: one that chases
+          the cursor across a projected canvas is unreadable from the back of
+          a room. A fixed strip in a known place is not. */}
+      {hovered && hovered.id !== selected && (
+        <div className="absolute top-2 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded
+                        border border-edge bg-panel/95 flex items-center gap-2.5
+                        pointer-events-none">
+          <i
+            className="w-2 h-2 rounded-full"
+            style={{ background: NODE_COLOR[hovered.type] ?? '#6b6579' }}
+          />
+          <span className="font-mono text-[10px] text-slate-200">
+            {shortId(hovered.id)}
+          </span>
+          <span className="text-[10px] text-slate-500">
+            {TYPE_LABEL[hovered.type] ?? hovered.type}
+          </span>
+          <span
+            className="text-[10px] font-mono"
+            style={{ color: riskColor(hovered.risk_level) }}
+          >
+            {hovered.risk_score}
+          </span>
+          <span className="text-[10px] text-slate-500">
+            {Math.round((hovered.illicit_ratio ?? 0) * 100)}% illicit
+          </span>
+        </div>
+      )}
+
+      <div className="absolute top-2 right-2 flex flex-col items-end gap-1.5">
+        <div className="flex gap-1.5">
+          {node && !showCard && (
+            <button
+              onClick={() => setShowCard(true)}
+              className="px-2 py-1 text-[10px] font-mono rounded border border-violet/50
+                         bg-panel/90 text-violet-200 hover:text-slate-100"
+            >
+              CARD
+            </button>
+          )}
+          <button
+            onClick={() => cyRef.current?.fit(undefined, 30)}
+            className="px-2 py-1 text-[10px] font-mono rounded border border-edge
+                       bg-panel/90 text-slate-400 hover:text-slate-100"
+          >
+            FIT
+          </button>
+          <button
+            onClick={() => cyRef.current?.zoom(cyRef.current.zoom() * 1.25)}
+            className="px-2 py-1 text-[10px] font-mono rounded border border-edge
+                       bg-panel/90 text-slate-400 hover:text-slate-100"
+          >
+            +
+          </button>
+          <button
+            onClick={() => cyRef.current?.zoom(cyRef.current.zoom() * 0.8)}
+            className="px-2 py-1 text-[10px] font-mono rounded border border-edge
+                       bg-panel/90 text-slate-400 hover:text-slate-100"
+          >
+            −
+          </button>
+        </div>
+
+        <div className="flex items-center gap-2 px-2 py-1 rounded border border-edge
+                        bg-panel/90">
+          <span className="text-[9.5px] uppercase tracking-wider text-slate-500">
+            Risk ≥
+          </span>
+          <input
+            type="range"
+            min="0"
+            max="80"
+            step="10"
+            value={minRisk}
+            onChange={(e) => setMinRisk(Number(e.target.value))}
+            disabled={following}
+            aria-label="Dim entities below this risk score"
+            className="w-20 accent-violet disabled:opacity-40"
+          />
+          <span className="text-[10px] font-mono text-slate-300 w-5 tabular-nums">
+            {minRisk}
+          </span>
+        </div>
       </div>
+
+      {following && path && (
+        <div className="absolute bottom-14 left-2 px-3 py-1.5 rounded border
+                        border-fuchsia-400/50 bg-panel/95 text-[10px]
+                        text-fuchsia-300 font-mono">
+          Route from complainant · {path.nodes.length} entities ·{' '}
+          {path.edges.length} transfers
+        </div>
+      )}
 
       <div className="absolute bottom-2 left-2 right-2 flex flex-wrap gap-x-4 gap-y-1
                       px-3 py-2 rounded bg-panel/95 border border-edge text-[10px]">

@@ -204,7 +204,10 @@ export default function App() {
 
     graph: (
       <div className="grid grid-rows-[1fr_auto] h-full min-h-0">
-        <GraphVisualiser graph={graph} selected={selected} onSelect={setSelected} />
+        <GraphVisualiser
+          graph={graph} selected={selected} onSelect={setSelected}
+          assets={data.assets} risk={riskCache[selected]}
+        />
         <div className="border-t border-edge max-h-[210px] overflow-hidden">
           <div className="label px-4 py-2 border-b border-edge">
             Synchronised chronology · {timeline.length} events
