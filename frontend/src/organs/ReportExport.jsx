@@ -8,7 +8,7 @@
 
 import { useState } from 'react'
 import { Button } from '../components/ui'
-import { generateNotice, generateReport, generateSTR } from '../api'
+import { generateNotice, generateReport, generateSTR, openDocument } from '../api'
 
 const SECTIONS = [
   ['Agency header & case metadata', 'FIR / NCRP reference, IO, incident time'],
@@ -30,7 +30,7 @@ export default function ReportExport({ kase }) {
     try {
       const r = await generateNotice(kase.case_id)
       setNotice({ status: 'done', result: r })
-      window.open(r.download_url, '_blank', 'noopener')
+      await openDocument(r.download_url)
     } catch (e) {
       setNotice({ status: 'error', error: e.message })
     }
@@ -41,7 +41,7 @@ export default function ReportExport({ kase }) {
     try {
       const r = await generateSTR(kase.case_id)
       setStr({ status: 'done', result: r })
-      window.open(r.download_url, '_blank', 'noopener')
+      await openDocument(r.download_url)
     } catch (e) {
       setStr({ status: 'error', error: e.message })
     }
@@ -55,7 +55,7 @@ export default function ReportExport({ kase }) {
       // Open in a new tab rather than forcing a save: on stage the officer
       // wants to SHOW the dossier, and a silent download to disk looks like
       // nothing happened.
-      window.open(r.download_url, '_blank', 'noopener')
+      await openDocument(r.download_url)
     } catch (e) {
       setState({ status: 'error', error: e.message })
     }
@@ -139,14 +139,12 @@ export default function ReportExport({ kase }) {
                 computing SHA-256 of the downloaded PDF and comparing.
               </p>
             </div>
-            <a
-              href={state.result.download_url}
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              onClick={() => openDocument(state.result.download_url)}
               className="inline-block text-[11px] text-violet hover:underline font-mono"
             >
               {state.result.filename} ↗
-            </a>
+              </button>
 
             {/* Anchoring is a bonus, never a dependency: when it is off the
                 dossier is unaffected and we say so rather than hiding it. */}
@@ -246,15 +244,13 @@ export default function ReportExport({ kase }) {
               <p className="text-[10px] text-slate-500 leading-relaxed">
                 {str.result.filing_instruction}
               </p>
-              <a
-                href={str.result.download_url}
-                target="_blank"
-                rel="noopener noreferrer"
+              <button
+                onClick={() => openDocument(str.result.download_url)}
                 className="inline-block text-[11px] text-violet hover:underline
                            font-mono"
               >
                 {str.result.filename} ↗
-              </a>
+                </button>
             </div>
           )}
         </div>
@@ -328,15 +324,13 @@ export default function ReportExport({ kase }) {
               <p className="text-[10px] text-slate-500 leading-relaxed">
                 {notice.result.issue_instruction}
               </p>
-              <a
-                href={notice.result.download_url}
-                target="_blank"
-                rel="noopener noreferrer"
+              <button
+                onClick={() => openDocument(notice.result.download_url)}
                 className="inline-block text-[11px] text-violet hover:underline
                            font-mono"
               >
                 {notice.result.filename} ↗
-              </a>
+                </button>
             </div>
           )}
         </div>

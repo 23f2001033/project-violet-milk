@@ -288,3 +288,46 @@ export const generateNotice = (caseId) =>
   USE_MOCKS
     ? Promise.reject(new Error('Notice drafting requires the backend'))
     : req(`/api/cases/${caseId}/notice`, { method: 'POST' })
+
+/* --------------------------------------------------------------- documents */
+
+/**
+ * Open a generated PDF in a new tab.
+ *
+ * A plain <a href> or window.open sends a browser navigation with NO
+ * Authorization header, and every case route sits behind RequireUser - so the
+ * dossier, the STR and the production order all opened a tab reading
+ * {"detail":"Sign in to access case data."}. Fetching the bytes with the
+ * session token and handing the tab a blob URL is what makes the link work.
+ *
+ * The tab is opened SYNCHRONOUSLY, before the await, or the browser treats the
+ * later window.open as an unrequested popup and blocks it.
+ */
+export async function openDocument(url) {
+  const tab = window.open('', '_blank', 'noopener')
+
+  const res = await fetch(url, { headers: { ...authHeader() } })
+  if (res.status === 401) {
+    setToken(null)
+    tab?.close()
+    throw new Error('SESSION_EXPIRED')
+  }
+  if (!res.ok) {
+    tab?.close()
+    throw new Error(`Could not open the document (${res.status})`)
+  }
+
+  const blobUrl = URL.createObjectURL(await res.blob())
+  if (tab) {
+    tab.location.href = blobUrl
+  } else {
+    // Popup blocked despite the synchronous open. Fall back to a save so the
+    // document is never simply lost.
+    const a = document.createElement('a')
+    a.href = blobUrl
+    a.download = url.split('/').pop()
+    a.click()
+  }
+  // Give the tab time to load before the URL is revoked.
+  setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000)
+}

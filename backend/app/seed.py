@@ -13,6 +13,9 @@ from .db import cursor, init_db
 from .models import AuditAction
 
 SEED_WALLET = "0xa7f39c1d8e4b2a5f7c3d9e0a1b8c6d4e5f2a67e9"
+
+# Shown under the signed-in name in the header and on the dossier.
+TEAM = "Team CyberNautics"
 EVIDENCE_HASH = (
     "9f8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d2e1f0a9b8c7d6e5f4a3b2c1d0e9f8a"
 )
@@ -58,7 +61,7 @@ _AUDIT = [
 
 
 def seed_officer() -> None:
-    """Create the demo investigating officer if absent.
+    """Create the four demo accounts if absent.
 
     The password comes from DEMO_OFFICER_PASSWORD. Left at the documented
     default, /health and the UI both say so - an instance on the default must
@@ -72,12 +75,35 @@ def seed_officer() -> None:
         exists = conn.execute(
             "SELECT 1 FROM users WHERE user_id = ?", (config.DEFAULT_IO_NAME,)
         ).fetchone()
-    if exists:
-        return
-    auth.create_user(
-        config.DEFAULT_IO_NAME, "Investigating Officer",
-        "Sub-Inspector, Cyber Crime Unit", config.DEMO_OFFICER_PASSWORD,
-    )
+    if not exists:
+        auth.create_user(
+            config.DEFAULT_IO_NAME, "Demo Test 1", TEAM,
+            config.DEMO_OFFICER_PASSWORD,
+        )
+    else:
+        # An instance created before the team accounts existed still carries
+        # the old title, and it is the string shown in the header. Correct it
+        # in place rather than leaving the display to depend on how old the
+        # database happens to be.
+        with cursor() as conn:
+            conn.execute(
+                "UPDATE users SET display_name = ?, rank = ? WHERE user_id = ?",
+                ("Demo Test 1", TEAM, config.DEFAULT_IO_NAME),
+            )
+
+    # One account per team member, so the custody log records who actually did
+    # a thing rather than everyone sharing a single identity. They share a
+    # password on purpose: this is a demonstration instance, and the banner
+    # says so whenever that password is still the documented default.
+    for n in (2, 3, 4):
+        uid = f"DEMO_{n}"
+        with cursor() as conn:
+            present = conn.execute(
+                "SELECT 1 FROM users WHERE user_id = ?", (uid,)
+            ).fetchone()
+        if not present:
+            auth.create_user(uid, f"Demo Test {n}", TEAM,
+                             config.DEMO_OFFICER_PASSWORD)
 
 
 def seed_demo_case() -> None:

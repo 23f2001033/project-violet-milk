@@ -70,22 +70,49 @@ function explorerFor(id, chain) {
   return null
 }
 
+/* Cytoscape draws to a canvas and cannot use Tailwind classes, so the two
+   colours that must follow the theme - the label plate and the label ink - are
+   read from the same CSS variables everything else resolves through. */
+function themeInk() {
+  const cs = getComputedStyle(document.documentElement)
+  const v = (n, fallback) => (cs.getPropertyValue(n) || fallback).trim()
+  return {
+    plate: v('--c-plate', '#0d0b12'),
+    nodeLabel: v('--t100', '#E9EBF4'),
+    edgeLabel: v('--t400', '#C3BCDA'),
+    line: v('--e-line', '#7A72A0'),
+    inferred: v('--e-inferred', '#FACC15'),
+    bankEdge: v('--e-bank', '#2DD4BF'),
+    node: {
+      victim: v('--n-victim', NODE_COLOR.victim),
+      bank_account: v('--n-bank', NODE_COLOR.bank_account),
+      upi_handle: v('--n-bank', NODE_COLOR.upi_handle),
+      exchange: v('--n-exchange', NODE_COLOR.exchange),
+      wallet: v('--n-wallet', NODE_COLOR.wallet),
+      mixer: v('--n-mixer', NODE_COLOR.mixer),
+      bridge: v('--n-bridge', NODE_COLOR.bridge),
+      contract: v('--n-unknown', NODE_COLOR.contract),
+      unknown: v('--n-unknown', NODE_COLOR.unknown),
+    },
+  }
+}
+
 const shortId = (id) =>
   id.startsWith('0x') ? `${id.slice(0, 8)}…${id.slice(-6)}` : id
 
-const STYLE = [
+const styleFor = (ink) => [
   {
     selector: 'node',
     style: {
-      'background-color': (n) => NODE_COLOR[n.data('type')] ?? '#6b6579',
+      'background-color': (n) => ink.node[n.data('type')] ?? ink.node.unknown,
       shape: (n) => NODE_SHAPE[n.data('type')] ?? 'ellipse',
       label: 'data(short)',
-      color: '#E9EBF4',
+      color: ink.nodeLabel,
       'font-size': 9.5,
       'font-family': 'JetBrains Mono, monospace',
       'text-valign': 'bottom',
       'text-margin-y': 5,
-      'text-background-color': '#0d0b12',
+      'text-background-color': ink.plate,
       'text-background-opacity': 0.82,
       'text-background-padding': 2.5,
       width: (n) => 18 + (n.data('risk_score') / 100) * 22,
@@ -95,7 +122,7 @@ const STYLE = [
       // A soft halo in the entity's own colour. This is what makes a node read
       // as lit rather than as a flat dot, and it scales with risk so the
       // entities that matter are the ones that glow.
-      'underlay-color': (n) => NODE_COLOR[n.data('type')] ?? '#94A3B8',
+      'underlay-color': (n) => ink.node[n.data('type')] ?? ink.node.unknown,
       'underlay-opacity': (n) => 0.10 + (n.data('risk_score') / 100) * 0.22,
       'underlay-padding': (n) => 4 + (n.data('risk_score') / 100) * 8,
       'transition-property': 'opacity, border-width',
@@ -116,19 +143,19 @@ const STYLE = [
       width: (e) => 1.4 + Math.min(4, Math.log10(e.data('amount') + 10)),
       // The old #3e3950 was barely a shade off the page background, so the
       // links - the actual subject of the picture - all but vanished.
-      'line-color': '#7A72A0',
-      'target-arrow-color': '#7A72A0',
+      'line-color': ink.line,
+      'target-arrow-color': ink.line,
       'target-arrow-shape': 'triangle',
       'arrow-scale': 0.95,
       'curve-style': 'bezier',
       label: 'data(caption)',
       'font-size': 8,
       'font-family': 'JetBrains Mono, monospace',
-      color: '#C3BCDA',
+      color: ink.edgeLabel,
       'text-rotation': 'autorotate',
       // Amounts sat directly on top of crossing edges and each other. A plate
       // behind the text is what makes them readable on a busy graph.
-      'text-background-color': '#0d0b12',
+      'text-background-color': ink.plate,
       'text-background-opacity': 0.82,
       'text-background-padding': 2,
       'text-background-shape': 'roundrectangle',
@@ -141,14 +168,14 @@ const STYLE = [
     selector: 'edge[evidence_type = "inferred_correlation"]',
     style: {
       'line-style': 'dashed',
-      'line-color': '#FACC15',
-      'target-arrow-color': '#FACC15',
-      color: '#FACC15',
+      'line-color': ink.inferred,
+      'target-arrow-color': ink.inferred,
+      color: ink.inferred,
     },
   },
   {
     selector: 'edge[evidence_type = "confirmed_bank"]',
-    style: { 'line-color': '#2DD4BF', 'target-arrow-color': '#2DD4BF' },
+    style: { 'line-color': ink.bankEdge, 'target-arrow-color': ink.bankEdge },
   },
   {
     selector: 'edge:selected',
@@ -591,7 +618,7 @@ export default function GraphVisualiser({ graph, selected, onSelect, assets, ris
     const cy = cytoscape({
       container: boxRef.current,
       elements,
-      style: STYLE,
+      style: styleFor(themeInk()),
       layout: layoutFor(graph),
       wheelSensitivity: 0.2,
       minZoom: 0.2,
@@ -736,7 +763,8 @@ export default function GraphVisualiser({ graph, selected, onSelect, assets, ris
         className="absolute inset-0"
         style={{
           background:
-            'radial-gradient(ellipse at 50% 45%, #1E1830 0%, #14101C 55%, #0D0B12 100%)',
+            'radial-gradient(ellipse at 50% 45%, var(--c-canvas-a) 0%, ' +
+            'var(--c-canvas-b) 55%, var(--c-canvas-c) 100%)',
         }}
       />
 

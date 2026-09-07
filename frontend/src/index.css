@@ -2,10 +2,108 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * DARK is the default and is byte-for-byte the palette the mockup was approved
+ * against. LIGHT is a separate ramp, not an inversion: naively flipping the
+ * greys produced muddy mid-tones that failed contrast on the small 10px labels
+ * this interface is full of.
+ *
+ * The neutral has a slight violet bias in both themes so it sits with the
+ * accent rather than fighting it.
+ */
+:root {
+  --c-ground: #0d0b12;
+  --c-panel: #15121d;
+  --c-panel2: #1c1828;
+  --c-edge: #2a2438;
+  --c-violet: #8b6fd4;
+  --c-violetdim: #3a2f5c;
+  --c-critical: #e5484d;
+  --c-high: #e5901d;
+  --c-medium: #d9b21c;
+  --c-low: #3d9a6d;
+
+  /* Neutral ramp: 100 is the brightest text, 700 the faintest. */
+  --t50:  #ffffff;
+  --t100: #f1f0f6;
+  --t200: #e2e0ec;
+  --t300: #c8c4d8;
+  --t400: #a49ebb;
+  --t500: #7d7695;
+  --t600: #5d5674;
+  --t700: #443e58;
+  --t800: #2f2a3f;
+  --t900: #1e1a29;
+  --t950: #12101a;
+
+  /* Read by the graph canvas, which paints outside Tailwind. */
+  --n-victim: #5AB2FF;
+  --n-bank: #2DD4BF;
+  --n-exchange: #FBBF24;
+  --n-wallet: #A78BFA;
+  --n-mixer: #FF5C6C;
+  --n-bridge: #FB923C;
+  --n-unknown: #94A3B8;
+  --e-line: #7A72A0;
+  --e-inferred: #FACC15;
+  --e-bank: #2DD4BF;
+
+  --c-plate: #0d0b12;
+  --c-canvas-a: #1e1830;
+  --c-canvas-b: #14101c;
+  --c-canvas-c: #0d0b12;
+
+  color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+  --c-ground: #f6f4fa;
+  --c-panel: #ffffff;
+  --c-panel2: #efecf6;
+  --c-edge: #ddd7e9;
+  --c-violet: #6a4cb5;
+  --c-violetdim: #d7cdf0;
+  --c-critical: #b5322f;
+  --c-high: #96590f;
+  --c-medium: #7d6410;
+  --c-low: #1f6d4a;
+
+  /* The ramp reverses: 100 is now the darkest text. */
+  --t50:  #0f0d15;
+  --t100: #191521;
+  --t200: #241f31;
+  --t300: #3a3350;
+  --t400: #554d70;
+  --t500: #6b6389;
+  --t600: #837ba0;
+  --t700: #a49dba;
+  --t800: #c9c3d8;
+  --t900: #e6e2ef;
+  --t950: #f3f1f8;
+
+  /* Deepened for a white ground. The dashed inferred edge is the single most
+     important mark on this canvas - it is the distinction the whole
+     credibility argument rests on - so it is the one that must not wash out. */
+  --n-victim: #1D74C4;
+  --n-bank: #0D9488;
+  --n-exchange: #B45309;
+  --n-wallet: #6D4CC0;
+  --n-mixer: #D0342C;
+  --n-bridge: #C2410C;
+  --n-unknown: #64748B;
+  --e-line: #8B84A8;
+  --e-inferred: #A16207;
+  --e-bank: #0D9488;
+
+  --c-plate: #ffffff;
+  --c-canvas-a: #ffffff;
+  --c-canvas-b: #f4f1fa;
+  --c-canvas-c: #eae5f4;
+
+  color-scheme: light;
+}
+
 @layer base {
-  html {
-    color-scheme: dark;
-  }
   body {
     @apply bg-ground text-slate-200 antialiased;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
@@ -17,6 +115,26 @@
 }
 
 @layer components {
+  /* The banners were fixed amber utilities tuned for a dark ground. On the
+     light theme amber-300 on a pale background is barely legible - and these
+     two lines are the ones that keep the demonstration honest, so they are the
+     last thing that may fade out. */
+  .banner-warn {
+    background: rgba(245, 158, 11, 0.15);
+    border-color: rgba(245, 158, 11, 0.40);
+    color: #fcd34d;
+  }
+  .banner-warn .banner-sub { color: rgba(252, 211, 77, 0.62); }
+  .banner-warn .banner-tag { color: rgba(252, 211, 77, 0.72); }
+
+  :root[data-theme="light"] .banner-warn {
+    background: rgba(180, 120, 10, 0.13);
+    border-color: rgba(146, 100, 10, 0.42);
+    color: #6d4a06;
+  }
+  :root[data-theme="light"] .banner-warn .banner-sub { color: rgba(109, 74, 6, 0.78); }
+  :root[data-theme="light"] .banner-warn .banner-tag { color: rgba(109, 74, 6, 0.85); }
+
   .organ {
     @apply bg-panel border border-edge rounded;
   }

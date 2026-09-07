@@ -58,21 +58,39 @@ const ORGANS = [
 
 function Banner() {
   return (
-    <div className="shrink-0 bg-amber-500/15 border-b border-amber-500/40 px-4 py-1
-                    text-[10px] tracking-wide text-amber-300 flex gap-3 items-center
+    <div className="banner-warn shrink-0 border-b px-4 py-1
+                    text-[10px] tracking-wide flex gap-3 items-center
                     flex-wrap">
       <span className="font-bold">⚠ DEMONSTRATION &amp; SYNTHETIC DATA MODE ACTIVE</span>
-      <span className="text-amber-300/60 hidden md:inline">
+      <span className="banner-sub hidden md:inline">
         Hackathon prototype · synthetic case data · not an official police system
       </span>
-      <span className="ml-auto font-mono text-amber-300/70">
+      <span className="banner-tag ml-auto font-mono">
         {USE_MOCKS ? 'FIXTURES' : 'LIVE BACKEND'}
       </span>
     </div>
   )
 }
 
+const THEME_KEY = 'vm.theme'
+
+function useTheme() {
+  const [theme, setTheme] = useState(() => {
+    try { return localStorage.getItem(THEME_KEY) || 'dark' } catch { return 'dark' }
+  })
+  useEffect(() => {
+    // Dark is the default, so it is the ABSENCE of the stamp - that keeps
+    // :root the dark palette and the light theme a single override block.
+    const root = document.documentElement
+    if (theme === 'light') root.setAttribute('data-theme', 'light')
+    else root.removeAttribute('data-theme')
+    try { localStorage.setItem(THEME_KEY, theme) } catch { /* private mode */ }
+  }, [theme])
+  return [theme, () => setTheme((t) => (t === 'light' ? 'dark' : 'light'))]
+}
+
 export default function App() {
+  const [theme, toggleTheme] = useTheme()
   const [organ, setOrgan] = useState('command')
   const [selected, setSelected] = useState(null)
   // Live mainnet is held entirely in local state and never written back to the
@@ -214,6 +232,7 @@ export default function App() {
     graph: (
       <div className="grid grid-rows-[1fr_auto] h-full min-h-0">
         <GraphVisualiser
+          key={theme}
           graph={graph} selected={selected} onSelect={setSelected}
           assets={data.assets} risk={riskCache[selected]}
         />
@@ -299,6 +318,16 @@ export default function App() {
             <Button variant="primary" onClick={() => setOrgan('dossier')}>
               Export Court Dossier
             </Button>
+            <button
+              onClick={toggleTheme}
+              title={theme === 'light' ? 'Switch to dark' : 'Switch to light'}
+              aria-label={theme === 'light' ? 'Switch to dark' : 'Switch to light'}
+              className="px-2.5 py-1.5 rounded border border-edge text-slate-400
+                         hover:text-slate-100 hover:border-violet/50 text-[13px]
+                         leading-none"
+            >
+              {theme === 'light' ? '☾' : '☀'}
+            </button>
             <Button
               onClick={() => {
                 logout()
