@@ -56,6 +56,11 @@ def build_fields(analysis: CaseAnalysis, case: dict) -> dict[str, Any]:
     """
     seed = case.get("seed_wallet", "")
     risk = analysis.risk.get(seed)
+    # Read the chain off the traced entity. It used to be the literal string
+    # "Ethereum", so a Tron trace named the wrong blockchain in a report a
+    # Reporting Entity puts its registration number against.
+    seed_node = next((n for n in analysis.nodes if n.node_id == seed), None)
+    chain = seed_node.chain.value if seed_node else "not determined"
     flagged = [s for s in analysis.dilution.steps if s.flagged]
     inferred = [e for e in analysis.edges
                 if e.evidence_type.value == "inferred_correlation"]
@@ -70,6 +75,30 @@ def build_fields(analysis: CaseAnalysis, case: dict) -> dict[str, Any]:
         "principal_officer_contact": TO_COMPLETE,
 
         # --- Part B: report metadata --------------------------------------
+        "statutory_basis": {
+            "obligation": (
+                "Section 12 of the Prevention of Money-Laundering Act 2002, "
+                "read with Rule 8 of the Prevention of Money-Laundering "
+                "(Maintenance of Records) Rules 2005."
+            ),
+            "recipient": (
+                "Director, Financial Intelligence Unit - India (FIU-IND), "
+                "Department of Revenue, Ministry of Finance, Government of "
+                "India, through the FINnet portal."
+            ),
+            "why_a_vda_provider_is_the_reporting_entity": (
+                "Virtual Digital Asset service providers were notified as "
+                "reporting entities under the PMLA by the Ministry of Finance "
+                "in March 2023, which is what places the exchange - not this "
+                "system and not the police station - under the reporting "
+                "obligation."
+            ),
+            "timeline": (
+                "Rule 8 requires a suspicious transaction report to be "
+                "furnished within seven working days of a reporting entity "
+                "establishing suspicion."
+            ),
+        },
         "report_type": "STR - Suspicious Transaction Report (DRAFT)",
         "report_status": "DRAFT - NOT FILED",
         "prepared_by_system": "Project Violet Milk",
@@ -88,7 +117,7 @@ def build_fields(analysis: CaseAnalysis, case: dict) -> dict[str, Any]:
                 "requires KYC records obtained from the exchange under a "
                 "Section 94 BNSS 2023 production order.",
             "primary_virtual_asset_address": seed,
-            "chain": "Ethereum",
+            "chain": chain,
             "linked_bank_utr": case.get("seed_utr") or "not supplied",
         },
 
@@ -131,6 +160,12 @@ def build_fields(analysis: CaseAnalysis, case: dict) -> dict[str, Any]:
             "and are not comprehensive.",
             "This system is not a registered Reporting Entity and has not "
             "filed, and cannot file, this report with FIU-IND.",
+            "The reporting obligation under Section 12 PMLA rests on the "
+            "reporting entity, not on this system and not on the "
+            "investigating officer who prepared the underlying analysis.",
+            "The statutory wording in this draft was prepared by the authors "
+            "of the software, who are not legal practitioners, and has not "
+            "been settled by counsel.",
         ],
     }
 
@@ -209,6 +244,17 @@ def build_str_document(
          _cell(fields["principal_officer_name"])],
         [_cell("<b>Contact</b>"), _cell(fields["principal_officer_contact"])],
     ], [50 * mm, 124 * mm], header=False))
+
+    story.append(Paragraph("Part A2 &mdash; Statutory basis", S_H))
+    sb = fields["statutory_basis"]
+    story.append(_table([
+        [_cell("Obligation"), Paragraph(sb["obligation"], S_BODY)],
+        [_cell("Recipient"), Paragraph(sb["recipient"], S_BODY)],
+        [_cell("Why a VDA provider"),
+         Paragraph(sb["why_a_vda_provider_is_the_reporting_entity"], S_BODY)],
+        [_cell("Timeline"), Paragraph(sb["timeline"], S_BODY)],
+    ], widths=[36 * mm, None]))
+    story.append(Spacer(1, 4 * mm))
 
     story.append(Paragraph("Part B &mdash; Report metadata", S_H))
     story.append(_table([

@@ -199,3 +199,58 @@ def test_str_generation_is_audited(str_doc):
         None)
     assert entry is not None, "this STR draft's digest is not in the custody log"
     assert entry["details"]["filed"] is False
+
+
+# ------------------------------------------------- current Indian statute law
+
+def test_the_chain_is_read_from_the_trace_not_hardcoded():
+    """Regression: the STR carried the literal string "Ethereum", so a Tron
+    trace would have named the wrong blockchain in a report a Reporting Entity
+    signs its registration number against."""
+    import backend.app.engines.str_engine as se
+    from backend.app.engines.pipeline import analyse
+
+    a = analyse(CASE, SEED)
+    fields = se.build_fields(a, {"case_id": CASE, "seed_wallet": SEED})
+    assert fields["subject"]["chain"] == "ethereum"
+
+    # Same analysis, seed relabelled as a Tron entity: the field must follow.
+    from backend.app.models import Chain
+    for n in a.nodes:
+        if n.node_id == SEED:
+            n.chain = Chain.TRON
+    assert se.build_fields(
+        a, {"case_id": CASE, "seed_wallet": SEED})["subject"]["chain"] == "tron"
+
+
+def test_the_str_cites_the_obligation_it_is_made_under(str_doc):
+    """An STR is furnished under Section 12 PMLA read with Rule 8. A draft
+    that does not say so leaves the Principal Officer to supply the basis."""
+    sb = str_doc["fields"]["statutory_basis"]
+    assert "Section 12" in sb["obligation"]
+    assert "Prevention of Money-Laundering Act 2002" in sb["obligation"]
+    assert "Rule 8" in sb["obligation"]
+    assert "seven working days" in sb["timeline"]
+
+
+def test_the_recipient_is_named_with_its_parent_ministry(str_doc):
+    sb = str_doc["fields"]["statutory_basis"]
+    assert "Financial Intelligence Unit" in sb["recipient"]
+    assert "Ministry of Finance" in sb["recipient"]
+
+
+def test_it_explains_why_the_exchange_is_the_reporting_entity(str_doc):
+    """Virtual Digital Asset providers were notified as reporting entities in
+    March 2023. That notification is why the obligation sits with the exchange
+    rather than with the police station or with us."""
+    why = str_doc["fields"]["statutory_basis"][
+        "why_a_vda_provider_is_the_reporting_entity"]
+    assert "Virtual Digital Asset" in why
+    assert "2023" in why
+
+
+def test_no_repealed_statute_is_cited_in_the_str(str_doc):
+    blob = str(str_doc["fields"]).lower()
+    for repealed in ("indian evidence act", "criminal procedure code",
+                     "code of criminal procedure"):
+        assert repealed not in blob, repealed

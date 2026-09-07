@@ -184,3 +184,24 @@ def test_every_scheduled_line_declares_its_basis():
     for s in fields["schedule"]:
         assert s["basis"] in {"CONFIRMED", "INFERRED"}
         assert s["direction"] in {"RECEIVED BY", "SENT BY"}
+
+
+# ------------------------------------------------- current Indian statute law
+
+def test_the_order_names_who_may_issue_it(notice):
+    """Sec 94(1) BNSS empowers a Court or an officer in charge of a police
+    station. An order that does not recite its own authority invites the first
+    question a defence will ask."""
+    text = notice["fields"]["issuing_authority"]
+    assert "94(1)" in text
+    assert "officer in charge of a police station" in text
+    assert "software cannot confer that authority" in text
+
+
+def test_no_repealed_statute_is_cited(notice):
+    """The CrPC 1973 and the Indian Evidence Act 1872 stand repealed. Citing
+    either in a document served on a third party would be an obvious error."""
+    blob = str(notice["fields"]).lower()
+    for repealed in ("criminal procedure code", "code of criminal procedure",
+                     "indian evidence act", "section 91 of the code"):
+        assert repealed not in blob, repealed

@@ -184,6 +184,13 @@ def build_fields(analysis: CaseAnalysis, case: dict) -> dict[str, Any]:
         "statutory_basis": (
             "Section 94 of the Bharatiya Nagarik Suraksha Sanhita 2023"
         ),
+        "issuing_authority": (
+            "Section 94(1) BNSS 2023 empowers a Court, or an officer in "
+            "charge of a police station, to require production of a document "
+            "or thing considered necessary for an investigation. This draft "
+            "must therefore be issued under the hand of an officer competent "
+            "to do so; software cannot confer that authority."
+        ),
         "limitations": [
             "This is an unsigned draft. It has no legal effect until issued "
             "and signed by an officer competent to do so.",
@@ -280,6 +287,9 @@ def build_notice_document(
             "Extend the trace, or treat the terminal addresses in the Schedule "
             "as the subject of further enquiry.", S_BODY))
 
+    story.append(Spacer(1, 3 * mm))
+    story.append(Paragraph("Authority to issue", S_H))
+    story.append(Paragraph(fields["issuing_authority"], S_BODY))
     story.append(Spacer(1, 3 * mm))
     story.append(Paragraph("Grounds", S_H))
     story.append(Paragraph(
