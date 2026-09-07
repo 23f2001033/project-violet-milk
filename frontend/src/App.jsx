@@ -13,6 +13,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   DEMO_CASE_ID,
   listCases,
+  runTrace,
   USE_MOCKS,
   getAudit,
   getCase,
@@ -90,6 +91,112 @@ function useTheme() {
   return [theme, () => setTheme((t) => (t === 'light' ? 'dark' : 'light'))]
 }
 
+
+/**
+ * The case as an officer receives it, before any analysis exists.
+ *
+ * Everything on this screen is a fact from the FIR - it is not output. That is
+ * the point: when the dashboard fills a moment later, a judge can tell which
+ * figures the software computed, because they were not here before.
+ */
+function Briefing({ kase, evidence, running, error, onRun, user }) {
+  return (
+    <div className="h-full overflow-y-auto p-6">
+      <div className="max-w-3xl mx-auto">
+        <div className="label mb-2">Case assigned</div>
+        <h1 className="text-[22px] font-bold text-slate-100 tracking-tight">
+          {kase.case_id}
+        </h1>
+        <p className="text-[12px] text-slate-500 mt-1">
+          Received by {user?.display_name ?? user?.user_id} ·{' '}
+          {user?.rank ?? 'unassigned'}
+        </p>
+
+        <div className="organ mt-5 divide-y divide-edge">
+          {[
+            ['FIR reference', kase.fir_ref],
+            ['NCRP acknowledgement', kase.ncrp_ref],
+            ['Complainant', kase.victim_name],
+            ['Reported loss', inr(kase.victim_amount_inr)],
+            ['Incident recorded', (kase.incident_datetime || '').replace('T', ' ')],
+            ['Address to trace', kase.seed_wallet],
+            ['Bank reference (UTR)', kase.seed_utr || 'not supplied'],
+          ].map(([k, v]) => (
+            <div key={k} className="flex flex-wrap gap-x-4 gap-y-1 px-4 py-2.5">
+              <div className="label w-[168px] shrink-0 pt-0.5">{k}</div>
+              <div className="font-mono text-[12px] text-slate-200 break-all flex-1">
+                {v || '—'}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {kase.notes && (
+          <p className="text-[12px] text-slate-400 leading-relaxed mt-3
+                        max-w-2xl">
+            {kase.notes}
+          </p>
+        )}
+
+        <div className="mt-5 flex items-center gap-3 flex-wrap">
+          <button
+            onClick={onRun}
+            disabled={running}
+            className="px-5 py-2.5 rounded bg-violet text-white text-[13px]
+                       font-semibold hover:brightness-110 disabled:opacity-60
+                       disabled:cursor-not-allowed"
+          >
+            {running ? 'Tracing…' : 'Begin investigation'}
+          </button>
+          <span className="text-[11px] text-slate-500">
+            {running
+              ? 'Following the money from the address above.'
+              : `Traces the address above, scores every entity it reaches against
+                 seven rules, and records the run in the chain of custody.`}
+          </span>
+        </div>
+
+        {error && (
+          <div className="mt-3 text-[11px] text-risk-critical font-mono">
+            {error}
+          </div>
+        )}
+
+        <div className="mt-6 pt-4 border-t border-edge">
+          <div className="label mb-1.5">
+            Evidence on file · {evidence?.length ?? 0}
+          </div>
+          {evidence?.length ? (
+            <ul className="space-y-1">
+              {evidence.map((e) => (
+                <li key={e.evidence_id}
+                    className="font-mono text-[11px] text-slate-400">
+                  {e.filename}
+                  <span className="text-slate-600">
+                    {' '}· {e.row_count ?? '—'} rows ·{' '}
+                    {e.hash_match ? 'hash verified' : 'HASH MISMATCH'}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-[11px] text-slate-600">
+              No files ingested. The trace will run on the case record alone.
+            </p>
+          )}
+        </div>
+
+        <p className="text-[10px] text-slate-600 leading-relaxed mt-6 max-w-2xl">
+          Nothing above is produced by this software. It is the case as it
+          arrives &mdash; the complaint, the amount, and one address. Every
+          figure that appears after the trace is computed from those inputs by
+          seven documented rules.
+        </p>
+      </div>
+    </div>
+  )
+}
+
 export default function App() {
   const [theme, toggleTheme] = useTheme()
   const [organ, setOrgan] = useState('command')
@@ -116,53 +223,74 @@ export default function App() {
   // Each officer opens their own case. The case list is fetched first so the
   // one owned by the signed-in user can be resolved; the bundled demo case is
   // the fallback, which is also what an unrecognised account gets.
-  const load = useCallback(async () => {
+  // TWO PHASES, on purpose.
+  //
+  // The dashboard used to arrive fully populated, which reads as a mockup: a
+  // judge cannot tell computed figures from typed ones. Now the case BRIEFING
+  // loads on sign-in - the FIR, the complainant, the amount, the seed address,
+  // the facts an officer already has - and the analysis only exists after
+  // someone runs it.
+  //
+  // The button is not a loading animation. It POSTs the trace, which is an
+  // audited action: a TRACE_RUN entry is written to the hash-chained custody
+  // log against the signed-in officer before any panel appears.
+  const brief = useCallback(async () => {
     if (!session) return
     setData({ loading: true })
-
     let caseId = DEMO_CASE_ID
     try {
       const mine = (await listCases()).find(
         (c) => c.io_name === session.user?.user_id
       )
       if (mine) caseId = mine.case_id
-    } catch {
-      /* fall back to the demo case rather than showing an empty shell */
+      const [kase, evidence] = await Promise.all([
+        getCase(caseId), listEvidence(caseId).catch(() => []),
+      ])
+      setData({ loading: false, caseId, kase, evidence, started: false })
+    } catch (e) {
+      if (e.message === 'SESSION_EXPIRED') return setSession(null)
+      setData({ loading: false, error: e.message })
     }
-
-    Promise.all([
-      getCase(caseId),
-      getGraph(caseId),
-      getDilution(caseId),
-      getTimeline(caseId),
-      getAudit(caseId),
-      listEvidence(caseId),
-      // The Flag Agent must never block the case view: a model failure is a
-      // missing panel, not a broken dashboard.
-      getAnomaly(caseId).catch(() => null),
-      verifyAudit(caseId).catch(() => null),
-      // Same rule as the Flag Agent: the asset ledger is a derived view, so a
-      // failure here is a missing panel, never a broken case.
-      getAssets(caseId).catch(() => null),
-    ])
-      .then(
-        ([kase, graph, dilution, timeline, audit, evidence, anomaly,
-          verification, assets]) =>
-          setData({
-            loading: false, caseId, kase, graph, dilution, timeline, audit,
-            evidence, anomaly, verification, assets,
-          })
-      )
-      .catch((e) => {
-        if (e.message === 'SESSION_EXPIRED') {
-          setSession(null)
-          return
-        }
-        setData({ loading: false, error: e.message })
-      })
   }, [session])
 
-  useEffect(() => { load() }, [load])
+  const investigate = useCallback(async () => {
+    const caseId = data.caseId
+    const kase = data.kase
+    if (!caseId || !kase) return
+    setData((d) => ({ ...d, running: true, error: null }))
+    try {
+      // The real thing, and the reason this button is worth pressing.
+      await runTrace(caseId, { seed: kase.seed_wallet, max_depth: 3 })
+
+      const [graph, dilution, timeline, audit, evidence, anomaly,
+             verification, assets] = await Promise.all([
+        getGraph(caseId),
+        getDilution(caseId),
+        getTimeline(caseId),
+        getAudit(caseId),
+        listEvidence(caseId).catch(() => []),
+        // A model failure is a missing panel, not a broken case.
+        getAnomaly(caseId).catch(() => null),
+        verifyAudit(caseId).catch(() => null),
+        getAssets(caseId).catch(() => null),
+      ])
+      setData((d) => ({
+        ...d, running: false, started: true, graph, dilution, timeline,
+        audit, evidence, anomaly, verification, assets,
+      }))
+      setOrgan('command')
+    } catch (e) {
+      if (e.message === 'SESSION_EXPIRED') return setSession(null)
+      setData((d) => ({ ...d, running: false, error: e.message }))
+    }
+  }, [data.caseId, data.kase])
+
+  // `load` is what the organs call after they change something - re-running
+  // the investigation is the honest way to refresh, since that is what an
+  // officer would actually do.
+  const load = data.started ? investigate : brief
+
+  useEffect(() => { brief() }, [brief])
   // Switching account switches case: drop the previous graph's risk cache.
   useEffect(() => { setRiskCache({}); setSelected(null) }, [data.caseId])
 
@@ -187,8 +315,10 @@ export default function App() {
   if (session === null) {
     return <Login onSignedIn={(s) => setSession(s)} />
   }
-  if (data.loading) return <Spinner label="Loading case…" />
-  if (data.error) return <ErrorBox error={data.error} onRetry={load} />
+  if (data.loading) return <Spinner label="Opening case…" />
+  if (data.error && !data.kase) {
+    return <ErrorBox error={data.error} onRetry={brief} />
+  }
 
   const { kase, dilution, timeline, audit } = data
   // The live trace, when one is loaded, replaces the displayed graph only.
@@ -230,9 +360,10 @@ export default function App() {
     if (id && !['graph', 'timeline'].includes(organ)) setOrgan('graph')
   }
 
-  const showInspector = ['graph', 'risk', 'dilution'].includes(organ)
+  const showInspector =
+    data.started && ['graph', 'risk', 'dilution'].includes(organ)
 
-  const main = {
+  const main = !data.started ? null : {
     command: (
       <CommandCenter
         kase={kase} graph={graph} dilution={dilution} audit={audit}
@@ -316,12 +447,13 @@ export default function App() {
           <span
             className="font-mono text-[9px] px-1.5 py-0.5 rounded border"
             style={
-              graph.stats.source === 'SyntheticSource'
+              !graph || graph.stats.source === 'SyntheticSource'
                 ? { color: '#e5901d', background: '#e5901d1a', borderColor: '#e5901d66' }
                 : { color: '#e5484d', background: '#e5484d1a', borderColor: '#e5484d66' }
             }
           >
-            {graph.stats.source === 'SyntheticSource' ? 'SYNTHETIC' : 'LIVE MAINNET'}
+            {!graph || graph.stats.source === 'SyntheticSource'
+              ? 'SYNTHETIC' : 'LIVE MAINNET'}
           </span>
           <div className="ml-auto flex items-center gap-3">
             <div className="text-right leading-tight hidden sm:block">
@@ -415,14 +547,20 @@ export default function App() {
           <span className="text-slate-300">{kase.case_id}</span>
           <span>NCRP {kase.ncrp_ref}</span>
           <span className="text-risk-high">{inr(kase.victim_amount_inr)}</span>
-          <span>{graph.stats.nodes} entities · {graph.stats.edges} transfers</span>
-          {graph.stats.ingested_edges > 0 && (
+          {graph ? (
+            <span>
+              {graph.stats.nodes} entities · {graph.stats.edges} transfers
+            </span>
+          ) : (
+            <span className="text-slate-600">not yet traced</span>
+          )}
+          {graph && graph.stats.ingested_edges > 0 && (
             <span className="text-risk-high">
               +{graph.stats.ingested_edges} ingested
             </span>
           )}
-          <span>depth {graph.stats.max_depth_reached}</span>
-          <span className="ml-auto">{graph.stats.source}</span>
+          {graph && <span>depth {graph.stats.max_depth_reached}</span>}
+          <span className="ml-auto">{graph?.stats.source ?? ""}</span>
         </div>
       </header>
 
@@ -494,7 +632,18 @@ export default function App() {
         </nav>
 
         {/* ------------------------------------------------ working surface */}
-        <main className="min-w-0 min-h-0 overflow-hidden bg-ground">{main}</main>
+        <main className="min-w-0 min-h-0 overflow-hidden bg-ground">
+          {data.started ? main : (
+            <Briefing
+              kase={kase}
+              evidence={evidence}
+              running={data.running}
+              error={data.error}
+              onRun={investigate}
+              user={session.user}
+            />
+          )}
+        </main>
 
         {/* --------------------------------------------------- inspector */}
         {showInspector && (
