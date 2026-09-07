@@ -292,42 +292,34 @@ export const generateNotice = (caseId) =>
 /* --------------------------------------------------------------- documents */
 
 /**
- * Open a generated PDF in a new tab.
+ * Fetch a generated PDF with the session token and return a blob URL for it.
  *
- * A plain <a href> or window.open sends a browser navigation with NO
- * Authorization header, and every case route sits behind RequireUser - so the
- * dossier, the STR and the production order all opened a tab reading
- * {"detail":"Sign in to access case data."}. Fetching the bytes with the
- * session token and handing the tab a blob URL is what makes the link work.
+ * Two problems this solves. A plain <a href> or window.open sends a browser
+ * navigation with NO Authorization header, and every case route sits behind
+ * RequireUser - so the dossier, the STR and the production order all opened a
+ * tab reading {"detail":"Sign in to access case data."}.
  *
- * The tab is opened SYNCHRONOUSLY, before the await, or the browser treats the
- * later window.open as an unrequested popup and blocks it.
+ * And opening a tab at all was wrong: the download route sets
+ * Content-Disposition: attachment, so Chrome saves the file and leaves the tab
+ * it was handed sitting on about:blank. The caller renders the blob in-app
+ * instead, which needs no popup, no new tab, and no cooperation from the
+ * browser's PDF settings.
+ *
+ * Revoke the returned URL when the viewer closes.
  */
-export async function openDocument(url) {
-  const tab = window.open('', '_blank', 'noopener')
-
+export async function loadDocument(url) {
   const res = await fetch(url, { headers: { ...authHeader() } })
   if (res.status === 401) {
     setToken(null)
-    tab?.close()
     throw new Error('SESSION_EXPIRED')
   }
-  if (!res.ok) {
-    tab?.close()
-    throw new Error(`Could not open the document (${res.status})`)
-  }
+  if (!res.ok) throw new Error(`Could not open the document (${res.status})`)
 
-  const blobUrl = URL.createObjectURL(await res.blob())
-  if (tab) {
-    tab.location.href = blobUrl
-  } else {
-    // Popup blocked despite the synchronous open. Fall back to a save so the
-    // document is never simply lost.
-    const a = document.createElement('a')
-    a.href = blobUrl
-    a.download = url.split('/').pop()
-    a.click()
+  // Force the type. A blob typed "" is saved rather than displayed.
+  const blob = new Blob([await res.arrayBuffer()], { type: 'application/pdf' })
+  return {
+    blobUrl: URL.createObjectURL(blob),
+    filename: url.split('/').pop(),
+    bytes: blob.size,
   }
-  // Give the tab time to load before the URL is revoked.
-  setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000)
 }

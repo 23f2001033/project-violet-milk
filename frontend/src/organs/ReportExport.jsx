@@ -8,7 +8,8 @@
 
 import { useState } from 'react'
 import { Button } from '../components/ui'
-import { generateNotice, generateReport, generateSTR, openDocument } from '../api'
+import { generateNotice, generateReport, generateSTR, loadDocument } from '../api'
+import DocumentViewer from '../components/DocumentViewer'
 
 const SECTIONS = [
   ['Agency header & case metadata', 'FIR / NCRP reference, IO, incident time'],
@@ -24,13 +25,29 @@ export default function ReportExport({ kase }) {
   const [state, setState] = useState({ status: 'idle' })
   const [str, setStr] = useState({ status: 'idle' })
   const [notice, setNotice] = useState({ status: 'idle' })
+  const [doc, setDoc] = useState(null)
+
+  // One place opens documents, so the blob URL is always revoked and a stray
+  // object URL cannot outlive the panel.
+  async function view(url) {
+    try {
+      setDoc(await loadDocument(url))
+    } catch (e) {
+      setNotice((n) => ({ ...n, error: e.message }))
+    }
+  }
+
+  function closeDoc() {
+    if (doc) URL.revokeObjectURL(doc.blobUrl)
+    setDoc(null)
+  }
 
   async function runNotice() {
     setNotice({ status: 'working' })
     try {
       const r = await generateNotice(kase.case_id)
       setNotice({ status: 'done', result: r })
-      await openDocument(r.download_url)
+      await view(r.download_url)
     } catch (e) {
       setNotice({ status: 'error', error: e.message })
     }
@@ -41,7 +58,7 @@ export default function ReportExport({ kase }) {
     try {
       const r = await generateSTR(kase.case_id)
       setStr({ status: 'done', result: r })
-      await openDocument(r.download_url)
+      await view(r.download_url)
     } catch (e) {
       setStr({ status: 'error', error: e.message })
     }
@@ -55,7 +72,7 @@ export default function ReportExport({ kase }) {
       // Open in a new tab rather than forcing a save: on stage the officer
       // wants to SHOW the dossier, and a silent download to disk looks like
       // nothing happened.
-      await openDocument(r.download_url)
+      await view(r.download_url)
     } catch (e) {
       setState({ status: 'error', error: e.message })
     }
@@ -63,6 +80,7 @@ export default function ReportExport({ kase }) {
 
   return (
     <div className="p-5 overflow-y-auto h-full">
+      <DocumentViewer doc={doc} onClose={closeDoc} />
       <div className="max-w-2xl space-y-4">
         <div className="organ p-4">
           <div className="text-center border-b border-edge pb-3 mb-3">
@@ -140,7 +158,7 @@ export default function ReportExport({ kase }) {
               </p>
             </div>
             <button
-              onClick={() => openDocument(state.result.download_url)}
+              onClick={() => view(state.result.download_url)}
               className="inline-block text-[11px] text-violet hover:underline font-mono"
             >
               {state.result.filename} ↗
@@ -245,7 +263,7 @@ export default function ReportExport({ kase }) {
                 {str.result.filing_instruction}
               </p>
               <button
-                onClick={() => openDocument(str.result.download_url)}
+                onClick={() => view(str.result.download_url)}
                 className="inline-block text-[11px] text-violet hover:underline
                            font-mono"
               >
@@ -325,7 +343,7 @@ export default function ReportExport({ kase }) {
                 {notice.result.issue_instruction}
               </p>
               <button
-                onClick={() => openDocument(notice.result.download_url)}
+                onClick={() => view(notice.result.download_url)}
                 className="inline-block text-[11px] text-violet hover:underline
                            font-mono"
               >
