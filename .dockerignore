@@ -1,0 +1,19 @@
+# Keep secrets, local state and build output out of the image.
+.env
+*.db
+.git
+.gitignore
+.venv
+venv
+__pycache__
+**/__pycache__
+*.pyc
+.pytest_cache
+node_modules
+**/node_modules
+frontend/dist
+backend/generated_reports
+docs
+*.pptx
+*.pdf
+image.png
