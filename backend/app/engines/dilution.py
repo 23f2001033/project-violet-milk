@@ -86,16 +86,25 @@ def compute_dilution(
     dirty = {n.node_id: 0.0 for n in nodes}
     ratio: dict[str, float] = {n.node_id: 0.0 for n in nodes}
 
+    # Whether the origin is the address under investigation rather than a
+    # complainant's own account. It decides one thing below, and getting it
+    # wrong is what made a curated case with its victims outside the trace
+    # bound report every downstream wallet as 0% traced.
+    origin_is_seed = False
+
     if origin_node is not None:
         origin = origin_node
     else:
         # Curated cases start at the complainant. A live trace has no victim
-        # node at all, so the seed address becomes the origin of taint.
+        # node - and neither does a curated case whose complainants sit beyond
+        # the traversal bound, which is the common shape once a mule network
+        # puts four hops between the victim and the wallet being traced.
         origin = next(
             (n.node_id for n in nodes if n.node_type.value == "victim"), None
         )
         if origin is None:
             origin = next((n.node_id for n in nodes if n.is_seed), None)
+            origin_is_seed = origin is not None
 
     steps: list[DilutionStep] = []
 
@@ -138,9 +147,16 @@ def compute_dilution(
 
     # The origin itself is fully traced by definition - it is the money the
     # complainant lost, or the address the investigator named.
+    #
+    # The distinction matters. Where the origin is a COMPLAINANT, their own
+    # account is not itself tainted: the taint begins with what leaves it, and
+    # marking the victim 100% illicit would be both wrong and offensive. Where
+    # the origin is the SEED - because the complainant is outside the traced
+    # set, or because a live trace has no complainant at all - that address IS
+    # the money under investigation, so it is 100% traced.
     if origin:
         ratio.setdefault(origin, 0.0)
-        if not prior_balances_available:
+        if origin_is_seed or not prior_balances_available:
             ratio[origin] = 1.0
 
     result = DilutionResult(

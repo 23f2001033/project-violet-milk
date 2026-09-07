@@ -1,0 +1,22 @@
+node_id,node_type,label,chain,prior_balance,balance,is_seed,label_source,label_confidence
+VICTIM_5511,victim,Complainant - retired (synthetic),bank_inr,640000.00,0.00,false,curated,confirmed
+VICTIM_5512,victim,Complainant - salaried (synthetic),bank_inr,310000.00,0.00,false,curated,confirmed
+VICTIM_5513,victim,Complainant - small trader (synthetic),bank_inr,175000.00,0.00,false,curated,confirmed
+VICTIM_5514,victim,Complainant - student (synthetic),bank_inr,92000.00,0.00,false,curated,confirmed
+BOB_XXXXXXXX4417,bank_account,Mule Account - Bank of Baroda (synthetic),bank_inr,0.00,0.00,false,curated,confirmed
+CANARA_XXXXXXXX9903,bank_account,Mule Account - Canara (synthetic),bank_inr,0.00,0.00,false,curated,confirmed
+IDFC_XXXXXXXX2276,bank_account,Mule Account - IDFC First (synthetic),bank_inr,0.00,0.00,false,curated,confirmed
+0xb74c3c347903a80c770f36e9b439ce59c64d4c2a,exchange,CEX Deposit Address (synthetic),ethereum,0.00,0.00,false,curated,inferred
+0xfc560e2e03603e6ec608bafe2de1f2f636221c44,wallet,Target Seed Wallet,ethereum,0.00,0.00,true,curated,confirmed
+0x8c27921fa4ae2dccf2d40e426bad900b4f037da2,mixer,Mixing service (synthetic),ethereum,0.00,3900.00,false,curated,confirmed
+0xa48646da1dc281e33a31a816acaea0f5f41b2d72,wallet,,ethereum,0.00,0.00,false,none,unknown
+0x1ff748904d4c32e9903e2d349e4f0381e9c6072f,wallet,,ethereum,0.00,0.00,false,none,unknown
+0x04fce43d98af9d2781ad4a4b7e0ce22f1c84239e,wallet,,ethereum,0.00,0.00,false,none,unknown
+0x959e26d4f95b3a9805f035a036a46c6fe55b200b,wallet,,ethereum,0.00,0.00,false,none,unknown
+0xf7e752b3196bb97907314fce42db41eb33dbc090,wallet,,ethereum,0.00,0.00,false,none,unknown
+0xed9b38cb7430ba8808e6b3ce0736e573167c5947,bridge,Cross-chain bridge (synthetic),ethereum,0.00,0.00,false,curated,inferred
+TQLchAo4LfSQmCMhrG9VqBuRg5DGNNokR,wallet,,tron,0.00,0.00,false,none,unknown
+0x9518c4e838717a8f7135b8602f2e14f0a91b9440,wallet,High-liquidity pool (clean),ethereum,39000.00,43150.00,false,curated,inferred
+P2P_TRADER_INR_31,exchange,P2P trader - USDT to INR (synthetic),upi,0.00,0.00,false,curated,inferred
+YESB_XXXXXXXX6640,bank_account,Payout account (synthetic),bank_inr,0.00,0.00,false,curated,confirmed
+0x6e1adcf3371617d426ee746ff9c8832c9870484f,exchange,Indian VDA exchange deposit (synthetic),ethereum,1400.00,2000.00,false,curated,inferred

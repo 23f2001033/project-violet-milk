@@ -1,0 +1,9 @@
+node_id,node_type,label,chain,prior_balance,balance,is_seed,label_source,label_confidence
+VICTIM_2290,victim,Complainant (synthetic),bank_inr,185000.00,0.00,false,curated,confirmed
+UNION_XXXXXXXX3308,bank_account,Mule Account - Union Bank (synthetic),bank_inr,0.00,0.00,false,curated,confirmed
+scampay@oksbi,upi_handle,UPI handle (synthetic),upi,0.00,0.00,false,curated,confirmed
+0x989e71bfb5ac158dc74806c2ea76f57dc2752091,exchange,Indian VDA exchange deposit (synthetic),ethereum,0.00,0.00,false,curated,inferred
+0x8b85752cc9ae2fd426e0b52396e9856fb23b14eb,wallet,Target Seed Wallet,ethereum,0.00,0.00,true,curated,confirmed
+0xe7487955bc48390f49de515c54cd2df63f4d6b18,wallet,,ethereum,0.00,0.00,false,none,unknown
+0x579ec211c7abf98a042c22d083eb02f279b140d4,wallet,,ethereum,0.00,0.00,false,none,unknown
+0xd1b3ba04baefa49f52d0fec22a2d3d2595c06687,wallet,,ethereum,0.00,0.00,false,none,unknown

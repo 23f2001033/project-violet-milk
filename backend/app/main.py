@@ -21,7 +21,7 @@ from .routers import (
     audit, auth, cases, evidence, graph, report, risk, timeline,
 )
 from .routers.auth import RequireUser
-from .seed import seed_demo_case
+from .seed import seed_demo_case, seed_team_cases
 
 log = logging.getLogger(__name__)
 
@@ -60,6 +60,7 @@ for r in (cases, evidence, graph, risk, timeline, audit, report):
 # missing under pytest. This is idempotent and runs identically under uvicorn,
 # TestClient and any ad-hoc script.
 seed_demo_case()
+seed_team_cases()
 
 
 # ---------------------------------------------------------------------------

@@ -12,6 +12,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   DEMO_CASE_ID,
+  listCases,
   USE_MOCKS,
   getAudit,
   getCase,
@@ -112,30 +113,44 @@ export default function App() {
       .catch(() => setSession(null))
   }, [session])
 
-  const load = useCallback(() => {
+  // Each officer opens their own case. The case list is fetched first so the
+  // one owned by the signed-in user can be resolved; the bundled demo case is
+  // the fallback, which is also what an unrecognised account gets.
+  const load = useCallback(async () => {
     if (!session) return
     setData({ loading: true })
+
+    let caseId = DEMO_CASE_ID
+    try {
+      const mine = (await listCases()).find(
+        (c) => c.io_name === session.user?.user_id
+      )
+      if (mine) caseId = mine.case_id
+    } catch {
+      /* fall back to the demo case rather than showing an empty shell */
+    }
+
     Promise.all([
-      getCase(DEMO_CASE_ID),
-      getGraph(DEMO_CASE_ID),
-      getDilution(DEMO_CASE_ID),
-      getTimeline(DEMO_CASE_ID),
-      getAudit(DEMO_CASE_ID),
-      listEvidence(DEMO_CASE_ID),
+      getCase(caseId),
+      getGraph(caseId),
+      getDilution(caseId),
+      getTimeline(caseId),
+      getAudit(caseId),
+      listEvidence(caseId),
       // The Flag Agent must never block the case view: a model failure is a
       // missing panel, not a broken dashboard.
-      getAnomaly(DEMO_CASE_ID).catch(() => null),
-      verifyAudit(DEMO_CASE_ID).catch(() => null),
+      getAnomaly(caseId).catch(() => null),
+      verifyAudit(caseId).catch(() => null),
       // Same rule as the Flag Agent: the asset ledger is a derived view, so a
       // failure here is a missing panel, never a broken case.
-      getAssets(DEMO_CASE_ID).catch(() => null),
+      getAssets(caseId).catch(() => null),
     ])
       .then(
         ([kase, graph, dilution, timeline, audit, evidence, anomaly,
           verification, assets]) =>
           setData({
-            loading: false, kase, graph, dilution, timeline, audit, evidence,
-            anomaly, verification, assets,
+            loading: false, caseId, kase, graph, dilution, timeline, audit,
+            evidence, anomaly, verification, assets,
           })
       )
       .catch((e) => {
@@ -147,7 +162,9 @@ export default function App() {
       })
   }, [session])
 
-  useEffect(load, [load])
+  useEffect(() => { load() }, [load])
+  // Switching account switches case: drop the previous graph's risk cache.
+  useEffect(() => { setRiskCache({}); setSelected(null) }, [data.caseId])
 
   const nodesById = useMemo(() => {
     if (!data.graph) return {}
@@ -160,11 +177,11 @@ export default function App() {
   // full indicator breakdown is the one the fixture carries in detail.
   const [riskCache, setRiskCache] = useState({})
   useEffect(() => {
-    if (!selected || riskCache[selected]) return
-    getRisk(DEMO_CASE_ID, selected)
+    if (!selected || riskCache[selected] || !data.caseId) return
+    getRisk(data.caseId, selected)
       .then((r) => setRiskCache((c) => ({ ...c, [selected]: r })))
       .catch(() => {})
-  }, [selected, riskCache])
+  }, [selected, riskCache, data.caseId])
 
   if (session === undefined) return <Spinner label="Restoring session…" />
   if (session === null) {

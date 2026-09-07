@@ -7,6 +7,7 @@ with something real on screen.
 """
 
 import json
+from datetime import datetime, timezone
 
 from .config import DEMO_CASE_ID
 from .db import cursor, init_db
@@ -145,3 +146,109 @@ def seed_demo_case() -> None:
                  seq, prev, entry),
             )
             prev = entry
+
+# ---------------------------------------------------------------- team cases
+# One case per officer, so each team member opens their own graph and the
+# custody log records who worked what. Case 001 stays with Demo Test 1
+# (IO_SHARMA) because its figures are the ones the integrity tests assert.
+#
+# The typologies are chosen from what Indian casework actually looks like, not
+# from what flatters the software: a mule-network funnel, a chain-hopping trail
+# that ends in a pool too dilute to report, and a short one that resolves.
+TEAM_CASES = [
+    {
+        "case_id": "CP-CYBER-2026-002",
+        "fir_ref": "FIR-2026-CHD-5518",
+        "ncrp_ref": "1930-NCRP-2026-88214",
+        "victim_name": "Six complainants (synthetic)",
+        "victim_amount_inr": 943000.0,
+        "incident_datetime": "2026-08-19T09:12:00+05:30",
+        "seed_wallet": None,          # filled from the generated dataset
+        "seed_utr": "94110820309 1",
+        "io_name": "DEMO_2",
+        "notes": ("Task-based 'part-time job' fraud. Six complainants, six "
+                  "mule accounts funnelling into two aggregator UPI handles, "
+                  "cash-out through a P2P trader into USDT on Tron."),
+    },
+    {
+        "case_id": "CP-CYBER-2026-003",
+        "fir_ref": "FIR-2026-CHD-4402",
+        "ncrp_ref": "1930-NCRP-2026-77190",
+        "victim_name": "Four complainants (synthetic)",
+        "victim_amount_inr": 1217000.0,
+        "incident_datetime": "2026-07-03T14:26:00+05:30",
+        "seed_wallet": None,
+        "seed_utr": "553011177 42",
+        "io_name": "DEMO_3",
+        "notes": ("Digital arrest fraud with deliberate chain-hopping: "
+                  "Ethereum to a bridge to Tron and back to an exchange. Part "
+                  "of the trail ends in a pool too dilute to report, and part "
+                  "returns to India through a P2P payout."),
+    },
+    {
+        "case_id": "CP-CYBER-2026-004",
+        "fir_ref": "FIR-2026-CHD-6031",
+        "ncrp_ref": "1930-NCRP-2026-91055",
+        "victim_name": "Complainant (synthetic)",
+        "victim_amount_inr": 185000.0,
+        "incident_datetime": "2026-09-01T11:04:00+05:30",
+        "seed_wallet": None,
+        "seed_utr": "330891204471",
+        "io_name": "DEMO_4",
+        "notes": ("Straightforward UPI fraud. Three hops to a KYC-bearing "
+                  "Indian exchange, and the production order can go out the "
+                  "same day."),
+    },
+]
+
+
+def _seed_wallet_for(case_id: str) -> str | None:
+    """Read the seed address out of the generated dataset.
+
+    Taking it from the CSV rather than repeating it here means the case record
+    and the graph can never disagree about which address is being traced.
+    """
+    import csv as _csv
+    from .config import DATA_DIR
+    path = DATA_DIR / "cases" / case_id / "nodes.csv"
+    if not path.is_file():
+        return None
+    with path.open(newline="", encoding="utf-8") as fh:
+        for row in _csv.DictReader(fh):
+            if row.get("is_seed", "").lower() == "true":
+                return row["node_id"]
+    return None
+
+
+def seed_team_cases() -> None:
+    """Create the per-officer cases, skipping any whose dataset is absent."""
+    init_db()
+    now = datetime.now(timezone.utc).isoformat()
+    for spec in TEAM_CASES:
+        seed_wallet = _seed_wallet_for(spec["case_id"])
+        if not seed_wallet:
+            continue
+        with cursor() as conn:
+            if conn.execute("SELECT 1 FROM cases WHERE case_id = ?",
+                            (spec["case_id"],)).fetchone():
+                continue
+            conn.execute(
+                "INSERT INTO cases (case_id, fir_ref, ncrp_ref, victim_name, "
+                "victim_amount_inr, incident_datetime, seed_wallet, seed_utr, "
+                "io_name, notes, status, data_mode, created_at, updated_at) "
+                "VALUES (?,?,?,?,?,?,?,?,?,?,'active','synthetic',?,?)",
+                (spec["case_id"], spec["fir_ref"], spec["ncrp_ref"],
+                 spec["victim_name"], spec["victim_amount_inr"],
+                 spec["incident_datetime"], seed_wallet, spec["seed_utr"],
+                 spec["io_name"], spec["notes"], now, now),
+            )
+        audit_record(spec["case_id"], spec["io_name"])
+
+
+def audit_record(case_id: str, user_id: str) -> None:
+    """A case that appears with no history looks fabricated. Give each one the
+    creation entry an officer would have generated."""
+    from .services import audit as _audit
+    from .models import AuditAction as _A
+    _audit.record(case_id, _A.CASE_CREATED, case_id, user_id=user_id,
+                  details={"seeded": True})

@@ -1,0 +1,33 @@
+node_id,node_type,label,chain,prior_balance,balance,is_seed,label_source,label_confidence
+VICTIM_8801,victim,Complainant 1 (synthetic),bank_inr,118000.00,0.00,false,curated,confirmed
+HDFC_XXXXXXXX2245,bank_account,Mule Account - HDFC (synthetic),bank_inr,0.00,0.00,false,curated,confirmed
+VICTIM_8802,victim,Complainant 2 (synthetic),bank_inr,96500.00,0.00,false,curated,confirmed
+PNB_XXXXXXXX7710,bank_account,Mule Account - PNB (synthetic),bank_inr,0.00,0.00,false,curated,confirmed
+VICTIM_8803,victim,Complainant 3 (synthetic),bank_inr,242000.00,0.00,false,curated,confirmed
+SBI_XXXXXXXX3391,bank_account,Mule Account - SBI (synthetic),bank_inr,0.00,0.00,false,curated,confirmed
+VICTIM_8804,victim,Complainant 4 (synthetic),bank_inr,87000.00,0.00,false,curated,confirmed
+ICICI_XXXXXXXX5502,bank_account,Mule Account - ICICI (synthetic),bank_inr,0.00,0.00,false,curated,confirmed
+VICTIM_8805,victim,Complainant 5 (synthetic),bank_inr,315000.00,0.00,false,curated,confirmed
+AXIS_XXXXXXXX8834,bank_account,Mule Account - Axis (synthetic),bank_inr,0.00,0.00,false,curated,confirmed
+VICTIM_8806,victim,Complainant 6 (synthetic),bank_inr,84500.00,0.00,false,curated,confirmed
+KOTAK_XXXXXXXX1188,bank_account,Mule Account - Kotak (synthetic),bank_inr,0.00,0.00,false,curated,confirmed
+COLLECT_UPI_4471,upi_handle,Aggregator UPI handle (synthetic),upi,0.00,0.00,false,curated,confirmed
+COLLECT_UPI_4472,upi_handle,Aggregator UPI handle (synthetic),upi,0.00,0.00,false,curated,confirmed
+P2P_TRADER_INR_09,exchange,P2P trader - INR to USDT (synthetic),upi,0.00,0.00,false,curated,inferred
+T3sPV66vTp1oNfCHVQPNEmy87qEF3NJ31,wallet,Target Seed Wallet,tron,0.00,0.00,true,curated,confirmed
+T6jAmwBh8pHLwUi8sqdX84MsN4ADNdjvs,mixer,Mixing service (synthetic),tron,0.00,3700.00,false,curated,confirmed
+TN9CkNnrYgykxqJ3Aa6Fy1c21mL1S8qnK,wallet,,tron,0.00,0.00,false,none,unknown
+TL9P6rHB51rp48mWPncrnQxHmFAwPJ6ok,wallet,,tron,0.00,0.00,false,none,unknown
+TRQAJXzxgjgdpwXC7RL2wpbYQS2iFWc7s,wallet,,tron,0.00,0.00,false,none,unknown
+TjEdEjGgk4oWSdMkqzQnL43f1xtS3ByXd,wallet,,tron,0.00,0.00,false,none,unknown
+T9TyoeGnrMMEoRNV7sVXCv2PN2BbWrUfV,wallet,,tron,0.00,0.00,false,none,unknown
+TvYiy1FB6zJny3sx751R5YHvkofpUkV8X,wallet,,tron,0.00,0.00,false,none,unknown
+TBeP1F87G48uBaSwjTz82k4gMzDEavMDr,wallet,,tron,0.00,0.00,false,none,unknown
+TGFtyKPmmyT7RUdHNQrgP1FSKiH3666rx,bridge,Cross-chain bridge (synthetic),tron,0.00,0.00,false,curated,inferred
+0x1cce9748be7dbf2c5b74b9e001f2b739d4b600e3,wallet,,ethereum,0.00,0.00,false,none,unknown
+0x025c999ae759539c349ab924754efe4bb2f0ac92,exchange,Offshore exchange deposit (synthetic),ethereum,41000.00,42730.00,false,curated,inferred
+TVccFKtPgfDgqAi2r1G3ANsL36kqtrCcV,exchange,Indian VDA exchange deposit (synthetic),tron,2600.00,4100.00,false,curated,inferred
+TAxdAuVGG3ZqkcmN4Tx3Z1G4ewYrPzRsi,wallet,,tron,0.00,0.00,false,none,unknown
+TTchVKG1WmuyEF4WHao7iVVzEG8Lir9a8,wallet,,tron,0.00,0.00,false,none,unknown
+TwAGxyNUSKcGgoDEezHec1UkJF6TgujDA,wallet,,tron,0.00,0.00,false,none,unknown
+Tg4KehXWRurQX9PrETKQpjt7n7QB1hq7K,wallet,,tron,0.00,0.00,false,none,unknown
