@@ -1,0 +1,281 @@
+<title>The Fifty-Eight Seconds</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600;1,400;1,600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+  :root{
+    --paper:#F7F5FA;--card:#FFF;--sunk:#EFEBF6;--ink:#16121E;--ink-soft:#423A54;
+    --muted:#6B6381;--rule:#DAD3E7;--rule-soft:#E9E4F1;
+    --accent:#6A4CB5;--accent-bg:#EDE7F9;--stage:#8A5510;--stage-bg:#F8EFDF;
+    --f-display:"Spectral",Cambria,Georgia,serif;
+    --f-body:"IBM Plex Sans",Calibri,system-ui,sans-serif;
+    --f-mono:"IBM Plex Mono","Courier New",monospace;
+    --measure:36rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#131019;--card:#1B1725;--sunk:#231D30;--ink:#ECE8F3;--ink-soft:#C3BCD3;
+      --muted:#948CA9;--rule:#332C42;--rule-soft:#262033;
+      --accent:#B39AEB;--accent-bg:#291F3D;--stage:#DCA855;--stage-bg:#2B2317;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#131019;--card:#1B1725;--sunk:#231D30;--ink:#ECE8F3;--ink-soft:#C3BCD3;
+    --muted:#948CA9;--rule:#332C42;--rule-soft:#262033;
+    --accent:#B39AEB;--accent-bg:#291F3D;--stage:#DCA855;--stage-bg:#2B2317;
+  }
+  *{box-sizing:border-box}
+  body{background:var(--paper);color:var(--ink);font-family:var(--f-body);
+       font-size:16px;line-height:1.62;-webkit-font-smoothing:antialiased}
+  .sheet{max-width:56rem;margin:0 auto;
+         padding:clamp(1.4rem,4vw,3.5rem) clamp(1rem,4vw,3rem) 5rem}
+  .eyebrow{font-family:var(--f-mono);font-size:.67rem;letter-spacing:.18em;
+           text-transform:uppercase;color:var(--accent);margin:0 0 .9rem}
+  h1{font-family:var(--f-display);font-weight:600;font-size:clamp(2.1rem,5.5vw,3.2rem);
+     line-height:1.05;letter-spacing:-.015em;text-wrap:balance;margin:0 0 .8rem}
+  .standfirst{font-family:var(--f-display);font-style:italic;
+              font-size:clamp(1.02rem,2vw,1.2rem);color:var(--ink-soft);
+              max-width:var(--measure);margin:0 0 2rem}
+  .meta{display:flex;flex-wrap:wrap;border-top:2px solid var(--ink);
+        border-bottom:1px solid var(--rule);margin-bottom:2.8rem}
+  .meta div{padding:.8rem 1.4rem .85rem 0;border-right:1px solid var(--rule-soft);
+            margin-right:1.4rem}
+  .meta div:last-child{border-right:0;margin-right:0}
+  .meta dt{font-family:var(--f-mono);font-size:.58rem;letter-spacing:.14em;
+           text-transform:uppercase;color:var(--muted);margin:0 0 .2rem}
+  .meta dd{margin:0;font-size:.95rem;font-weight:600}
+
+  section{margin:0 0 3rem}
+  h2{font-family:var(--f-display);font-weight:600;font-size:1.55rem;line-height:1.18;
+     letter-spacing:-.012em;text-wrap:balance;margin:0 0 .9rem;padding-bottom:.55rem;
+     border-bottom:1px solid var(--rule)}
+  .kicker{font-family:var(--f-mono);font-size:.63rem;letter-spacing:.15em;
+          text-transform:uppercase;color:var(--muted);margin:0 0 .7rem}
+  p{max-width:var(--measure);margin:0 0 .9rem}
+  code{font-family:var(--f-mono);font-size:.85em;background:var(--sunk);
+       padding:.1em .36em;border-radius:2px}
+  strong{font-weight:600}
+  a{color:var(--accent)}
+
+  /* ------------------------------------------------------------ the script */
+  .movement{margin:0 0 2.2rem}
+  .stage{display:inline-block;font-family:var(--f-mono);font-size:.6rem;
+         letter-spacing:.15em;text-transform:uppercase;color:var(--stage);
+         background:var(--stage-bg);padding:.22em .6em;border-radius:2px;
+         margin-bottom:.75rem}
+  .movement p{font-family:var(--f-display);font-size:1.16rem;line-height:1.62;
+              color:var(--ink);max-width:38rem;margin:0 0 1rem}
+  .movement p:last-child{margin-bottom:0}
+  .movement em{font-style:italic}
+  .do{font-family:var(--f-mono)!important;font-size:.76rem!important;
+      color:var(--muted)!important;background:var(--sunk);padding:.4rem .75rem;
+      border-radius:3px;line-height:1.5!important;margin-bottom:.85rem!important;
+      max-width:38rem}
+  .beat{border-left:3px solid var(--accent);padding-left:1.2rem;margin:1.1rem 0}
+  .beat p{font-size:1.22rem;line-height:1.5}
+
+  ul.plain{list-style:none;margin:1rem 0 0;padding:0;max-width:var(--measure)}
+  ul.plain li{position:relative;padding:0 0 .7rem 1.1rem;font-size:.94rem;
+              color:var(--ink-soft)}
+  ul.plain li::before{content:"";position:absolute;left:0;top:.6em;width:5px;height:5px;
+                      background:var(--accent);border-radius:50%}
+  ul.plain li b{color:var(--ink);font-weight:600}
+
+  .tablewrap{overflow-x:auto;margin:1.1rem 0 0}
+  table{border-collapse:collapse;width:100%;min-width:30rem;font-size:.9rem}
+  th,td{text-align:left;padding:.55rem .9rem .55rem 0;
+        border-bottom:1px solid var(--rule-soft);vertical-align:top}
+  th{font-family:var(--f-mono);font-size:.6rem;letter-spacing:.13em;
+     text-transform:uppercase;color:var(--muted);font-weight:500;
+     border-bottom:1px solid var(--rule)}
+
+  .note{background:var(--sunk);border:1px solid var(--rule);
+        border-left:3px solid var(--accent);padding:.9rem 1.1rem;
+        border-radius:0 3px 3px 0;margin-top:1.1rem;max-width:40rem}
+  .note p{max-width:none;font-size:.92rem;color:var(--ink-soft)}
+
+  footer{margin-top:3rem;padding-top:1.2rem;border-top:2px solid var(--ink);
+         font-family:var(--f-mono);font-size:.7rem;letter-spacing:.04em;
+         color:var(--muted);display:flex;flex-wrap:wrap;gap:.4rem 1.5rem;
+         justify-content:space-between}
+  @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="sheet">
+
+  <p class="eyebrow">Final presentation script · Team CyberNautics</p>
+  <h1>The fifty-eight seconds</h1>
+  <p class="standfirst">Delivered standing, without the screen, in about six minutes. Every number in it is computed by the software in front of you.</p>
+
+  <dl class="meta">
+    <div><dt>Runtime</dt><dd>~6 minutes</dd></div>
+    <div><dt>Open on</dt><dd>Timeline</dd></div>
+    <div><dt>Close on</dt><dd>Their keyboard</dd></div>
+    <div><dt>Ask</dt><dd>3 months, 1 cell</dd></div>
+  </dl>
+
+  <section>
+    <p class="kicker">Movement one</p>
+    <h2>Open on a person, not a problem statement</h2>
+
+    <div class="movement">
+      <span class="stage">Stand. Screen off or ignored.</span>
+      <p>Sir, I want to start with one woman in Chandigarh, and one number.</p>
+      <p>She lost four lakh seventy thousand rupees to a digital arrest fraud. She did everything we ask citizens to do. She did not panic, she did not delete anything, and she called 1930 <em>within the hour</em>.</p>
+      <div class="beat">
+        <p>It was already too late. And I can tell you exactly how much too late. <strong>Fifty-eight seconds.</strong></p>
+      </div>
+      <p>Her money left her SBI account at ten thirty-one and four seconds. At ten thirty-two and two seconds it was USDT on a public blockchain &mdash; outside Indian banking, outside the helpline, outside anything CFCFRMS can freeze.</p>
+      <p>Not fifty-eight minutes. Fifty-eight seconds. By the time she finished the call, the part of this case that our systems can see was already over.</p>
+    </div>
+  </section>
+
+  <section>
+    <p class="kicker">Movement two</p>
+    <h2>Name the gap precisely &mdash; it is narrower than people think</h2>
+
+    <div class="movement">
+      <p>Now, I am not standing here to tell you that CFCFRMS is broken. It is not. Within the golden hour, on bank rails, using UTRs, it does its job and it does it at national scale.</p>
+      <p>The problem is that at that fifty-eighth second the money stops being a bank transaction and becomes a blockchain transaction, and the trail simply goes dark. The officer who has to write that chargesheet has nothing to work with.</p>
+      <p>And here is the part that I think matters most, sir. <em>He is not missing a law.</em></p>
+      <p>Section 94 of the BNSS already lets him compel any exchange in this country to produce its records. Section 63 of the Bharatiya Sakshya Adhiniyam already tells him how to put electronic evidence before a court. The Prevention of Money-Laundering Act already makes every registered exchange a reporting entity &mdash; that has been true since March 2023.</p>
+      <div class="beat">
+        <p>He has every instrument he needs. He is missing one thing: he does not know <em>which</em> exchange to name, or <em>which</em> deposit address to write into that order.</p>
+      </div>
+      <p>That is the whole gap. It is not a legal gap. It is not a policy gap. It is a capability gap &mdash; and a capability gap is the kind you can close in a semester.</p>
+    </div>
+  </section>
+
+  <section>
+    <p class="kicker">Movement three</p>
+    <h2>What we built, and the one thing to believe first</h2>
+
+    <div class="movement">
+      <p>So we built the thing that starts at that fifty-eighth second and ends with a signed piece of paper.</p>
+      <p class="do">Turn to the screen. Graph Visualiser. Point at the one dashed line.</p>
+      <p>Before I show you a single number, one thing. On this map, every solid line is a bank record or a blockchain transaction hash &mdash; you can copy it and check it on a public explorer without trusting me at all.</p>
+      <p>One line is dashed. That one we <em>inferred</em>. It is a thirteen-second gap between a UPI debit and an exchange deposit. It is a hypothesis, not a proven transfer.</p>
+      <div class="beat">
+        <p>It is drawn differently on the screen, typed differently in the database, and printed as INFERRED on the face of the court document. Sixteen confirmed. One inferred.</p>
+      </div>
+      <p>I lead with that because everything else I say is only worth something if you believe we know the difference.</p>
+    </div>
+  </section>
+
+  <section>
+    <p class="kicker">Movement four</p>
+    <h2>The score, and then the honest negative</h2>
+
+    <div class="movement">
+      <p class="do">Risk Inspector on the seed wallet. Read the four rules aloud.</p>
+      <p>Sixty-five out of a hundred. Twenty because it is the seed. Fifteen because funds left three minutes after arriving. Fifteen for a direct transfer into a mixer. Fifteen because a cross-chain bridge sits two hops downstream.</p>
+      <p>Seven rules, fixed weights, evidence cited against each. No model produced that number &mdash; which means a defence lawyer can check the addition, and I can explain it in a witness box. That is not a design preference. Section 63 requires us to explain how the output was produced, and a neural network cannot be cross-examined.</p>
+
+      <p class="do">Dilution Calculator. Let them read NOT FLAGGED.</p>
+      <p>And now I will show you something no other prototype today will show you. Our own tool telling you it has <em>failed</em>.</p>
+      <p>Sixty per cent of the tainted funds land in an exchange pool that already held clean money. The traceable share falls to twelve per cent. Our own threshold is thirty. So the system says <strong>NOT FLAGGED</strong>.</p>
+      <div class="beat">
+        <p>That pool contains real criminal proceeds and we are still telling you the trail ends there.</p>
+      </div>
+      <p>A tool that only ever says guilty is worthless in a courtroom. That negative is the reason the sixty-five on the previous screen is worth believing.</p>
+    </div>
+  </section>
+
+  <section>
+    <p class="kicker">Movement five</p>
+    <h2>Answer the AI question before it is asked</h2>
+
+    <div class="movement">
+      <p class="do">Flag Agent. Point at the complainant in the findings.</p>
+      <p>You will want to know where the artificial intelligence is, because everything is called AI this year. Here it is. And look what it did.</p>
+      <p>It flagged the <em>complainant</em>. She moved the largest single amount in the case, so statistically she is the outlier.</p>
+      <div class="beat">
+        <p>Her risk score is zero. If the model touched scoring, the victim would be our prime suspect.</p>
+      </div>
+      <p>The model produces leads on a separate screen with a separate shape. It cannot reach a score, and that is enforced by an automated test that fails our build &mdash; not by a promise on a slide.</p>
+    </div>
+  </section>
+
+  <section>
+    <p class="kicker">Movement six</p>
+    <h2>Tuesday morning</h2>
+
+    <div class="movement">
+      <p>Which brings me to the only question that actually matters, sir. On Tuesday morning, what does the investigating officer <em>do</em>?</p>
+      <p class="do">Sec 63 BSA Dossier. Press Draft production order. Let the PDF open on screen.</p>
+      <p>He presses one button, and out comes a draft order under Section 94 BNSS, addressed to the exchange, with the deposit address, the amount, the timestamp and the transaction hash already written into the Schedule &mdash; and every line marked CONFIRMED or INFERRED, so he knows in advance which ones a defence will contest.</p>
+      <p>He fills in his designation and his station, has it checked, signs it, serves it. That is a Tuesday-morning action. Not a research project.</p>
+      <p>Alongside it: a dossier carrying the particulars a Section 63 certificate recites, and an FIU-IND suspicious transaction report drafted under Section 12 PMLA read with Rule 8.</p>
+      <div class="note">
+        <p><strong>If they ask whether you can file the STR:</strong> No, sir. FIU-IND has no public submission API and filing requires registered reporting-entity status. We produce a draft. There is a test in our codebase that fails the build if anyone ever adds an endpoint that could transmit one.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <p class="kicker">Movement seven</p>
+    <h2>Why us, and why this is feasible here</h2>
+
+    <div class="movement">
+      <p>Sir, let me be direct about where we sit, because I would rather say it than have you find it.</p>
+      <p>We do not beat Chainalysis at identifying who owns an address. That is their commercial product, priced per analyst seat per year in dollars, which is exactly why it sits with national agencies and not in a district cyber cell. Our label file has <strong>fifteen entries</strong>, and it says fifteen in writing.</p>
+      <p>What we do is the layer around it, built for here.</p>
+    </div>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Because</th><th>What it means on the ground</th></tr></thead>
+        <tbody>
+          <tr><td><strong>The output is Indian</strong></td><td>Sec 63 BSA particulars, a Sec 94 BNSS order, an FIU-IND STR under Sec 12 PMLA. Rupees in lakh and crore. A foreign tool hands you a graph and leaves the paperwork to you.</td></tr>
+          <tr><td><strong>Tron is first class</strong></td><td>Indian proceeds move as USDT on Tron far more than on Ethereum. We built for that rail on purpose, not as an afterthought.</td></tr>
+          <tr><td><strong>It costs nothing per district</strong></td><td>Free API tiers, SQLite, open source, MIT licensed. No per-seat licence, no subscription, no procurement cycle. The next cyber cell costs zero.</td></tr>
+          <tr><td><strong>It runs with the wifi unplugged</strong></td><td>Pre-tested addresses replay from disk; a dead network falls through to cache in about a second. That matters more in a police station than in a pitch.</td></tr>
+          <tr><td><strong>It is auditable by you</strong></td><td>252 automated tests. Clone it, run them, and know in a minute whether it still works. You do not have to trust us in six months.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="movement" style="margin-top:1.4rem">
+      <p>And Chandigarh is the right place to prove it. One Union Territory, one force, one command chain. No inter-state memorandum, no coordination committee. A decision taken here can be executed here, and the result is attributable to that decision.</p>
+    </div>
+  </section>
+
+  <section>
+    <p class="kicker">Movement eight</p>
+    <h2>Close by handing over the keyboard</h2>
+
+    <div class="movement">
+      <p class="do">Switch to LIVE MAINNET. Turn the laptop towards them.</p>
+      <p>Everything I have shown you is a synthetic case, and honestly, sir, I would not trust a demonstration either.</p>
+      <div class="beat">
+        <p>So please &mdash; type any Ethereum or Tron address you like.</p>
+      </div>
+      <p>Same seven rules. Same custody log. Same documents. Real mainnet data.</p>
+      <p>We are not asking you to believe this is finished. The rule weights are reasoned, not calibrated. The statutory wording has not been settled by counsel. We have fifteen labels. All of that is written into the software itself, because we would rather you heard it from us.</p>
+      <div class="beat">
+        <p>We are asking for three months in one cyber cell, and one number back: how many cases where the trail continued past the bank.</p>
+      </div>
+      <p>If that number is not meaningfully above zero, we have not earned anything, and you should tell us so.</p>
+      <p>Thank you, sir.</p>
+    </div>
+  </section>
+
+  <section>
+    <p class="kicker">Discipline</p>
+    <h2>Four rules while you are on your feet</h2>
+    <ul class="plain">
+      <li><b>Concede inside one sentence when they are right.</b> Bitcoin, the false-positive rate, Hindi, attribution. Say "you are right, sir" and move. Every fast concession buys credibility for the answers that hold.</li>
+      <li><b>Never claim to beat Chainalysis at attribution.</b> One sentence there ends your run with anyone who knows the field.</li>
+      <li><b>When a number is challenged, show the screen, not the argument.</b> The score decomposition, the ILLICIT 100% next to the LOW 15, the CONFIRMED/INFERRED column. Let them read it themselves.</li>
+      <li><b>If a live address comes back empty, say so and stop.</b> "Small graph, low score &mdash; that is the system working." Reaching back for the demo case is the only thing that would actually lose you the room.</li>
+    </ul>
+  </section>
+
+  <footer>
+    <span>Project Violet Milk · Team CyberNautics</span>
+    <span>252 tests · 4 cases · 2 chains · MIT</span>
+    <span>Chandigarh Police Hackathon</span>
+  </footer>
+
+</div>
