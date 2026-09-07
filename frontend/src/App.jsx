@@ -63,7 +63,7 @@ function Banner() {
                     flex-wrap">
       <span className="font-bold">⚠ DEMONSTRATION &amp; SYNTHETIC DATA MODE ACTIVE</span>
       <span className="text-amber-300/60 hidden md:inline">
-        Authorised law-enforcement pilot workspace · UT Chandigarh Cyber Command
+        Hackathon prototype · synthetic case data · not an official police system
       </span>
       <span className="ml-auto font-mono text-amber-300/70">
         {USE_MOCKS ? 'FIXTURES' : 'LIVE BACKEND'}
@@ -270,7 +270,7 @@ export default function App() {
         <div className="px-4 py-2.5 flex items-center gap-3 flex-wrap">
           <div className="min-w-0">
             <div className="text-[10px] tracking-[0.15em] text-slate-500">
-              CHANDIGARH POLICE CYBER CRIME UNIT
+              CHANDIGARH POLICE HACKATHON
             </div>
             <div className="text-violet font-bold tracking-tight leading-tight">
               PROJECT VIOLET MILK

@@ -45,7 +45,7 @@ export default function Login({ onSignedIn }) {
         <form onSubmit={submit} className="w-full max-w-sm space-y-5">
           <div>
             <div className="text-[10px] tracking-[0.15em] text-slate-500">
-              CHANDIGARH POLICE CYBER CRIME UNIT
+              CHANDIGARH POLICE HACKATHON
             </div>
             <div className="text-violet font-bold text-lg tracking-tight">
               PROJECT VIOLET MILK

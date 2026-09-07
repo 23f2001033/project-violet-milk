@@ -21,16 +21,19 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import cytoscape from 'cytoscape'
 import { riskColor } from '../api'
 
+/* Saturated on purpose. The first palette was tuned for a laptop screen in a
+   dark room; on a projector in a lit hall it read as grey mud and the entity
+   types stopped being distinguishable at the back of the room. */
 const NODE_COLOR = {
-  victim: '#5b8dd6',
-  bank_account: '#4a9d8e',
-  upi_handle: '#4a9d8e',
-  exchange: '#c9a227',
-  wallet: '#8b6fd4',
-  mixer: '#e5484d',
-  bridge: '#e5901d',
-  contract: '#6b6579',
-  unknown: '#6b6579',
+  victim: '#5AB2FF',
+  bank_account: '#2DD4BF',
+  upi_handle: '#2DD4BF',
+  exchange: '#FBBF24',
+  wallet: '#A78BFA',
+  mixer: '#FF5C6C',
+  bridge: '#FB923C',
+  contract: '#94A3B8',
+  unknown: '#94A3B8',
 }
 
 // Shape carries entity type independently of colour, so the graph still reads
@@ -77,18 +80,24 @@ const STYLE = [
       'background-color': (n) => NODE_COLOR[n.data('type')] ?? '#6b6579',
       shape: (n) => NODE_SHAPE[n.data('type')] ?? 'ellipse',
       label: 'data(short)',
-      color: '#cbd5e1',
-      'font-size': 9,
+      color: '#E9EBF4',
+      'font-size': 9.5,
       'font-family': 'JetBrains Mono, monospace',
       'text-valign': 'bottom',
       'text-margin-y': 5,
       'text-background-color': '#0d0b12',
-      'text-background-opacity': 0.75,
-      'text-background-padding': 2,
+      'text-background-opacity': 0.82,
+      'text-background-padding': 2.5,
       width: (n) => 18 + (n.data('risk_score') / 100) * 22,
       height: (n) => 18 + (n.data('risk_score') / 100) * 22,
-      'border-width': 2,
+      'border-width': 2.5,
       'border-color': (n) => riskColor(n.data('risk_level')),
+      // A soft halo in the entity's own colour. This is what makes a node read
+      // as lit rather than as a flat dot, and it scales with risk so the
+      // entities that matter are the ones that glow.
+      'underlay-color': (n) => NODE_COLOR[n.data('type')] ?? '#94A3B8',
+      'underlay-opacity': (n) => 0.10 + (n.data('risk_score') / 100) * 0.22,
+      'underlay-padding': (n) => 4 + (n.data('risk_score') / 100) * 8,
       'transition-property': 'opacity, border-width',
       'transition-duration': '160ms',
     },
@@ -104,16 +113,18 @@ const STYLE = [
   {
     selector: 'edge',
     style: {
-      width: (e) => 1 + Math.min(4, Math.log10(e.data('amount') + 10)),
-      'line-color': '#3e3950',
-      'target-arrow-color': '#3e3950',
+      width: (e) => 1.4 + Math.min(4, Math.log10(e.data('amount') + 10)),
+      // The old #3e3950 was barely a shade off the page background, so the
+      // links - the actual subject of the picture - all but vanished.
+      'line-color': '#7A72A0',
+      'target-arrow-color': '#7A72A0',
       'target-arrow-shape': 'triangle',
-      'arrow-scale': 0.8,
+      'arrow-scale': 0.95,
       'curve-style': 'bezier',
       label: 'data(caption)',
       'font-size': 8,
       'font-family': 'JetBrains Mono, monospace',
-      color: '#8b8496',
+      color: '#C3BCDA',
       'text-rotation': 'autorotate',
       // Amounts sat directly on top of crossing edges and each other. A plate
       // behind the text is what makes them readable on a busy graph.
@@ -130,14 +141,14 @@ const STYLE = [
     selector: 'edge[evidence_type = "inferred_correlation"]',
     style: {
       'line-style': 'dashed',
-      'line-color': '#d9b21c',
-      'target-arrow-color': '#d9b21c',
-      color: '#d9b21c',
+      'line-color': '#FACC15',
+      'target-arrow-color': '#FACC15',
+      color: '#FACC15',
     },
   },
   {
     selector: 'edge[evidence_type = "confirmed_bank"]',
-    style: { 'line-color': '#4a9d8e', 'target-arrow-color': '#4a9d8e' },
+    style: { 'line-color': '#2DD4BF', 'target-arrow-color': '#2DD4BF' },
   },
   {
     selector: 'edge:selected',
@@ -720,7 +731,14 @@ export default function GraphVisualiser({ graph, selected, onSelect, assets, ris
 
   return (
     <div className="relative h-full min-h-[340px]">
-      <div ref={boxRef} className="absolute inset-0" />
+      <div
+        ref={boxRef}
+        className="absolute inset-0"
+        style={{
+          background:
+            'radial-gradient(ellipse at 50% 45%, #1E1830 0%, #14101C 55%, #0D0B12 100%)',
+        }}
+      />
 
       {node && showCard && (
         <WalletCard
@@ -852,12 +870,12 @@ export default function GraphVisualiser({ graph, selected, onSelect, assets, ris
           <span className="flex items-center gap-1.5 text-slate-400 ml-auto">
             <i className="w-5 h-px bg-slate-500" /> confirmed
           </span>
-          <span className="flex items-center gap-1.5 text-[#d9b21c]">
+          <span className="flex items-center gap-1.5 text-[#FACC15]">
             <i
               className="w-5 h-px"
               style={{
                 backgroundImage:
-                  'repeating-linear-gradient(90deg,#d9b21c 0 3px,transparent 3px 6px)',
+                  'repeating-linear-gradient(90deg,#FACC15 0 3px,transparent 3px 6px)',
               }}
             />
             inferred

@@ -67,7 +67,7 @@ export default function ReportExport({ kase }) {
         <div className="organ p-4">
           <div className="text-center border-b border-edge pb-3 mb-3">
             <div className="text-[11px] tracking-[0.18em] text-slate-300 font-bold">
-              CHANDIGARH POLICE CYBER CRIME UNIT
+              CHANDIGARH POLICE HACKATHON
             </div>
             <div className="text-[10px] text-violet mt-1 tracking-wider">
               ELECTRONIC EVIDENCE DOSSIER · SEC 63 BSA 2023
