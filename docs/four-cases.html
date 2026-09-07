@@ -1,0 +1,305 @@
+<title>Four Cases, Four Officers</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+  :root {
+    --paper:#F6F4FA; --card:#FFF; --sunk:#EEEAF5; --ink:#17131F; --ink-soft:#433B54;
+    --muted:#6C6482; --rule:#DAD3E7; --rule-soft:#E9E4F1;
+    --accent:#6A4CB5; --accent-bg:#EDE7F9;
+    --crit:#B0322D; --crit-bg:#F9E8E6;
+    --high:#8A5510; --high-bg:#F8EFDF;
+    --low:#1F6146; --low-bg:#E3F0EA;
+    --f-display:"Spectral",Cambria,Georgia,serif;
+    --f-body:"IBM Plex Sans",Calibri,system-ui,sans-serif;
+    --f-mono:"IBM Plex Mono","Courier New",monospace;
+    --measure:37rem;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:#131019; --card:#1B1725; --sunk:#231D30; --ink:#ECE8F3; --ink-soft:#C3BCD3;
+      --muted:#948CA9; --rule:#332C42; --rule-soft:#262033;
+      --accent:#B39AEB; --accent-bg:#291F3D;
+      --crit:#E58C82; --crit-bg:#2E1C1A;
+      --high:#DCA855; --high-bg:#2B2317;
+      --low:#75C5A0; --low-bg:#162B23;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:#131019; --card:#1B1725; --sunk:#231D30; --ink:#ECE8F3; --ink-soft:#C3BCD3;
+    --muted:#948CA9; --rule:#332C42; --rule-soft:#262033;
+    --accent:#B39AEB; --accent-bg:#291F3D;
+    --crit:#E58C82; --crit-bg:#2E1C1A;
+    --high:#DCA855; --high-bg:#2B2317;
+    --low:#75C5A0; --low-bg:#162B23;
+  }
+  *{box-sizing:border-box}
+  body{background:var(--paper);color:var(--ink);font-family:var(--f-body);
+       font-size:16px;line-height:1.62;-webkit-font-smoothing:antialiased}
+  .sheet{max-width:63rem;margin:0 auto;padding:clamp(1.4rem,4vw,3.5rem) clamp(1rem,4vw,3rem) 5rem}
+  .eyebrow{font-family:var(--f-mono);font-size:.67rem;letter-spacing:.18em;
+           text-transform:uppercase;color:var(--accent);margin:0 0 .9rem}
+  h1{font-family:var(--f-display);font-weight:600;font-size:clamp(2rem,5vw,3rem);
+     line-height:1.06;letter-spacing:-.015em;text-wrap:balance;margin:0 0 .8rem}
+  .standfirst{font-family:var(--f-display);font-style:italic;
+              font-size:clamp(1.02rem,2vw,1.2rem);color:var(--ink-soft);
+              max-width:var(--measure);margin:0 0 2.4rem}
+  section{margin:0 0 3.4rem}
+  .kicker{font-family:var(--f-mono);font-size:.63rem;letter-spacing:.15em;
+          text-transform:uppercase;color:var(--muted);margin:0 0 .7rem}
+  h2{font-family:var(--f-display);font-weight:600;font-size:1.7rem;line-height:1.16;
+     letter-spacing:-.012em;text-wrap:balance;margin:0 0 1rem;padding-bottom:.6rem;
+     border-bottom:1px solid var(--rule)}
+  p{max-width:var(--measure);margin:0 0 .9rem}
+  p:last-child{margin-bottom:0}
+  code{font-family:var(--f-mono);font-size:.85em;background:var(--sunk);
+       padding:.1em .36em;border-radius:2px;word-break:break-word}
+  strong{font-weight:600}
+  a{color:var(--accent)}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+
+  /* ------------------------------------------------------------- case cards */
+  .cases{display:grid;gap:1.1rem;margin-top:1.4rem}
+  .case{background:var(--card);border:1px solid var(--rule);border-radius:4px;
+        padding:1.1rem 1.25rem 1.25rem}
+  .case > header{display:flex;flex-wrap:wrap;align-items:baseline;gap:.6rem .9rem;
+                 margin-bottom:.7rem}
+  .case h3{font-family:var(--f-body);font-size:1.05rem;font-weight:700;margin:0}
+  .case .who{font-family:var(--f-mono);font-size:.68rem;letter-spacing:.1em;
+             text-transform:uppercase;color:var(--accent);background:var(--accent-bg);
+             padding:.2em .55em;border-radius:2px}
+  .score{margin-left:auto;font-family:var(--f-mono);font-size:.7rem;font-weight:600;
+         letter-spacing:.08em;padding:.25em .6em;border-radius:2px;white-space:nowrap}
+  .s-crit{color:var(--crit);background:var(--crit-bg)}
+  .s-high{color:var(--high);background:var(--high-bg)}
+  .s-low{color:var(--low);background:var(--low-bg)}
+  .case p{max-width:none;font-size:.94rem;color:var(--ink-soft)}
+  .facts{display:flex;flex-wrap:wrap;gap:0 1.6rem;margin:.75rem 0 .2rem;
+         padding-top:.7rem;border-top:1px solid var(--rule-soft)}
+  .facts div{padding:.2rem 0}
+  .facts dt{font-family:var(--f-mono);font-size:.58rem;letter-spacing:.13em;
+            text-transform:uppercase;color:var(--muted);margin:0 0 .12rem}
+  .facts dd{margin:0;font-family:var(--f-mono);font-size:.85rem;
+            font-variant-numeric:tabular-nums}
+  .say{font-family:var(--f-display);font-size:1.02rem;line-height:1.5;
+       color:var(--ink);background:var(--sunk);border-left:3px solid var(--accent);
+       padding:.6rem .9rem;margin:.85rem 0 0;max-width:none}
+  .say::before{content:"SAY";display:block;font-family:var(--f-mono);font-size:.56rem;
+               letter-spacing:.16em;color:var(--muted);margin-bottom:.25rem}
+
+  /* ----------------------------------------------------------------- tables */
+  .tablewrap{overflow-x:auto;margin:1.2rem 0 0}
+  table{border-collapse:collapse;width:100%;min-width:33rem;font-size:.9rem}
+  th,td{text-align:left;padding:.6rem .9rem .6rem 0;
+        border-bottom:1px solid var(--rule-soft);vertical-align:top}
+  th{font-family:var(--f-mono);font-size:.61rem;letter-spacing:.13em;
+     text-transform:uppercase;color:var(--muted);font-weight:500;
+     border-bottom:1px solid var(--rule)}
+  td.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+
+  /* ------------------------------------------------------------------ lists */
+  ul.plain{list-style:none;margin:1rem 0 0;padding:0;max-width:var(--measure)}
+  ul.plain li{position:relative;padding:0 0 .7rem 1.1rem;font-size:.94rem;color:var(--ink-soft)}
+  ul.plain li::before{content:"";position:absolute;left:0;top:.6em;width:5px;height:5px;
+                      background:var(--accent);border-radius:50%}
+  ul.plain li:last-child{padding-bottom:0}
+  ul.plain li b{color:var(--ink);font-weight:600}
+
+  ol.steps{list-style:none;margin:1.2rem 0 0;padding:0;counter-reset:s;max-width:46rem}
+  ol.steps li{counter-increment:s;display:grid;grid-template-columns:1.9rem 1fr;
+              gap:0 .85rem;padding:.75rem 0;border-bottom:1px solid var(--rule-soft)}
+  ol.steps li::before{content:counter(s);font-family:var(--f-mono);font-size:.72rem;
+                      color:var(--accent);background:var(--accent-bg);border-radius:2px;
+                      text-align:center;padding:.22rem 0;height:fit-content}
+  ol.steps b{font-weight:600}
+  ol.steps p{font-size:.9rem;margin:.15rem 0 0;max-width:none;color:var(--ink-soft)}
+
+  .note{background:var(--sunk);border:1px solid var(--rule);border-left:3px solid var(--accent);
+        padding:.9rem 1.1rem;border-radius:0 3px 3px 0;margin-top:1.1rem;max-width:46rem}
+  .note p{max-width:none;font-size:.92rem;color:var(--ink-soft)}
+
+  footer{margin-top:3rem;padding-top:1.2rem;border-top:2px solid var(--ink);
+         font-family:var(--f-mono);font-size:.7rem;letter-spacing:.04em;color:var(--muted);
+         display:flex;flex-wrap:wrap;gap:.4rem 1.5rem;justify-content:space-between}
+  @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="sheet">
+
+  <p class="eyebrow">Demonstration set · 252 tests green</p>
+  <h1>Four cases, four officers</h1>
+  <p class="standfirst">One login each, one caseload each — and a set chosen so that showing all four proves something showing one never could.</p>
+
+  <section>
+    <p class="kicker">Why four and not one</p>
+    <h2>A single case cannot prove a system works</h2>
+    <p>Any prototype can be tuned until one dataset looks impressive. The moment there are four, with different shapes and different answers, the scoring has to actually discriminate — and a judge can see that it does without taking anyone's word for it.</p>
+    <p>So the four are deliberately unlike each other: a mule-network funnel, a chain-hopping trail, a short one that resolves, and the original digital-arrest case. They score <strong>CRITICAL, HIGH, HIGH and LOW</strong>. If they all came back red, that would tell you the tool paints everything red.</p>
+    <div class="note">
+      <p><strong>Sign-in is the same password for everyone</strong> — <code>violet-demo-2026</code> — with a different officer ID each. Every action lands in the hash-chained custody log against the person who did it, which is the point of separate accounts rather than one shared login.</p>
+    </div>
+  </section>
+
+  <section>
+    <p class="kicker">The set</p>
+    <h2>What each officer opens</h2>
+
+    <div class="cases">
+
+      <article class="case">
+        <header>
+          <h3>Digital arrest fraud</h3>
+          <span class="who">IO_SHARMA · Demo Test 1</span>
+          <span class="score s-high">65 · HIGH</span>
+        </header>
+        <p>The original case. One complainant, one mule account, one off-ramp, then dispersal into a mixer and a bridge. Small enough to hold in your head and the right one to open with.</p>
+        <dl class="facts">
+          <div><dt>Loss</dt><dd>INR 4,70,000</dd></div>
+          <div><dt>Graph</dt><dd>14 · 17</dd></div>
+          <div><dt>Rules</dt><dd>R1 R2 R3 R4</dd></div>
+          <div><dt>Assets</dt><dd>INR · USDT</dd></div>
+          <div><dt>Elapsed</dt><dd>13m 15s</dd></div>
+        </dl>
+        <p class="say">The money left her account at ten thirty-one and four seconds. Fifty-eight seconds later it was USDT, and the helpline could no longer see it.</p>
+      </article>
+
+      <article class="case">
+        <header>
+          <h3>Task-based fraud, mule network</h3>
+          <span class="who">DEMO_2 · Demo Test 2</span>
+          <span class="score s-crit">75 · CRITICAL</span>
+        </header>
+        <p>Six complainants, six mule accounts in six different banks, funnelling through two aggregator UPI handles into a P2P trader who converts to <strong>USDT on Tron</strong> — the rail Indian proceeds actually move on. All five behavioural rules fire on the seed.</p>
+        <dl class="facts">
+          <div><dt>Loss</dt><dd>INR 9,43,000</dd></div>
+          <div><dt>Graph</dt><dd>25 · 28 <span style="color:var(--muted)">of 32</span></dd></div>
+          <div><dt>Rules</dt><dd>R1 R2 R3 R4 R5</dd></div>
+          <div><dt>Chain</dt><dd>Tron</dd></div>
+          <div><dt>Victims</dt><dd>6</dd></div>
+        </dl>
+        <p class="say">No single complainant here lost enough to get a case prioritised. Together they lost nine and a half lakh to one network. That is the argument for tracing rather than triaging by amount.</p>
+      </article>
+
+      <article class="case">
+        <header>
+          <h3>Chain-hopping, and a trail that ends</h3>
+          <span class="who">DEMO_3 · Demo Test 3</span>
+          <span class="score s-high">60 · HIGH</span>
+        </header>
+        <p>Four complainants, larger amounts, and a deliberate <strong>Ethereum → bridge → Tron</strong> hop that exists to break a single-chain tracer. Part of the trail dies in a liquidity pool; part comes back to India through a P2P payout into a bank account, which is where it becomes actionable again.</p>
+        <dl class="facts">
+          <div><dt>Loss</dt><dd>INR 12,17,000</dd></div>
+          <div><dt>Graph</dt><dd>20 · 23</dd></div>
+          <div><dt>Rules</dt><dd>R1 R3 R4 R5</dd></div>
+          <div><dt>Assets</dt><dd>INR · USDT · ETH</dd></div>
+          <div><dt>Inferred</dt><dd>4 edges</dd></div>
+        </dl>
+        <p class="say">They hopped chains on purpose, to break a tracer that only reads one. We followed it across and we also tell you which part we lost.</p>
+      </article>
+
+      <article class="case">
+        <header>
+          <h3>Short UPI trail</h3>
+          <span class="who">DEMO_4 · Demo Test 4</span>
+          <span class="score s-low">20 · LOW</span>
+        </header>
+        <p>One complainant, three hops, ending at a KYC-bearing Indian exchange. Deliberately unimpressive — and the most important case in the set for exactly that reason.</p>
+        <dl class="facts">
+          <div><dt>Loss</dt><dd>INR 1,85,000</dd></div>
+          <div><dt>Graph</dt><dd>7 · 7</dd></div>
+          <div><dt>Rules</dt><dd>R1</dd></div>
+          <div><dt>Ends at</dt><dd>Indian VDA SP</dd></div>
+          <div><dt>Notice</dt><dd>same day</dd></div>
+        </dl>
+        <p class="say">Sometimes the answer is small. Three hops, a KYC'd Indian exchange, and the production order goes out the same afternoon. A tool that only ever draws a spider's web is lying to you about the job.</p>
+      </article>
+
+    </div>
+  </section>
+
+  <section>
+    <p class="kicker">The core, in one page</p>
+    <h2>What the system actually is</h2>
+    <p>Four claims, and each one is enforced by a test rather than asserted in a slide.</p>
+    <ol class="steps">
+      <li><div><b>It starts where the 1930 helpline stops.</b>
+        <p>CFCFRMS freezes bank accounts on UTRs and goes blind the moment funds become crypto. In case 001 that happens 58 seconds after the debit. Everything here is about the part after that second.</p></div></li>
+      <li><div><b>It separates what it knows from what it guessed.</b>
+        <p>Solid edge is a bank record or a transaction hash. Dashed edge is an inference — a timing correlation, not a proven transfer. The distinction is in the drawing, in the data type, and printed CONFIRMED or INFERRED on the face of every legal document.</p></div></li>
+      <li><div><b>The AI never touches a score.</b>
+        <p>Seven fixed rules with cited evidence produce every number. The language model writes prose; the anomaly model produces leads on a separate screen. The proof is that the model flags the complainant, whose score is zero.</p></div></li>
+      <li><div><b>It ends with paperwork, not a picture.</b>
+        <p>A Sec 63 BSA dossier, an FIU-IND STR draft, and a Sec 94 BNSS production order to the exchange with the deposit address, amounts, timestamps and hashes already in the Schedule.</p></div></li>
+    </ol>
+  </section>
+
+  <section>
+    <p class="kicker">The comparison to make, and the one to avoid</p>
+    <h2>Where this sits in the Indian system</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>System</th><th>What it does well</th><th>Where it stops</th></tr></thead>
+        <tbody>
+          <tr><td><strong>NCRP / 1930</strong></td><td>Complaint intake and routing at national scale</td><td>Not an analysis tool</td></tr>
+          <tr><td><strong>CFCFRMS</strong></td><td>Golden-hour bank-to-bank freeze on UTRs</td><td><strong>The second funds become crypto</strong></td></tr>
+          <tr><td><strong>CCTNS</strong></td><td>FIR and case records</td><td>No financial tracing</td></tr>
+          <tr><td><strong>Chainalysis / TRM</strong></td><td>Address attribution at global scale</td><td>Per-seat foreign-currency licence, cloud-dependent, no Indian statutory output</td></tr>
+          <tr><td><strong>This</strong></td><td>FIR → trace → Sec 63 dossier → Sec 94 order, offline, at zero licence cost</td><td><strong>Attribution — 15 curated labels, stated in writing</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note">
+      <p><strong>Never claim to beat Chainalysis at attribution.</strong> One sentence there ends your run with anyone who knows the field. The differentiator is the Indian statutory output and a deployment a district cyber cell can actually afford — not the tracing intelligence.</p>
+    </div>
+  </section>
+
+  <section>
+    <p class="kicker">Why it is more feasible here</p>
+    <h2>The argument that is actually about India</h2>
+    <ul class="plain">
+      <li><b>Zero marginal cost per district.</b> Etherscan and TronGrid free tiers, SQLite, open-source everything. No per-seat licence, no subscription, no procurement cycle. Adding the next cyber cell costs nothing.</li>
+      <li><b>It runs offline.</b> Pre-tested addresses replay from disk; a dead network trips a circuit breaker and falls through to cache in about a second. That matters more in a district police station than it does in a pitch deck.</li>
+      <li><b>The output is Indian.</b> Sec 63 BSA certificate particulars, a Sec 94 BNSS order, an FIU-IND STR under Sec 12 PMLA read with Rule 8 — with rupee figures in lakh/crore grouping. A foreign tool gives you a graph and leaves the paperwork to you.</li>
+      <li><b>Tron is first-class, not an afterthought.</b> Indian proceeds move as USDT on Tron far more than on Ethereum. Case 002 is built on that rail on purpose.</li>
+      <li><b>A UT is the right place to pilot it.</b> One force, one command chain, no inter-state memorandum. A three-month trial can be decided and executed inside one organisation, and the result is attributable to that decision.</li>
+    </ul>
+  </section>
+
+  <section>
+    <p class="kicker">How to run it in front of them</p>
+    <h2>Use the set, do not tour it</h2>
+    <p>Do not walk through four cases in order — you will lose the room by the third. Open on one, and bring the others in only to answer a question that has actually been asked.</p>
+    <ol class="steps">
+      <li><div><b>Open on case 001 as Demo Test 1.</b>
+        <p>Timeline first, then the dashed edge, then the score decomposition, then the dilution negative. That is the six-minute run you have rehearsed.</p></div></li>
+      <li><div><b>When they ask "does this only work on your one example?" — sign out and sign in as DEMO_2.</b>
+        <p>Different officer, different case, six victims, Tron, 75/CRITICAL. Nothing was reconfigured; the account changed and the caseload changed with it. This is the single strongest move in the demonstration.</p></div></li>
+      <li><div><b>When they ask about chain-hopping, use DEMO_3.</b>
+        <p>Ethereum to a bridge to Tron, three assets in the Asset Ledger, and part of the trail honestly lost in a pool.</p></div></li>
+      <li><div><b>When they ask "so every case is a nightmare?" — DEMO_4.</b>
+        <p>Seven entities, three hops, ends at a KYC-bearing Indian exchange. Draft the production order in front of them. It takes about fifteen seconds.</p></div></li>
+      <li><div><b>Close by handing over the keyboard.</b>
+        <p>LIVE MAINNET, any Ethereum or Tron address they like, against real chain data.</p></div></li>
+    </ol>
+    <div class="note">
+      <p><strong>The line to use when you switch accounts:</strong> <em>“Every officer has their own login, because the custody log has to record who did a thing, not that somebody did. Here is my colleague's caseload — same seven rules, different money, different answer.”</em></p>
+    </div>
+  </section>
+
+  <section>
+    <p class="kicker">Worth knowing before someone finds it</p>
+    <h2>Two things about this set that are honest, not hidden</h2>
+    <ul class="plain">
+      <li><b>Case 002 shows 25 of 32 entities.</b> The trace is bounded at depth 3, so the complainants sit outside it and the header says <code>bounds reached</code>. That is the bound doing its job, and re-seeding from a terminal address continues the enquiry. It is not a rendering failure.</li>
+      <li><b>The complainants show 0% traced funds, the seed shows 100%.</b> Deliberate. Taint begins with what <em>leaves</em> a victim's account; marking a complainant as illicit would be both wrong and offensive. Where the trace starts at an address instead of a person, that address is the money under investigation, so it reads 100%. Both directions are pinned by tests.</li>
+    </ul>
+  </section>
+
+  <footer>
+    <span>Project Violet Milk · demonstration set</span>
+    <span>4 cases · 252 tests · 2 chains</span>
+    <span>Chandigarh Police Hackathon</span>
+  </footer>
+
+</div>
