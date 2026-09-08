@@ -177,4 +177,4 @@ def get_conversions(case_id: str):
     ledger already follow.
     """
     a = get_analysis(case_id, _seed_for(case_id))
-    return conversion_engine.build(case_id, a.nodes, a.edges)
+    return conversion_engine.build(case_id, a.nodes, a.edges, a.hop_depth)

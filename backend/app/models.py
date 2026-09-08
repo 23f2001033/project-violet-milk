@@ -677,6 +677,29 @@ class VenueUse(BaseModel):
     note: str
 
 
+class TerminalAddress(BaseModel):
+    """An address where the traced money stops, and what to do about it.
+
+    A Section 94 order compels a PERSON to produce records. Serving one on a
+    smart contract or an unhosted wallet asks nobody for nothing, and burns an
+    officer's week finding that out. So the three ways a trail can stop are
+    reported separately, each with the route that actually applies.
+    """
+    node_id: str
+    label: str | None = None
+    node_type: NodeType
+    chain: Chain
+    amount_received: float
+    assets: list[Asset]
+    disposition: Literal["unhosted", "pass_through_contract", "bounds_reached"]
+    serve_production_order: Literal[False] = Field(
+        False,
+        description="Always false. None of these is a person who can produce "
+                    "records; that is what makes them terminal.",
+    )
+    recommended_action: str
+
+
 class ConversionTrail(BaseModel):
     case_id: str
     computed_at: str
@@ -685,4 +708,5 @@ class ConversionTrail(BaseModel):
     )
     conversions: list[ConversionPoint]
     venues: list[VenueUse]
+    terminal_addresses: list[TerminalAddress] = []
     caveat: str

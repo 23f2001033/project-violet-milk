@@ -36,7 +36,7 @@ from datetime import datetime, timezone
 
 from ..models import (
     Asset, Chain, ConversionPoint, ConversionTrail, Edge, Node, NodeType,
-    VenueUse,
+    TerminalAddress, VenueUse,
 )
 
 # Services that hold customer records and can therefore be served with a
@@ -61,6 +61,26 @@ NOTE_CONTRACT = (
     "A contract, not a company. There is no operator holding records to "
     "produce, so the trail is followed through it rather than served on it."
 )
+# Where a trail stops, and the route that actually applies. A Section 94 order
+# compels a PERSON to produce records; none of these is one, which is exactly
+# why they are listed apart from the venues that can be served.
+ACTION_UNHOSTED = (
+    "Terminal unhosted address. No custodian holds this key, so there is "
+    "nobody to serve a production order on. Refer it as an FIU-IND lead and to "
+    "blockchain analytics for attribution, and monitor it: the order becomes "
+    "possible the moment these funds move to a hosted service."
+)
+ACTION_CONTRACT = (
+    "Pass-through contract. It has an address but no operator, so a production "
+    "order would ask nobody for nothing. Follow the value through it and serve "
+    "the hosted service on the far side."
+)
+ACTION_BOUNDS = (
+    "The trace stopped here at its depth bound, so this address may well have "
+    "onward movement that was never fetched. It is not established as terminal. "
+    "Re-seed a fresh trace from this address before treating it as an endpoint."
+)
+
 NOTE_UNIDENTIFIED = (
     "No curated label backs this address, so the service behind it is not "
     "identified. Unlabelled is unknown, never clean."
@@ -86,7 +106,55 @@ def _rate(amount_in: float, amount_out: float,
     return f"{amount_out / amount_in:,.6f} {a_out.value} per {a_in.value}"
 
 
-def build(case_id: str, nodes: list[Node], edges: list[Edge]) -> ConversionTrail:
+def _terminals(nodes: list[Node], edges: list[Edge],
+               hop_depth: dict[str, int] | None) -> list[TerminalAddress]:
+    """Addresses the traced money does not leave.
+
+    The load-bearing distinction is the third case. A node at the traversal
+    bound has no outbound edges IN OUR DATA, which is not the same as having
+    none on the chain - we simply stopped expanding. Calling that terminal
+    would be a claim the evidence does not support, and would send an officer
+    to close an enquiry that had not actually ended.
+    """
+    hop_depth = hop_depth or {}
+    max_depth = max(hop_depth.values(), default=0)
+    senders = {e.from_node for e in edges}
+
+    out: list[TerminalAddress] = []
+    for node in nodes:
+        if node.node_id in senders:
+            continue
+        inbound = [e for e in edges if e.to_node == node.node_id]
+        if not inbound:
+            continue
+
+        at_bound = hop_depth.get(node.node_id) == max_depth and max_depth > 0
+        if node.node_type in (NodeType.MIXER, NodeType.BRIDGE):
+            disposition, action = "pass_through_contract", ACTION_CONTRACT
+        elif at_bound:
+            disposition, action = "bounds_reached", ACTION_BOUNDS
+        else:
+            disposition, action = "unhosted", ACTION_UNHOSTED
+
+        out.append(TerminalAddress(
+            node_id=node.node_id,
+            label=node.label,
+            node_type=node.node_type,
+            chain=node.chain,
+            amount_received=round(sum(e.amount for e in inbound), 8),
+            assets=sorted({e.asset for e in inbound}, key=lambda a: a.value),
+            disposition=disposition,
+            recommended_action=action,
+        ))
+
+    # Unhosted first: those are the ones an officer must decide about.
+    order = {"unhosted": 0, "bounds_reached": 1, "pass_through_contract": 2}
+    out.sort(key=lambda t: (order[t.disposition], -t.amount_received))
+    return out
+
+
+def build(case_id: str, nodes: list[Node], edges: list[Edge],
+          hop_depth: dict[str, int] | None = None) -> ConversionTrail:
     by_id = {n.node_id: n for n in nodes}
 
     # Rails in order of first appearance, so the sequence reads the way the
@@ -178,5 +246,6 @@ def build(case_id: str, nodes: list[Node], edges: list[Edge]) -> ConversionTrail
         rails_used=rails,
         conversions=conversions,
         venues=venues,
+        terminal_addresses=_terminals(nodes, edges, hop_depth),
         caveat=CAVEAT,
     )

@@ -147,3 +147,83 @@ def test_the_trail_writes_no_audit_row():
     before = len(client.get(f"/api/cases/{CASE}/audit").json())
     client.get(f"/api/cases/{CASE}/conversions")
     assert len(client.get(f"/api/cases/{CASE}/audit").json()) == before
+
+
+# ------------------------------------------------- where the trail actually ends
+
+def test_terminal_addresses_are_reported(trail):
+    """A trail that stops somewhere is a fact an officer must act on, and the
+    graph alone does not say where."""
+    assert trail["terminal_addresses"], "the demo case has dead ends"
+
+
+def test_none_of_them_can_be_served_with_a_production_order(trail):
+    """THE point of the list. Section 94 compels a PERSON to produce records.
+    An unhosted key has no custodian and a contract has no operator, so an
+    order against either asks nobody for nothing - and the officer loses the
+    weeks it takes to find that out."""
+    for t in trail["terminal_addresses"]:
+        assert t["serve_production_order"] is False, t["node_id"]
+
+
+def test_a_contract_is_distinguished_from_an_unhosted_wallet(trail):
+    """Different dead ends, different next steps. Conflating them sends an
+    officer down the wrong route."""
+    by_kind = {t["node_type"]: t["disposition"] for t in trail["terminal_addresses"]}
+    assert by_kind.get("mixer") == "pass_through_contract"
+    assert by_kind.get("bridge") == "pass_through_contract"
+    assert "unhosted" in by_kind.values()
+
+
+def test_an_unhosted_address_is_routed_to_a_lead_not_an_order(trail):
+    t = next(x for x in trail["terminal_addresses"]
+             if x["disposition"] == "unhosted")
+    action = t["recommended_action"]
+    assert "FIU-IND lead" in action
+    assert "blockchain analytics" in action
+    assert "monitor" in action.lower()
+
+
+def test_a_contract_is_routed_through_rather_than_served(trail):
+    t = next(x for x in trail["terminal_addresses"]
+             if x["disposition"] == "pass_through_contract")
+    assert "no operator" in t["recommended_action"]
+    assert "far side" in t["recommended_action"]
+
+
+def test_a_bound_is_never_reported_as_an_ending():
+    """The load-bearing honesty. A node at the traversal bound has no outbound
+    edges IN OUR DATA, which is not the same as having none on the chain.
+    Calling that terminal would close an enquiry that had not ended."""
+    from backend.app.engines.pipeline import analyse as _analyse
+
+    a = _analyse(CASE, SEED)
+    # Force every node to sit at the bound: nothing may then be called
+    # unhosted, because nothing has been established as terminal.
+    flat = {n.node_id: 3 for n in a.nodes}
+    t = conversion.build(CASE, a.nodes, a.edges, flat)
+    dispositions = {x.disposition for x in t.terminal_addresses}
+    assert "unhosted" not in dispositions
+    assert "bounds_reached" in dispositions
+    for x in t.terminal_addresses:
+        if x.disposition == "bounds_reached":
+            assert "not established as terminal" in x.recommended_action
+
+
+def test_unhosted_addresses_are_listed_before_contracts(trail):
+    """Those are the ones an officer has to make a decision about."""
+    order = [t["disposition"] for t in trail["terminal_addresses"]]
+    rank = {"unhosted": 0, "bounds_reached": 1, "pass_through_contract": 2}
+    assert order == sorted(order, key=lambda d: rank[d])
+
+
+def test_the_notice_tells_an_officer_what_to_do_instead():
+    """When no exchange was reached, the draft must not simply fail quietly -
+    it has to redirect, or the officer serves it anyway."""
+    from backend.app.engines import notice_engine
+    from backend.app.engines.pipeline import analyse as _analyse
+    from backend.app.models import NodeType as NT
+
+    a = _analyse(CASE, SEED)
+    a.nodes = [n for n in a.nodes if n.node_type != NT.EXCHANGE]
+    assert notice_engine.identify_addressee(a) is None

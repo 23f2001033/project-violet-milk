@@ -263,6 +263,52 @@ export default function AssetLedger({ assets, conversions, selected, nodesById }
             ))}
           </div>
 
+          {conversions.terminal_addresses?.length > 0 && (
+            <>
+              <div className="label mt-4 mb-1">
+                Where the trail stops · {conversions.terminal_addresses.length}
+              </div>
+              <p className="text-[10px] text-slate-500 leading-relaxed mb-2">
+                A Section 94 order compels a <em>person</em> to produce records.
+                None of these is one, so none of them should be served — the
+                route that does apply is stated against each.
+              </p>
+              <div className="flex flex-col">
+                {conversions.terminal_addresses.map((t) => (
+                  <div key={t.node_id}
+                       className="py-2 border-b border-edge last:border-b-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className={`font-mono text-[9px] px-1.5 py-0.5 rounded
+                        ${t.disposition === 'unhosted'
+                          ? 'text-risk-high bg-risk-high/15'
+                          : t.disposition === 'bounds_reached'
+                            ? 'text-risk-medium bg-risk-medium/15'
+                            : 'text-slate-500 bg-panel2'}`}>
+                        {t.disposition === 'unhosted' ? 'TERMINAL UNHOSTED'
+                          : t.disposition === 'bounds_reached' ? 'BOUND REACHED'
+                          : 'PASS-THROUGH CONTRACT'}
+                      </span>
+                      <span className="text-[11px] text-slate-200">
+                        {t.label || short(t.node_id)}
+                      </span>
+                      <span className="text-[10px] text-slate-600 font-mono">
+                        {t.node_type} · {t.chain}
+                      </span>
+                      <span className="ml-auto text-[10px] text-slate-500 font-mono">
+                        {t.amount_received.toLocaleString('en-IN', {
+                          maximumFractionDigits: 2,
+                        })} {t.assets.join(' ')}
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-slate-500 leading-relaxed mt-0.5">
+                      {t.recommended_action}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+
           <p className="text-[10px] text-slate-600 leading-relaxed mt-2">
             {conversions.caveat}
           </p>

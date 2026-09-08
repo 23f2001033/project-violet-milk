@@ -282,10 +282,23 @@ def build_notice_document(
 
     if not fields["addressee_address_on_chain"]:
         story.append(Paragraph(
-            "<b>This trace reached no exchange.</b> A production order cannot "
-            "be drafted against an entity that has not been identified. "
-            "Extend the trace, or treat the terminal addresses in the Schedule "
-            "as the subject of further enquiry.", S_BODY))
+            "<b>This trace reached no exchange, so this order should not be "
+            "issued.</b> A production order under Section 94 compels a person "
+            "to produce records. Where funds rest in an unhosted address or "
+            "pass through a contract such as a mixer or a bridge, there is no "
+            "custodian holding records and no operator to serve: an order "
+            "would ask nobody for nothing, and the weeks spent discovering "
+            "that are weeks the trail goes cold.", S_BODY))
+        story.append(Spacer(1, 2 * mm))
+        story.append(Paragraph(
+            "The appropriate steps instead are to refer the terminal addresses "
+            "as an FIU-IND lead and for blockchain-analytics attribution, to "
+            "place them under monitoring so that a production order becomes "
+            "possible the moment the funds reach a hosted service, and to "
+            "re-seed a fresh trace from any address the traversal stopped at "
+            "rather than treating a bound as an ending. The Asset Ledger "
+            "screen lists each terminal address with which of these applies.",
+            S_BODY))
 
     story.append(Spacer(1, 3 * mm))
     story.append(Paragraph("Authority to issue", S_H))
