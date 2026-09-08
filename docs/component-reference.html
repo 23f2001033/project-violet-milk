@@ -1,0 +1,449 @@
+<title>Violet Milk Component Reference</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+  :root{
+    --paper:#F7F5FA;--card:#FFF;--sunk:#EFEBF6;--ink:#16121E;--ink-soft:#423A54;
+    --muted:#6B6381;--rule:#DAD3E7;--rule-soft:#E9E4F1;
+    --accent:#6A4CB5;--accent-bg:#EDE7F9;
+    --p1:#1F5D46;--p1bg:#E3F0EA; --p2:#8A5510;--p2bg:#F8EFDF;
+    --p3:#1D5B87;--p3bg:#E1EDF6; --p4:#8A2F55;--p4bg:#F7E6EE;
+    --f-display:"Spectral",Cambria,Georgia,serif;
+    --f-body:"IBM Plex Sans",Calibri,system-ui,sans-serif;
+    --f-mono:"IBM Plex Mono","Courier New",monospace;
+    --measure:38rem;
+  }
+  @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+    --paper:#131019;--card:#1B1725;--sunk:#231D30;--ink:#ECE8F3;--ink-soft:#C3BCD3;
+    --muted:#948CA9;--rule:#332C42;--rule-soft:#262033;
+    --accent:#B39AEB;--accent-bg:#291F3D;
+    --p1:#74C49F;--p1bg:#162B23; --p2:#DCA855;--p2bg:#2B2317;
+    --p3:#7FB4DC;--p3bg:#152430; --p4:#DE8FB0;--p4bg:#2C1922;
+  }}
+  :root[data-theme="dark"]{
+    --paper:#131019;--card:#1B1725;--sunk:#231D30;--ink:#ECE8F3;--ink-soft:#C3BCD3;
+    --muted:#948CA9;--rule:#332C42;--rule-soft:#262033;
+    --accent:#B39AEB;--accent-bg:#291F3D;
+    --p1:#74C49F;--p1bg:#162B23; --p2:#DCA855;--p2bg:#2B2317;
+    --p3:#7FB4DC;--p3bg:#152430; --p4:#DE8FB0;--p4bg:#2C1922;
+  }
+  *{box-sizing:border-box}
+  body{background:var(--paper);color:var(--ink);font-family:var(--f-body);
+       font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .sheet{max-width:64rem;margin:0 auto;padding:clamp(1.4rem,4vw,3.5rem) clamp(1rem,4vw,3rem) 5rem}
+  .eyebrow{font-family:var(--f-mono);font-size:.66rem;letter-spacing:.18em;
+           text-transform:uppercase;color:var(--accent);margin:0 0 .9rem}
+  h1{font-family:var(--f-display);font-weight:600;font-size:clamp(2rem,5vw,3rem);
+     line-height:1.06;letter-spacing:-.015em;text-wrap:balance;margin:0 0 .8rem}
+  .standfirst{font-family:var(--f-display);font-style:italic;
+              font-size:clamp(1.02rem,2vw,1.2rem);color:var(--ink-soft);
+              max-width:var(--measure);margin:0 0 1.8rem}
+  .meta{display:flex;flex-wrap:wrap;border-top:2px solid var(--ink);
+        border-bottom:1px solid var(--rule);margin-bottom:2.6rem}
+  .meta div{padding:.75rem 1.3rem .8rem 0;border-right:1px solid var(--rule-soft);margin-right:1.3rem}
+  .meta div:last-child{border-right:0;margin-right:0}
+  .meta dt{font-family:var(--f-mono);font-size:.56rem;letter-spacing:.14em;
+           text-transform:uppercase;color:var(--muted);margin:0 0 .18rem}
+  .meta dd{margin:0;font-size:.92rem;font-weight:600;font-variant-numeric:tabular-nums}
+
+  section{margin:0 0 2.8rem}
+  h2{font-family:var(--f-display);font-weight:600;font-size:1.55rem;line-height:1.18;
+     letter-spacing:-.012em;text-wrap:balance;margin:0 0 .9rem;padding-bottom:.5rem;
+     border-bottom:1px solid var(--rule)}
+  h3{font-family:var(--f-body);font-size:1rem;font-weight:700;margin:1.6rem 0 .5rem}
+  .kicker{font-family:var(--f-mono);font-size:.62rem;letter-spacing:.15em;
+          text-transform:uppercase;color:var(--muted);margin:0 0 .65rem}
+  p{max-width:var(--measure);margin:0 0 .85rem}
+  code{font-family:var(--f-mono);font-size:.84em;background:var(--sunk);
+       padding:.08em .34em;border-radius:2px;word-break:break-word}
+  strong{font-weight:600}
+
+  .tablewrap{overflow-x:auto;margin:1rem 0 0}
+  table{border-collapse:collapse;width:100%;min-width:32rem;font-size:.875rem}
+  th,td{text-align:left;padding:.5rem .85rem .5rem 0;
+        border-bottom:1px solid var(--rule-soft);vertical-align:top}
+  th{font-family:var(--f-mono);font-size:.59rem;letter-spacing:.13em;
+     text-transform:uppercase;color:var(--muted);font-weight:500;
+     border-bottom:1px solid var(--rule)}
+  td.mono,td.num{font-family:var(--f-mono);font-size:.8rem;
+                 font-variant-numeric:tabular-nums}
+  td.num{white-space:nowrap}
+
+  ul.plain{list-style:none;margin:.8rem 0 0;padding:0;max-width:var(--measure)}
+  ul.plain li{position:relative;padding:0 0 .6rem 1.05rem;font-size:.92rem;color:var(--ink-soft)}
+  ul.plain li::before{content:"";position:absolute;left:0;top:.6em;width:5px;height:5px;
+                      background:var(--accent);border-radius:50%}
+  ul.plain li b{color:var(--ink);font-weight:600}
+
+  .speaker{display:inline-block;font-family:var(--f-mono);font-size:.58rem;
+           letter-spacing:.14em;text-transform:uppercase;padding:.2em .55em;
+           border-radius:2px;margin-left:.5rem;vertical-align:.12em}
+  .sp1{color:var(--p1);background:var(--p1bg)}
+  .sp2{color:var(--p2);background:var(--p2bg)}
+  .sp3{color:var(--p3);background:var(--p3bg)}
+  .sp4{color:var(--p4);background:var(--p4bg)}
+
+  .note{background:var(--sunk);border:1px solid var(--rule);
+        border-left:3px solid var(--accent);padding:.85rem 1.05rem;
+        border-radius:0 3px 3px 0;margin-top:1rem;max-width:42rem}
+  .note p{max-width:none;font-size:.9rem;color:var(--ink-soft)}
+  .note p:last-child{margin-bottom:0}
+
+  footer{margin-top:2.6rem;padding-top:1.1rem;border-top:2px solid var(--ink);
+         font-family:var(--f-mono);font-size:.68rem;letter-spacing:.04em;
+         color:var(--muted);display:flex;flex-wrap:wrap;gap:.4rem 1.5rem;
+         justify-content:space-between}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="sheet">
+
+  <p class="eyebrow">Component reference · for scripting a four-person presentation</p>
+  <h1>Violet Milk, part by part</h1>
+  <p class="standfirst">Every component of the prototype, what it does, why it exists, and the honest limit on each — written so a speech can be built from it without inventing anything.</p>
+
+  <dl class="meta">
+    <div><dt>Tests</dt><dd>287 passing</dd></div>
+    <div><dt>API</dt><dd>24 paths · 28 ops</dd></div>
+    <div><dt>Code</dt><dd>11,483 lines</dd></div>
+    <div><dt>Engines</dt><dd>11</dd></div>
+    <div><dt>Services</dt><dd>10</dd></div>
+    <div><dt>Screens</dt><dd>11</dd></div>
+    <div><dt>Cases</dt><dd>4</dd></div>
+    <div><dt>Chains</dt><dd>Ethereum · Tron</dd></div>
+  </dl>
+
+  <div class="note">
+    <p><strong>How to use this for a four-person speech.</strong> Each section carries a speaker tag — <span class="speaker sp1">P1 problem</span> <span class="speaker sp2">P2 method</span> <span class="speaker sp3">P3 evidence</span> <span class="speaker sp4">P4 outcome</span> — suggesting who owns it. Roughly: P1 opens on the problem and the case, P2 explains how the tracing and scoring work, P3 covers evidence integrity and the AI boundary, P4 closes on the legal output, cost and the ask. Every figure below is computed by the running system, not aspirational.</p>
+  </div>
+
+  <!-- ============================================================ 1 -->
+  <section>
+    <p class="kicker">One</p>
+    <h2>The problem, stated as a clock <span class="speaker sp1">P1 problem</span></h2>
+    <p>A complainant loses money to cyber fraud. She calls 1930. The Citizen Financial Cyber Fraud Reporting and Management System freezes on bank rails using UTRs, and it is good at that.</p>
+    <p>In the demonstration case her money leaves the SBI account at <strong>10:31:04</strong> and is USDT on a public blockchain at <strong>10:32:02</strong> — <strong>fifty-eight seconds</strong>. From that second the helpline can no longer see it.</p>
+    <p>The officer who must write the chargesheet is not missing a law. Section 94 BNSS 2023 already compels any exchange to produce records; Section 63 BSA 2023 already governs electronic evidence; the PMLA already makes registered exchanges reporting entities. <strong>He is missing one fact: which exchange, and which deposit address.</strong> That is a capability gap, not a legal one.</p>
+  </section>
+
+  <!-- ============================================================ 2 -->
+  <section>
+    <p class="kicker">Two</p>
+    <h2>Architecture <span class="speaker sp2">P2 method</span></h2>
+    <p>One process, one port. The React interface is built and served by the same FastAPI application, so there is no second service to deploy or fail. SQLite is a single file on disk.</p>
+
+    <h3>Data sources — three, interchangeable</h3>
+    <p>A <code>DataSource</code> interface with three implementations. No engine downstream knows which is active, which is why a judge can paste a live address mid-demonstration and nothing else changes.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Source</th><th>Reads</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">SyntheticSource</td><td>Bundled case CSVs</td><td>Per-case datasets; needs no network</td></tr>
+          <tr><td class="mono">EtherscanSource</td><td>Ethereum mainnet</td><td>Throttled to 3 calls/sec, disk-cached, circuit breaker</td></tr>
+          <tr><td class="mono">TronSource</td><td>Tron / TRC-20</td><td>Tokens verified by contract address, never ticker</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:.9rem">An address routes itself: <code>0x…</code> is Ethereum, <code>T…</code> is Tron.</p>
+
+    <h3>Eleven engines</h3>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Engine</th><th>Answers</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">graph_engine</td><td>Bounded traversal from a seed. Each asset gets a fair share of the per-node budget, so large native-currency figures cannot starve token transfers out</td></tr>
+          <tr><td class="mono">risk_engine</td><td>Seven fixed rules with cited evidence. No model touches it</td></tr>
+          <tr><td class="mono">dilution</td><td>How much of what sits at an address is traceable to the complainant</td></tr>
+          <tr><td class="mono">timeline</td><td>The same events as a clock, IST-aware</td></tr>
+          <tr><td class="mono">anomaly</td><td>Isolation Forest + DBSCAN. Leads only, on a separate endpoint</td></tr>
+          <tr><td class="mono">assets</td><td>Which currency moved, at which layer, and in rupees</td></tr>
+          <tr><td class="mono">conversion</td><td>Where value changed FORM, and whose hands it changed at</td></tr>
+          <tr><td class="mono">report_engine</td><td>The Sec 63 BSA court dossier</td></tr>
+          <tr><td class="mono">str_engine</td><td>The FIU-IND suspicious transaction report draft</td></tr>
+          <tr><td class="mono">notice_engine</td><td>The Sec 94 BNSS production order draft</td></tr>
+          <tr><td class="mono">pipeline</td><td>Orchestration and caching of one analysis</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Ten services</h3>
+    <p><code>audit</code> (hash chain) · <code>auth</code> (PBKDF2, 240,000 iterations) · <code>anchor</code> (optional on-chain digest) · <code>ingestion</code> (CSV to graph) · <code>column_mapper</code> (AI with heuristic floor) · <code>narration</code> (Indian bank narration parsing) · <code>narrative</code> (AI prose with template floor) · <code>llm_client</code> (cached, optional) · <code>hashing</code> (SHA-256) · <code>formatting</code> (lakh/crore grouping)</p>
+  </section>
+
+  <!-- ============================================================ 3 -->
+  <section>
+    <p class="kicker">Three</p>
+    <h2>The seven rules <span class="speaker sp2">P2 method</span></h2>
+    <p>Section 63 BSA requires explaining how an electronic record was produced. Arithmetic can be explained to a court; a neural network cannot be cross-examined. That is the entire reason scoring is deterministic.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Rule</th><th>Pts</th><th>Fires when</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">R1</td><td class="num">+20</td><td>Within one hop of the seed</td></tr>
+          <tr><td class="mono">R2</td><td class="num">+15</td><td>Funds leave within 240 seconds of arriving</td></tr>
+          <tr><td class="mono">R3</td><td class="num">+15</td><td>Interaction with a known mixer contract</td></tr>
+          <tr><td class="mono">R4</td><td class="num">+15</td><td>A cross-chain bridge within two hops downstream</td></tr>
+          <tr><td class="mono">R5</td><td class="num">+10</td><td>Fan-out to more than five addresses</td></tr>
+          <tr><td class="mono">R6</td><td class="num">+10</td><td>Structuring — repeated amounts under a reporting band</td></tr>
+          <tr><td class="mono">R7</td><td class="num">+15</td><td>Time correlation with the victim debit. Suppressed when R1 fires, so proximity is not counted twice</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:.9rem">Bands: 0–24 LOW, 25–49 MEDIUM, 50–74 HIGH, 75–100 CRITICAL. A test asserts every score equals the clamped sum of its own cited indicators.</p>
+    <div class="note">
+      <p><strong>Stated limit.</strong> The weights are reasoned, not calibrated. There is no empirical basis for twenty points rather than fifteen, and no labelled ground truth exists to measure a false-positive rate against. What is defensible is that every score is reproducible and <em>contestable</em>: an accused can point at R4 and argue the bridge inference, which is impossible against an opaque model.</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ 4 -->
+  <section>
+    <p class="kicker">Four</p>
+    <h2>Evidence: confirmed versus inferred <span class="speaker sp3">P3 evidence</span></h2>
+    <p>The single most important rendering rule in the product. A <code>confirmed_bank</code> or <code>confirmed_onchain</code> edge is drawn SOLID. An <code>inferred_correlation</code> edge is drawn DASHED, in vivid amber, and is the most visible mark on the canvas.</p>
+    <p>In the demonstration case: <strong>sixteen confirmed, one inferred</strong>. The inference is a thirteen-second gap between a UPI debit and an exchange deposit. It is typed differently in the database, drawn differently on screen, and printed <strong>INFERRED</strong> on the face of the production order.</p>
+    <p>A conversion inherits the basis of its <em>weaker</em> leg, so the rupee-to-USDT conversion reads INFERRED even though the on-chain side is proven.</p>
+  </section>
+
+  <!-- ============================================================ 5 -->
+  <section>
+    <p class="kicker">Five</p>
+    <h2>Dilution, and the honest negative <span class="speaker sp2">P2 method</span></h2>
+    <p>Proportional haircut, chosen because it makes the fewest assumptions a defence can attack: it says only that a pool mixes. FIFO and lowest-intermediate-balance both require assumptions about ordering.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Hop</th><th>Prior clean</th><th>Tainted in</th><th>Traceable share</th></tr></thead>
+        <tbody>
+          <tr><td>Victim account</td><td class="num">—</td><td class="num">INR 4,70,000</td><td class="num">100%</td></tr>
+          <tr><td>Seed wallet</td><td class="num">0</td><td class="num">5,200 USDT</td><td class="num">100%</td></tr>
+          <tr><td>Layering wallet</td><td class="num">1,200</td><td class="num">1,800</td><td class="num">60%</td></tr>
+          <tr><td>Exchange pool</td><td class="num">8,000</td><td class="num">2,000 at 60%</td><td class="num">12% — NOT FLAGGED</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:.9rem">Threshold is 30%. That pool holds real criminal proceeds and the system still reports the trail as ending there. <strong>A tool that only ever says guilty is worthless in a courtroom.</strong></p>
+    <p>Two models, labelled. <code>haircut</code> where curated evidence supplies real prior balances; <code>propagation</code> on live chains, carrying a caveat that says in plain words it measures reach, not proportion — because a public explorer cannot report an address's balance at the moment funds arrived.</p>
+  </section>
+
+  <!-- ============================================================ 6 -->
+  <section>
+    <p class="kicker">Six</p>
+    <h2>The Indian rupee side <span class="speaker sp1">P1 problem</span></h2>
+    <p>Most tracing tools start at a wallet address. An Indian officer starts at a bank statement, so this system reads one.</p>
+
+    <h3>Ingestion</h3>
+    <p>Two shapes are handled. A <strong>transfer list</strong> names both ends of each movement. A <strong>bank statement</strong> is one account's ledger: it has a UTR, a date and an amount, and it does not name the counterparty. There is no honest way to invent one, so the counterparty becomes a node identified only by its reference — <code>UTR:420192830192</code> — explicitly unidentified.</p>
+    <p>Amounts and dates are parsed defensively: <code>4,70,000.00 Dr</code>, bare lakh grouping, bracketed negatives, and several date orderings. Naive timestamps are read as IST, not UTC. A row that cannot be parsed is skipped and counted, never guessed at.</p>
+
+    <h3>Narration parsing</h3>
+    <p>The narration is the only column in an Indian statement that says anything about <em>who</em> received the money. It now yields the rail, the counterparty's virtual payment address, the PSP handle behind it, and the beneficiary name as recorded.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Narration</th><th>Extracted</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">UPI/DR/412345678901/RAHUL K/YESB/rahul@ybl/Payment</td><td class="mono">UPI · rahul@ybl · Yes Bank · RAHUL K</td></tr>
+          <tr><td class="mono">IMPS/P2A/509812345678/PRIYA S/HDFC</td><td class="mono">IMPS · no VPA · PRIYA S</td></tr>
+          <tr><td class="mono">BY CASH DEPOSIT</td><td class="mono">names nobody</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note">
+      <p><strong>The boundary, and it must be said aloud.</strong> A handle names the payment service provider — <code>@ybl</code> is Yes Bank — <em>never</em> the business behind the VPA. Whether an address belongs to an exchange is established by the bank answering the production order, never by reading a string. A test feeds the parser <code>binance@ybl</code> and asserts it still reports only "Yes Bank".</p>
+      <p>The value is that the order can cite a <strong>VPA</strong> rather than only a UTR — and "who owns this handle" is a far more direct question for a bank than "who received this reference".</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ 7 -->
+  <section>
+    <p class="kicker">Seven</p>
+    <h2>Conversion trail — which platform, which currency <span class="speaker sp1">P1 problem</span></h2>
+    <p>The graph shows movement. It does not separate the two things an officer must write down, so a dedicated engine does.</p>
+    <ul class="plain">
+      <li><b>Where value changed FORM.</b> On the demo case: <code>4,70,000 INR → 5,200 USDT</code> at the exchange deposit address, marked INFERRED, with the rate <strong>derived</strong> from the two legs at <code>INR 90.38 per USDT</code>.</li>
+      <li><b>Where it changed HANDS.</b> Every service the money passed through, split into <strong>CAN BE SERVED</strong> (exchange, bank, UPI handle — they hold customer records) and <strong>PASS-THROUGH</strong> (mixer, bridge — a contract with no operator to ask). Confusing the two wastes a week on an order nobody can answer.</li>
+      <li><b>Which rails.</b> <code>bank_inr → ethereum</code>, in the order travelled.</li>
+    </ul>
+    <p style="margin-top:.9rem">No company is ever named. An on-chain label is not a legal identity, and a test asserts no brand name can appear in the output.</p>
+  </section>
+
+  <!-- ============================================================ 8 -->
+  <section>
+    <p class="kicker">Eight</p>
+    <h2>Where the AI is, and is not <span class="speaker sp3">P3 evidence</span></h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Component</th><th>Role</th><th>Touches a score?</th></tr></thead>
+        <tbody>
+          <tr><td>Language model</td><td>Drafts the officer's narrative paragraph; guesses bank CSV column headings</td><td class="mono">No</td></tr>
+          <tr><td>Isolation Forest</td><td>Flags behavioural outliers as leads</td><td class="mono">No</td></tr>
+          <tr><td>DBSCAN</td><td>Clusters wallets by behaviour</td><td class="mono">No</td></tr>
+          <tr><td>Seven rules</td><td>Produce every risk figure</td><td class="mono">Yes — only these</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:.9rem"><strong>The proof, not the promise.</strong> The anomaly model flags the <em>complainant</em> — she moved the largest single amount, so she is the statistical outlier. Her risk score is <strong>zero</strong>. If the model influenced scoring, the victim would be the prime suspect. That test is the reason the model is kept off the score.</p>
+    <p>Every AI feature degrades to a deterministic path. One test deletes the API key <em>and</em> the cache, then generates a complete dossier from the template and the heuristic column mapper.</p>
+  </section>
+
+  <!-- ============================================================ 9 -->
+  <section>
+    <p class="kicker">Nine</p>
+    <h2>Chain of custody and anchoring <span class="speaker sp3">P3 evidence</span></h2>
+    <p>Each custody entry hashes the entry before it:</p>
+    <p><code>entry_hash = SHA256(prev_hash | id | time | user | action | target)</code></p>
+    <p>Altering any row breaks every hash after it, and <code>/audit/verify</code> names the first broken link. Rows order by an explicit sequence column, never by rowid or timestamp. Identity comes from the signed-in session, never from the request body — before authentication existed, the officer's name was a form field.</p>
+    <p>A document's own SHA-256 is recorded separately, because a file cannot contain its own digest. That detached record is the only way to verify a dossier afterwards.</p>
+    <div class="note">
+      <p><strong>Stated limit.</strong> This makes tampering <em>detectable</em>, not impossible — anyone who can rewrite the whole chain forward from an edit can hide a change. Optional on-chain anchoring closes that by putting the digest somewhere outside our control. It proves a document existed in a given state at a given block time. It does <em>not</em> prove the document is true, and the dossier says so in those words.</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ 10 -->
+  <section>
+    <p class="kicker">Ten</p>
+    <h2>The three documents <span class="speaker sp4">P4 outcome</span></h2>
+
+    <h3>Sec 63 BSA 2023 court dossier</h3>
+    <p>Case metadata, the statutory certificate section, the evidence hash register, graph and timeline with confirmed and inferred listed separately, the risk and dilution appendix, limitations, and the document's own digest.</p>
+    <p>It states what Section 63(4) actually requires — a certificate in the form of the Schedule to the Act, signed <strong>both</strong> by the person in charge of the device and by an expert, which is the change from the repealed Evidence Act — and says plainly that this document supplies the particulars but <em>is not</em> the certificate and carries neither signature.</p>
+
+    <h3>FIU-IND suspicious transaction report — DRAFT</h3>
+    <p>Cites the obligation it is made under: Section 12 PMLA 2002 read with Rule 8 of the PML (Maintenance of Records) Rules 2005, addressed to the Director, FIU-IND, Department of Revenue, Ministry of Finance, with the seven-working-day timeline. It explains why the <em>exchange</em> carries the duty: Virtual Digital Asset providers were notified as reporting entities in March 2023.</p>
+    <p><code>filed</code> is permanently false. A test walks the API schema and fails the build if any endpoint appears that could transmit a report.</p>
+
+    <h3>Sec 94 BNSS 2023 production order — DRAFT</h3>
+    <p>The answer to "what do I do on Tuesday morning". Addressed to the exchange, reciting its own authority under Sec 94(1), with a Schedule of transactions carrying time, direction, amount, counterparty, transaction hash and <strong>CONFIRMED or INFERRED</strong> on every line. Six categories of records sought: KYC, account status and due diligence, full transaction statement, linked Indian bank accounts and UPI handles, IP and device logs, and any freeze presently operating.</p>
+    <ul class="plain">
+      <li><b>Never signed.</b> A schema test fails the build if any route could issue or serve one.</li>
+      <li><b>Never invents an addressee.</b> The legal name and registered address are placeholders — we hold an on-chain label, not a company's identity, and serving the wrong entity is a real harm.</li>
+      <li><b>Names nobody when nothing was found.</b> A trace reaching no exchange says so.</li>
+      <li><b>Ranked by tainted value</b>, so a large clean inflow cannot select the wrong target.</li>
+    </ul>
+  </section>
+
+  <!-- ============================================================ 11 -->
+  <section>
+    <p class="kicker">Eleven</p>
+    <h2>The eleven screens <span class="speaker sp2">P2 method</span></h2>
+    <p>Sign-in opens a <strong>case briefing</strong> — the FIR, the complainant, the amount, the address — and nothing else. Every figure is a fact the officer already had. One button, <em>Begin investigation</em>, runs the trace, which is an audited action: a TRACE_RUN entry lands in the custody log before any panel appears.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Screen</th><th>Answers</th></tr></thead>
+        <tbody>
+          <tr><td><b>Command Center</b></td><td>Highest-risk entities and the recent custody trail</td></tr>
+          <tr><td><b>Case Intake</b></td><td>FIR and NCRP references, loss, seed address</td></tr>
+          <tr><td><b>Evidence Ingestion</b></td><td>Upload a statement; rows merge into the graph as typed entities</td></tr>
+          <tr><td><b>Graph Visualiser</b></td><td>The map. Solid proven, dashed inferred. An entity card with the address, a public-explorer link, the illicit share and amounts by currency</td></tr>
+          <tr><td><b>Asset Ledger</b></td><td>Currency by layer, per entity, and the conversion trail</td></tr>
+          <tr><td><b>Timeline</b></td><td>The clock. This is what makes fifty-eight seconds land</td></tr>
+          <tr><td><b>Risk Inspector</b></td><td>Case-level distribution, then the arithmetic for any entity</td></tr>
+          <tr><td><b>Dilution Calculator</b></td><td>Traceable share, including when it falls below threshold</td></tr>
+          <tr><td><b>Flag Agent</b></td><td>Model output, deliberately apart from scoring</td></tr>
+          <tr><td><b>Sec 63 BSA Dossier</b></td><td>All three documents, rendered in-app</td></tr>
+          <tr><td><b>Chain of Custody</b></td><td>Every action, hash-chained, with verification</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:.9rem">Graph detail: entity type is carried by <em>shape</em> as well as colour, so it reads on a projector that washes colour out. <strong>FOLLOW</strong> highlights the route funds took from the complainant — breadth-first along edge direction, which answers "how did money get here", not "what is this connected to". A risk filter <em>dims</em> rather than hides, because removing a node would quietly change the picture. Light and dark themes both supported.</p>
+  </section>
+
+  <!-- ============================================================ 12 -->
+  <section>
+    <p class="kicker">Twelve</p>
+    <h2>Four officers, four cases <span class="speaker sp4">P4 outcome</span></h2>
+    <p>Each officer signs in with their own ID and opens their own caseload. Nothing is reconfigured — the account changes and the case changes with it. The spread is the point: four identical scores would prove the tool paints everything red.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Officer</th><th>Case</th><th>Loss</th><th>Graph</th><th>Score</th><th>Rules</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">IO_SHARMA</td><td>Digital arrest</td><td class="num">4,70,000</td><td class="num">14n 17e</td><td class="num">65 HIGH</td><td class="mono">R1 R2 R3 R4</td></tr>
+          <tr><td class="mono">DEMO_2</td><td>Task-based, mule network, Tron</td><td class="num">9,43,000</td><td class="num">25n 28e</td><td class="num">75 CRITICAL</td><td class="mono">R1 R2 R3 R4 R5</td></tr>
+          <tr><td class="mono">DEMO_3</td><td>Chain-hopping ETH→bridge→Tron</td><td class="num">12,17,000</td><td class="num">20n 23e</td><td class="num">60 HIGH</td><td class="mono">R1 R3 R4 R5</td></tr>
+          <tr><td class="mono">DEMO_4</td><td>Short UPI trail</td><td class="num">1,85,000</td><td class="num">7n 7e</td><td class="num">20 LOW</td><td class="mono">R1</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:.9rem">All four share the password <code>violet-demo-2026</code>. Separate accounts exist so the custody log records <em>who</em> did a thing, not that somebody did.</p>
+  </section>
+
+  <!-- ============================================================ 13 -->
+  <section>
+    <p class="kicker">Thirteen</p>
+    <h2>Feasibility in India <span class="speaker sp4">P4 outcome</span></h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Component</th><th>What is used</th><th>Cost</th></tr></thead>
+        <tbody>
+          <tr><td>Chain data</td><td>Etherscan free tier, throttled to 3/sec</td><td class="num">₹0</td></tr>
+          <tr><td>Tron data</td><td>TronGrid free tier</td><td class="num">₹0</td></tr>
+          <tr><td>Database</td><td>SQLite, one file</td><td class="num">₹0</td></tr>
+          <tr><td>Software</td><td>Python, FastAPI, React — open source, MIT licensed</td><td class="num">₹0</td></tr>
+          <tr><td>AI</td><td>Optional; template fallback is tested</td><td class="num">₹0</td></tr>
+          <tr><td>Hardware</td><td>One laptop already on the desk</td><td class="num">existing</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:.9rem"><strong>Marginal cost of the next district: nil.</strong> No per-seat licence, no subscription, no procurement cycle. And it runs offline — pre-tested addresses replay from disk, and a dead network trips a circuit breaker that falls through to cache in about a second rather than sixty-two.</p>
+  </section>
+
+  <!-- ============================================================ 14 -->
+  <section>
+    <p class="kicker">Fourteen</p>
+    <h2>What it does not claim <span class="speaker sp3">P3 evidence</span></h2>
+    <p>Every item below is printed in the repository, in the generated documents, or both. Volunteering them is cheaper than being caught.</p>
+    <ul class="plain">
+      <li><b>Rule weights are not calibrated</b>, and the false-positive rate is unknown — there is no labelled ground truth.</li>
+      <li><b>Attribution is fifteen curated labels.</b> We do not compete with commercial attribution at scale. An unlabelled address renders as <em>unknown</em>, never clean.</li>
+      <li><b>Bitcoin is not supported.</b> The model is account-based; Bitcoin is UTXO and needs a different graph plus a change-address heuristic that is itself a source of error.</li>
+      <li><b>Bank clocks and block clocks are not the same clock.</b> Correlation across them is a lead, drawn dashed for that reason.</li>
+      <li><b>Chain reorganisations are not handled.</b> A trace records what the explorer returned at that moment, which is why the custody log timestamps it.</li>
+      <li><b>The statutory wording is unreviewed</b> by a legal practitioner and says so on its own face.</li>
+      <li><b>The interface is English only.</b></li>
+      <li><b>Not affiliated with Chandigarh Police.</b> Stated in the README and in a permanent banner on every screen.</li>
+    </ul>
+  </section>
+
+  <!-- ============================================================ 15 -->
+  <section>
+    <p class="kicker">Fifteen</p>
+    <h2>Suggested split for four speakers</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Speaker</th><th>Owns</th><th>Their one line</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="speaker sp1">P1 problem</span></td>
+            <td>Sections 1, 6, 7 — the clock, the bank statement, the conversion</td>
+            <td>"Fifty-eight seconds. That is how long the helpline had."</td>
+          </tr>
+          <tr>
+            <td><span class="speaker sp2">P2 method</span></td>
+            <td>Sections 2, 3, 5, 11 — architecture, rules, dilution, the screens</td>
+            <td>"Seven rules, fixed weights, and a defence lawyer can check the addition."</td>
+          </tr>
+          <tr>
+            <td><span class="speaker sp3">P3 evidence</span></td>
+            <td>Sections 4, 8, 9, 14 — inference, the AI boundary, custody, the limits</td>
+            <td>"The model flagged the complainant. Her score is zero."</td>
+          </tr>
+          <tr>
+            <td><span class="speaker sp4">P4 outcome</span></td>
+            <td>Sections 10, 12, 13 — the documents, the four cases, cost and the ask</td>
+            <td>"One button, and out comes the Section 94 order."</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note">
+      <p><strong>Rule for whoever writes the script.</strong> Every number in this document is produced by the running system. Do not add a figure that is not here, and do not soften a stated limit — the limits are the reason the claims are believable, and each one is already printed inside the product.</p>
+    </div>
+  </section>
+
+  <footer>
+    <span>Project Violet Milk · component reference</span>
+    <span>287 tests · 24 API paths · 4 cases · 2 chains · MIT</span>
+    <span>Chandigarh Police Hackathon</span>
+  </footer>
+
+</div>
