@@ -710,3 +710,29 @@ class ConversionTrail(BaseModel):
     venues: list[VenueUse]
     terminal_addresses: list[TerminalAddress] = []
     caveat: str
+
+
+class ReferralResponse(BaseModel):
+    """Internal referral note for addresses that cannot be served.
+
+    `statutory` is permanently false and `transmitted` permanently false. No
+    provision prescribes this note's form - inventing a legal basis for an
+    internal memo would undo the discipline that makes the Sec 63 and Sec 94
+    documents credible - and a referral is made by an officer through their
+    own chain, never by this software.
+    """
+    case_id: str
+    referral_reference: str
+    generated_at: str
+    statutory: Literal[False] = False
+    transmitted: Literal[False] = False
+    addresses_referred: int
+    instruction: str = (
+        "An internal working note. It compels nobody and has been sent to "
+        "nobody. Refer it through your own chain; this software does not "
+        "transmit it."
+    )
+    filename: str
+    sha256: str
+    download_url: str
+    fields: dict[str, Any]

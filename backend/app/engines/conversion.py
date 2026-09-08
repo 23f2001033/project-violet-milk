@@ -124,6 +124,13 @@ def _terminals(nodes: list[Node], edges: list[Edge],
     for node in nodes:
         if node.node_id in senders:
             continue
+        # An exchange or a bank that sends nothing onward is not a dead end -
+        # it is the DESTINATION, and it can be served. Listing it here would
+        # tell an officer "no custodian holds this key" about the one party in
+        # the trace who does, which is this feature's own failure mode
+        # inverted. Those already appear under venues as CAN BE SERVED.
+        if node.node_type in COMPELLABLE:
+            continue
         inbound = [e for e in edges if e.to_node == node.node_id]
         if not inbound:
             continue

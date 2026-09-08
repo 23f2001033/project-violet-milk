@@ -8,7 +8,9 @@
 
 import { useState } from 'react'
 import { Button } from '../components/ui'
-import { generateNotice, generateReport, generateSTR, loadDocument } from '../api'
+import {
+  generateNotice, generateReferral, generateReport, generateSTR, loadDocument,
+} from '../api'
 import DocumentViewer from '../components/DocumentViewer'
 
 const SECTIONS = [
@@ -25,6 +27,18 @@ export default function ReportExport({ kase }) {
   const [state, setState] = useState({ status: 'idle' })
   const [str, setStr] = useState({ status: 'idle' })
   const [notice, setNotice] = useState({ status: 'idle' })
+  const [referral, setReferral] = useState({ status: 'idle' })
+
+  async function runReferral() {
+    setReferral({ status: 'working' })
+    try {
+      const r = await generateReferral(kase.case_id)
+      setReferral({ status: 'done', result: r })
+      await view(r.download_url)
+    } catch (e) {
+      setReferral({ status: 'error', error: e.message })
+    }
+  }
   const [doc, setDoc] = useState(null)
 
   // One place opens documents, so the blob URL is always revoked and a stray
@@ -349,6 +363,76 @@ export default function ReportExport({ kase }) {
               >
                 {notice.result.filename} ↗
                 </button>
+            </div>
+          )}
+        </div>
+
+        {/* ---------------------------- internal referral for dead ends */}
+        <div className="pt-4 mt-2 border-t border-edge space-y-3">
+          <div>
+            <div className="label mb-1">
+              Internal referral · addresses that cannot be served
+            </div>
+            <p className="text-[11px] text-slate-400 leading-relaxed">
+              A production order compels a <em>person</em> to produce records.
+              Where funds rest in an unhosted address, or pass through a mixer
+              or bridge, there is no custodian and no operator — an order would
+              ask nobody for nothing. This records those addresses for FIU-IND
+              lead referral, attribution and monitoring instead.
+            </p>
+          </div>
+
+          <div className="rounded border border-edge bg-panel2 px-3 py-2">
+            <div className="text-[10px] font-bold uppercase tracking-wider
+                            text-slate-400 mb-1">
+              Internal working note — not a statutory instrument
+            </div>
+            <p className="text-[10px] text-slate-500 leading-relaxed">
+              No provision prescribes this form. It recites no authority,
+              compels nobody, and is transmitted to nobody — a referral is made
+              by an officer through their own chain.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3 flex-wrap">
+            <Button onClick={runReferral} disabled={referral.status === 'working'}>
+              {referral.status === 'working'
+                ? 'Preparing…'
+                : 'Prepare referral note'}
+            </Button>
+            {referral.status === 'error' && (
+              <span className="text-[11px] text-risk-high font-mono">
+                {referral.error}
+              </span>
+            )}
+          </div>
+
+          {referral.status === 'done' && (
+            <div className="organ p-3 space-y-2">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-mono text-[10px] font-bold px-1.5 py-0.5
+                                 rounded bg-panel2 text-slate-400">
+                  INTERNAL · NOT TRANSMITTED
+                </span>
+                <span className="font-mono text-[10px] text-slate-500">
+                  {referral.result.referral_reference}
+                </span>
+              </div>
+              <p className="text-[10px] text-slate-400">
+                {referral.result.addresses_referred} address
+                {referral.result.addresses_referred === 1 ? '' : 'es'} that a
+                production order cannot reach.
+              </p>
+              <p className="text-[10px] text-slate-500 leading-relaxed">
+                {referral.result.instruction}
+              </p>
+              <button
+                onClick={() => view(referral.result.download_url)}
+                className="inline-block text-[11px] text-violet hover:underline
+                           font-mono"
+              >
+                {referral.result.filename} ↗
+              </button>
             </div>
           )}
         </div>

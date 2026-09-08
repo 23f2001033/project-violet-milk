@@ -8,10 +8,11 @@ from ..db import cursor, row_to_evidence
 from ..engines.pipeline import get_analysis
 from ..engines.report_engine import build_dossier
 from ..engines.notice_engine import build_notice_document
+from ..engines.referral_engine import build_referral_document
 from ..engines.str_engine import build_str_document
 from ..models import (
     AnchorRecord, AnomalyFinding, AnomalyResponse, AuditAction,
-    NoticeResponse, ReportResponse, STRResponse,
+    NoticeResponse, ReferralResponse, ReportResponse, STRResponse,
 )
 from ..services import anchor as anchor_service
 from ..services import audit as audit_service
@@ -255,6 +256,53 @@ def generate_notice(case_id: str):
         notice_reference=reference,
         generated_at=analysis.traced_at,
         addressee_identified=bool(fields["addressee_address_on_chain"]),
+        filename=path.name,
+        sha256=digest,
+        download_url=f"/api/cases/{case_id}/report/{path.name}",
+        fields=fields,
+    )
+
+
+@router.post("/{case_id}/referral", response_model=ReferralResponse,
+             summary="Internal referral note for addresses that cannot be served")
+def generate_referral(case_id: str):
+    """For the addresses a production order cannot reach.
+
+    An unhosted key has no custodian and a contract has no operator, so a
+    Section 94 order against either asks nobody for nothing. This records them
+    for FIU-IND lead referral, attribution and monitoring instead.
+
+    It recites no authority and is transmitted to nobody: a referral is made by
+    an officer through their own chain. The same rule that forbids an
+    STR-filing endpoint applies here.
+    """
+    with cursor() as conn:
+        row = conn.execute(
+            "SELECT * FROM cases WHERE case_id = ?", (case_id,)
+        ).fetchone()
+    if not row:
+        raise HTTPException(404, f"Case {case_id} not found")
+
+    case = dict(row)
+    if not case.get("seed_wallet"):
+        raise HTTPException(422, "Case has no seed wallet to trace.")
+
+    analysis = get_analysis(case_id, case["seed_wallet"])
+    path, digest, fields, reference = build_referral_document(analysis, case)
+
+    audit_service.record(
+        case_id, AuditAction.REPORT_GENERATED, path.name,
+        user_id=case.get("io_name", "IO_SHARMA"), target_hash=digest,
+        details={"kind": "INTERNAL_REFERRAL", "reference": reference,
+                 "statutory": False, "transmitted": False,
+                 "addresses": len(fields["addresses"])},
+    )
+
+    return ReferralResponse(
+        case_id=case_id,
+        referral_reference=reference,
+        generated_at=analysis.traced_at,
+        addresses_referred=len(fields["addresses"]),
         filename=path.name,
         sha256=digest,
         download_url=f"/api/cases/{case_id}/report/{path.name}",

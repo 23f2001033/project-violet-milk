@@ -327,3 +327,9 @@ export async function loadDocument(url) {
 /** Where value changed form, and whose hands it passed through. */
 export const getConversions = (caseId) =>
   USE_MOCKS ? mock(null) : req(`/api/cases/${caseId}/conversions`)
+
+/** Internal referral note for addresses a production order cannot reach. */
+export const generateReferral = (caseId) =>
+  USE_MOCKS
+    ? Promise.reject(new Error('Referral drafting requires the backend'))
+    : req(`/api/cases/${caseId}/referral`, { method: 'POST' })
