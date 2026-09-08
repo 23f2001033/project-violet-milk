@@ -217,6 +217,15 @@ export default function App() {
   useEffect(() => {
     try { localStorage.setItem('vm.rail', railOpen ? 'open' : 'closed') } catch {}
   }, [railOpen])
+  // The inspector on the right folds the same way, to a 36px spine that keeps
+  // its reopen control on screen. Both sides collapsed leaves the canvas
+  // almost the full width without the operator losing their way back.
+  const [inspectorOpen, setInspectorOpen] = useState(() => {
+    try { return localStorage.getItem('vm.inspector') !== 'closed' } catch { return true }
+  })
+  useEffect(() => {
+    try { localStorage.setItem('vm.inspector', inspectorOpen ? 'open' : 'closed') } catch {}
+  }, [inspectorOpen])
   // The chronology strip under the graph, likewise. It is useful while reading
   // the trace and in the way while presenting it.
   const [chronOpen, setChronOpen] = useState(true)
@@ -638,16 +647,20 @@ export default function App() {
         ))}
       </nav>
 
-      <div
-        className={`flex-1 min-h-0 grid grid-cols-1 ${
-          railOpen
-            ? 'lg:grid-cols-[190px_1fr] xl:grid-cols-[190px_1fr_320px]'
-            : 'lg:grid-cols-[44px_1fr] xl:grid-cols-[44px_1fr_320px]'
-        }`}
-      >
+      {/* Flex, not a fixed three-column grid. The grid declared a 320px
+          inspector track at xl whether or not the inspector was rendered, so
+          every organ that does not use it - the briefing, Command Center, the
+          dossier - left a dead 320px band down the right of the screen. A
+          column that is not rendered must not reserve space. */}
+      <div className="flex-1 min-h-0 flex">
         {/* -------------------------------------------------- organ rail */}
-        <nav className="hidden lg:flex flex-col border-r border-edge bg-panel
-                        overflow-y-auto overflow-x-hidden">
+        {/* No width transition. An animated width resizes the graph canvas on
+            every frame of the animation, and the cheapest way to keep that
+            canvas correct is to give it one size change to react to. */}
+        <nav className={`hidden lg:flex flex-col shrink-0 border-r border-edge
+                         bg-panel overflow-y-auto overflow-x-hidden ${
+                           railOpen ? 'w-[190px]' : 'w-11'
+                         }`}>
           <button
             onClick={() => setRailOpen((v) => !v)}
             title={railOpen ? 'Collapse the organ rail' : 'Expand the organ rail'}
@@ -750,7 +763,7 @@ export default function App() {
         </nav>
 
         {/* ------------------------------------------------ working surface */}
-        <main className="min-w-0 min-h-0 overflow-hidden bg-ground">
+        <main className="flex-1 min-w-0 min-h-0 overflow-hidden bg-ground">
           {data.started ? main : (
             <Briefing
               kase={kase}
@@ -763,11 +776,37 @@ export default function App() {
           )}
         </main>
 
+        {/* ----------------------------------------- inspector, collapsed */}
+        {showInspector && !inspectorOpen && (
+          <div className="hidden xl:flex flex-col items-center w-9 shrink-0
+                          border-l border-edge bg-panel">
+            <button
+              onClick={() => setInspectorOpen(true)}
+              title="Show the inspector"
+              aria-label="Show the inspector"
+              aria-expanded={false}
+              className="w-full py-2.5 border-b border-edge font-mono text-[11px]
+                         leading-none text-slate-500 hover:text-slate-100
+                         hover:bg-panel2 transition-colors"
+            >
+              ‹
+            </button>
+            {/* Rotated so the operator can still see what is behind the spine
+                without opening it. */}
+            <div
+              className="mt-3 label whitespace-nowrap text-slate-600"
+              style={{ writingMode: 'vertical-rl' }}
+            >
+              {inspectorTab === 'risk' ? 'Risk "why?"' : 'Dilution decay'}
+            </div>
+          </div>
+        )}
+
         {/* --------------------------------------------------- inspector */}
-        {showInspector && (
-          <aside className="hidden xl:flex flex-col border-l border-edge bg-panel
-                            min-h-0">
-            <div className="flex border-b border-edge shrink-0">
+        {showInspector && inspectorOpen && (
+          <aside className="hidden xl:flex flex-col w-[320px] shrink-0 border-l
+                            border-edge bg-panel min-h-0">
+            <div className="flex items-stretch border-b border-edge shrink-0">
               {[
                 ['risk', 'Risk "why?"'],
                 ['dilution', 'Dilution decay'],
@@ -785,6 +824,17 @@ export default function App() {
                   {label}
                 </button>
               ))}
+              <button
+                onClick={() => setInspectorOpen(false)}
+                title="Hide the inspector"
+                aria-label="Hide the inspector"
+                aria-expanded
+                className="px-2.5 border-l border-edge font-mono text-[11px]
+                           leading-none text-slate-500 hover:text-slate-100
+                           hover:bg-panel2 transition-colors"
+              >
+                ›
+              </button>
             </div>
             <div className="flex-1 min-h-0">
               {inspectorTab === 'risk' ? (

@@ -672,12 +672,22 @@ export default function GraphVisualiser({ graph, selected, onSelect, assets, ris
     // is correct, only its timing was wrong.
     const settles = [80, 300, 800].map((ms) => setTimeout(refit, ms))
 
-    const ro = new ResizeObserver(refit)
+    // Trailing-debounced, and that matters. Collapsing a side panel resizes
+    // this canvas repeatedly over one animation frame sequence; fitting on
+    // every intermediate width left the view fitted to a size the canvas no
+    // longer had, and the graph disappeared off-screen until FIT was pressed
+    // by hand. Only the settled size is worth fitting to.
+    let settle
+    const ro = new ResizeObserver(() => {
+      clearTimeout(settle)
+      settle = setTimeout(refit, 120)
+    })
     ro.observe(boxRef.current)
 
     cyRef.current = cy
     return () => {
       settles.forEach(clearTimeout)
+      clearTimeout(settle)
       ro.disconnect()
       cy.destroy()
     }
