@@ -227,3 +227,39 @@ def test_the_notice_tells_an_officer_what_to_do_instead():
     a = _analyse(CASE, SEED)
     a.nodes = [n for n in a.nodes if n.node_type != NT.EXCHANGE]
     assert notice_engine.identify_addressee(a) is None
+
+
+# ------------------------------------------------ detection and rate honesty
+
+def test_a_venue_that_receives_its_output_asset_back_still_shows_the_conversion():
+    """Regression. The rule required the outgoing asset to never appear on the
+    inbound side. An exchange that converts rupees to USDT and later receives
+    USDT back has it on both, so case 004 reported NO conversion while plainly
+    performing one. Only the consumed asset may be excluded."""
+    r = client.get("/api/cases/CP-CYBER-2026-004/conversions")
+    conversions = r.json()["conversions"]
+    assert conversions, "the short case converts rupees to USDT"
+    c = conversions[0]
+    assert c["from_asset"] == "INR" and c["to_asset"] == "USDT"
+
+
+def test_a_rate_is_withheld_when_the_inbound_asset_bought_more_than_one_thing():
+    """In case 003 the rupees purchased both ETH and USDT. Attributing all of
+    them to the larger leg gives "INR 133.74 per USDT" - arithmetic that is
+    correct and a figure that is false. No rate is the honest output."""
+    r = client.get("/api/cases/CP-CYBER-2026-003/conversions")
+    split = next(c for c in r.json()["conversions"]
+                 if c["from_asset"] == "INR" and c["to_asset"] == "USDT")
+    assert split["implied_rate"] is None
+
+
+def test_every_reported_rupee_rate_is_near_the_locked_demo_rate():
+    """A rate that IS reported must be defensible. Every unambiguous rupee
+    conversion in the set should land near the locked INR 90.38, because that
+    is what the evidence actually says."""
+    for cid in ("CP-CYBER-2026-001", "CP-CYBER-2026-002",
+                "CP-CYBER-2026-003", "CP-CYBER-2026-004"):
+        for c in client.get(f"/api/cases/{cid}/conversions").json()["conversions"]:
+            if c["implied_rate"] and "per USDT" in c["implied_rate"]:
+                value = float(c["implied_rate"].split()[1].replace(",", ""))
+                assert 85 <= value <= 95, f"{cid}: {c['implied_rate']}"

@@ -154,8 +154,8 @@ def story():
         [_cell("Reported loss"), Paragraph("INR 4,70,000 on the case shown; "
                                   "INR 27,15,000 across the set", S_BODY)],
         [_cell("Chains traced"), Paragraph("Ethereum, Tron (TRC-20)", S_BODY)],
-        [_cell("Automated tests"), mono("252 passing")],
-        [_cell("API surface"), mono("23 paths")],
+        [_cell("Automated tests"), mono("315 passing")],
+        [_cell("API surface"), mono("25 paths")],
         [_cell("Licence"), Paragraph("MIT - free for any force to use", S_BODY)],
         [_cell("Cost per district"), Paragraph("Nil. No licence, no cloud "
                                                "account, no subscription.", S_BODY)],

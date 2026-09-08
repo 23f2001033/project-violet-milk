@@ -185,14 +185,20 @@ def build(case_id: str, nodes: list[Node], edges: list[Edge],
         got = _sum_by_asset(inbound)
         gave = _sum_by_asset(outbound)
 
-        # A conversion is an asset arriving that does not leave. Matching the
-        # largest of each side is the honest reading of a swap when the
-        # evidence does not pair individual legs.
+        # A conversion is an asset that ARRIVES and never leaves: it was
+        # consumed, and something else left in its place.
+        #
+        # The outgoing side deliberately does NOT require the asset to be
+        # absent from the inbound set. An exchange that converts rupees to
+        # USDT and later receives USDT back has USDT on both sides, and
+        # requiring "outgoing only" made the conversion invisible - case 004
+        # reported no conversion at all while plainly performing one. What must
+        # be excluded is only the consumed asset itself.
         incoming_only = {a: v for a, v in got.items() if a not in gave}
-        outgoing_only = {a: v for a, v in gave.items() if a not in got}
-        if incoming_only and outgoing_only:
+        outgoing = {a: v for a, v in gave.items() if a not in incoming_only}
+        if incoming_only and outgoing:
             a_in = max(incoming_only, key=incoming_only.get)
-            a_out = max(outgoing_only, key=outgoing_only.get)
+            a_out = max(outgoing, key=outgoing.get)
             legs = [e for e in outbound if e.asset == a_out]
             # A conversion is only as good as its weaker leg.
             all_legs = [e for e in inbound if e.asset == a_in] + legs
@@ -208,9 +214,15 @@ def build(case_id: str, nodes: list[Node], edges: list[Edge],
                 from_asset=a_in,
                 to_asset=a_out,
                 amount_in=round(incoming_only[a_in], 8),
-                amount_out=round(outgoing_only[a_out], 8),
-                implied_rate=_rate(incoming_only[a_in], outgoing_only[a_out],
-                                   a_in, a_out),
+                amount_out=round(outgoing[a_out], 8),
+                # A rate is only meaningful when the consumed asset bought
+                # ONE thing. Where the rupees purchased both ETH and USDT,
+                # attributing all of them to the larger leg produced
+                # "INR 133.74 per USDT" - arithmetic that is correct and a
+                # figure that is false. An absent rate is the honest output.
+                implied_rate=(_rate(incoming_only[a_in], outgoing[a_out],
+                                    a_in, a_out)
+                              if len(outgoing) == 1 else None),
                 at=min(e.timestamp for e in legs),
                 basis=basis,
             ))
