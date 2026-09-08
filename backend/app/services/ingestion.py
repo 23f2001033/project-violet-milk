@@ -34,6 +34,7 @@ import uuid
 from datetime import datetime, timezone
 
 from ..models import Asset, EvidenceType
+from . import narration as narration_service
 
 # Indian statements: "4,70,000.00 Dr", "(1,200.50)", "INR 5,200", "-470000"
 _AMOUNT_CLEAN = re.compile(r"[^\d.\-]")
@@ -127,6 +128,7 @@ def normalise_rows(
     col_utr = mapping.get("utr")
     col_asset = mapping.get("asset")
     col_bank = mapping.get("bank")
+    col_desc = mapping.get("description")
 
     shape = "transfer_list" if (col_from and col_to) else "bank_statement"
     rows: list[dict] = []
@@ -136,6 +138,11 @@ def normalise_rows(
         amount = parse_amount(r.get(col_amount)) if col_amount else None
         ts = parse_timestamp(r.get(col_time)) if col_time else None
         utr = (r.get(col_utr) or "").strip() if col_utr else ""
+        # The narration is the ONLY column in an Indian statement that says
+        # anything about who received the money. It was mapped and then
+        # discarded, so a statement produced a counterparty called
+        # "UTR:412345678901" and nothing else.
+        facts = narration_service.parse(r.get(col_desc) if col_desc else None)
 
         if amount is None:
             skipped.append(f"row {n}: no readable amount")
@@ -178,11 +185,34 @@ def normalise_rows(
             "evidence_type": evidence_type.value,
             "utr": utr or None,
             "tx_hash": None,
+            # Read from the evidence, never inferred. The VPA is what makes a
+            # production order to the bank answerable: "who owns this handle"
+            # is a far more direct question than "who received this UTR".
+            "narration": facts.as_dict() if facts.raw else None,
         })
+
+    named = [r for r in rows if (r.get("narration") or {}).get(
+        "identifies_counterparty")]
+    vpas = sorted({r["narration"]["vpa"] for r in named
+                   if r["narration"].get("vpa")})
+    rails = sorted({r["narration"]["rail"] for r in rows
+                    if (r.get("narration") or {}).get("rail")})
 
     report = {
         "shape": shape,
         "ingested": len(rows),
+        # What the narration actually established, stated as a count rather
+        # than a claim about any one platform.
+        "narration": {
+            "rows_naming_a_counterparty": len(named),
+            "rails_seen": rails,
+            "vpas_found": vpas,
+            "note": (
+                "A VPA identifies a payment handle, not the business behind "
+                "it. Establishing who operates one requires the bank to "
+                "answer a Section 94 BNSS 2023 production order."
+            ),
+        },
         "skipped": len(skipped),
         # Cap the reasons: a badly-formed file should not produce a wall of text.
         "reasons": skipped[:8],
