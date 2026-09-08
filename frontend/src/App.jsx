@@ -493,7 +493,17 @@ export default function App() {
                 {session.user?.rank || session.user?.user_id}
               </div>
             </div>
-            <Button variant="primary" onClick={() => setOrgan('dossier')}>
+            {/* The most prominent button on the screen, and before a trace it
+                also went nowhere. There is nothing to certify until the trace
+                has run, so it says that instead of appearing to fail. */}
+            <Button
+              variant="primary"
+              onClick={() => setOrgan('dossier')}
+              disabled={!data.started}
+              title={data.started
+                ? 'Open the Sec 63 BSA dossier'
+                : 'Begin the investigation first — the dossier is built from the trace'}
+            >
               Export Court Dossier
             </Button>
             <button
@@ -529,11 +539,21 @@ export default function App() {
             >
               ◉ DEMO
             </button>
+            {/* Also gated. A live trace run before the workspace exists used
+                to succeed, call setOrgan('graph'), and then land nowhere,
+                because the working surface is not mounted until the case
+                trace has run - so a mainnet trace that actually worked looked
+                like it had failed. */}
             <button
               onClick={() => setLive((s) => ({ ...s, on: true }))}
+              disabled={!data.started}
+              title={data.started
+                ? 'Trace an address on mainnet'
+                : 'Begin the investigation first, then switch to mainnet'}
               className={`px-2.5 py-1 text-[10px] font-mono tracking-wider
-                ${live.on ? 'bg-risk-critical/25 text-risk-critical'
-                          : 'text-slate-500 hover:text-slate-300'}`}
+                ${!data.started ? 'text-slate-700 cursor-not-allowed'
+                  : live.on ? 'bg-risk-critical/25 text-risk-critical'
+                            : 'text-slate-500 hover:text-slate-300'}`}
             >
               ◉ LIVE MAINNET
             </button>
@@ -602,11 +622,14 @@ export default function App() {
           <button
             key={o.id}
             onClick={() => setOrgan(o.id)}
+            disabled={!data.started}
             className={`shrink-0 px-3 py-2 text-[11px] whitespace-nowrap border-b-2
               transition-colors ${
-                organ === o.id
-                  ? 'border-violet text-slate-100 bg-violet/10'
-                  : 'border-transparent text-slate-500 hover:text-slate-200'
+                !data.started
+                  ? 'border-transparent text-slate-700 cursor-not-allowed'
+                  : organ === o.id
+                    ? 'border-violet text-slate-100 bg-violet/10'
+                    : 'border-transparent text-slate-500 hover:text-slate-200'
               }`}
           >
             <span className="text-violet/70 mr-1.5">{o.icon}</span>
@@ -640,24 +663,46 @@ export default function App() {
               {railOpen ? '«' : '»'}
             </span>
           </button>
+          {/* Locked until the trace has run. Every organ reads from the
+              analysis, so before "Begin investigation" there is nothing behind
+              any of them - and a button that highlights on click while the
+              screen never changes reads as a frozen application, which is
+              exactly how this looked. Saying "locked" is the fix; silently
+              doing nothing was the bug. */}
           {ORGANS.map((o) => (
             <button
               key={o.id}
               onClick={() => setOrgan(o.id)}
-              title={o.label}
+              disabled={!data.started}
+              title={data.started ? o.label
+                                  : `${o.label} — begin the investigation to open this`}
               className={`flex items-center py-2 text-[11px] text-left
                 border-l-2 transition-colors ${
                   railOpen ? 'gap-2.5 px-3' : 'justify-center px-0'
                 } ${
-                  organ === o.id
-                    ? 'border-violet bg-violet/10 text-slate-100'
-                    : 'border-transparent text-slate-500 hover:text-slate-200 hover:bg-panel2'
+                  !data.started
+                    ? 'border-transparent text-slate-700 cursor-not-allowed'
+                    : organ === o.id
+                      ? 'border-violet bg-violet/10 text-slate-100'
+                      : 'border-transparent text-slate-500 hover:text-slate-200 hover:bg-panel2'
                 }`}
             >
-              <span className="text-violet/70 w-3 text-center shrink-0">{o.icon}</span>
+              <span
+                className={`w-3 text-center shrink-0 ${
+                  data.started ? 'text-violet/70' : 'text-slate-700'
+                }`}
+              >
+                {o.icon}
+              </span>
               {railOpen && <span className="truncate">{o.label}</span>}
             </button>
           ))}
+          {!data.started && railOpen && (
+            <div className="px-3 py-2 text-[10px] leading-snug text-slate-600">
+              Locked until the trace runs. Press
+              <span className="text-violet-300"> Begin investigation</span>.
+            </div>
+          )}
           {/* Derived from the real evidence register: a file is "verified"
               only when the browser hash and the server hash actually agree.
               This previously read "SHA-256 chain valid" unconditionally - a
