@@ -5,10 +5,11 @@ from fastapi import APIRouter, HTTPException
 from ..config import MAX_EDGES_PER_NODE, MAX_TRACE_DEPTH
 from ..db import cursor
 from ..engines import assets as assets_engine
+from ..engines import conversion as conversion_engine
 from ..engines.pipeline import get_analysis
 from ..models import (
-    AssetBreakdown, AuditAction, GraphResponse, Label, LayerAssets,
-    NodeAssets, TraceRequest, TraceResult,
+    AssetBreakdown, AuditAction, ConversionTrail, GraphResponse, Label,
+    LayerAssets, NodeAssets, TraceRequest, TraceResult,
 )
 from ..models import AuthUser
 from ..services import audit
@@ -160,3 +161,20 @@ def get_node_assets(case_id: str, node_id: str):
         if row.node_id.lower() == node_id.lower():
             return row
     raise HTTPException(404, f"Node {node_id} not found in case {case_id}")
+
+
+@router.get("/cases/{case_id}/conversions", response_model=ConversionTrail,
+            summary="Where value changed form, and whose hands it passed through")
+def get_conversions(case_id: str):
+    """Answers "which platform, and what did it become?".
+
+    Separates the points where value changed FORM from the services it changed
+    HANDS at, and marks which of those can actually be served with a
+    production order. No company is named: an on-chain label is not a legal
+    identity.
+
+    Derived, so it writes no audit row - the same rule dilution and the asset
+    ledger already follow.
+    """
+    a = get_analysis(case_id, _seed_for(case_id))
+    return conversion_engine.build(case_id, a.nodes, a.edges)

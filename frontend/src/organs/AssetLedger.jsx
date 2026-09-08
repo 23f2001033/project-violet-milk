@@ -70,7 +70,7 @@ function AssetRows({ rows, empty = '—' }) {
   )
 }
 
-export default function AssetLedger({ assets, selected, nodesById }) {
+export default function AssetLedger({ assets, conversions, selected, nodesById }) {
   if (!assets) {
     return (
       <div className="p-6 text-[12px] text-slate-500">
@@ -184,6 +184,90 @@ export default function AssetLedger({ assets, selected, nodesById }) {
           </div>
         )}
       </section>
+
+
+      {/* ------------------------------------------- where it changed form */}
+      {conversions && (
+        <section>
+          <div className="label mb-2">
+            Conversion trail · {conversions.rails_used.join(' → ')}
+          </div>
+
+          {conversions.conversions.length === 0 ? (
+            <p className="text-[11px] text-slate-600 italic">
+              No point in this trace converts one asset into another.
+            </p>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {conversions.conversions.map((c) => (
+                <div key={c.node_id + c.at}
+                     className="border border-edge rounded bg-panel2 px-3 py-2.5">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-mono text-[12px] text-slate-100">
+                      {c.amount_in.toLocaleString('en-IN', {
+                        maximumFractionDigits: c.from_asset === 'INR' ? 0 : 2,
+                      })} {c.from_asset}
+                    </span>
+                    <span className="text-slate-500">→</span>
+                    <span className="font-mono text-[12px] text-slate-100">
+                      {c.amount_out.toLocaleString('en-IN', {
+                        maximumFractionDigits: c.to_asset === 'INR' ? 0 : 2,
+                      })} {c.to_asset}
+                    </span>
+                    <span className={`ml-auto font-mono text-[9px] px-1.5 py-0.5
+                      rounded ${c.basis === 'CONFIRMED'
+                        ? 'text-risk-low bg-risk-low/15'
+                        : 'text-risk-medium bg-risk-medium/15'}`}>
+                      {c.basis}
+                    </span>
+                  </div>
+                  <div className="text-[10.5px] text-slate-400 mt-1">
+                    at {c.label || c.node_type} · {c.at.slice(11, 19)} IST
+                  </div>
+                  {c.implied_rate && (
+                    <div className="text-[10px] text-slate-500 font-mono mt-0.5">
+                      implied {c.implied_rate}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="label mt-4 mb-2">Platforms the money passed through</div>
+          <div className="flex flex-col">
+            {conversions.venues.map((v) => (
+              <div key={v.node_id}
+                   className="py-2 border-b border-edge last:border-b-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className={`font-mono text-[9px] px-1.5 py-0.5 rounded
+                    ${v.can_be_compelled
+                      ? 'text-violet bg-violet/15'
+                      : 'text-slate-500 bg-panel2'}`}>
+                    {v.can_be_compelled ? 'CAN BE SERVED' : 'PASS-THROUGH'}
+                  </span>
+                  <span className="text-[11px] text-slate-200">
+                    {v.label || 'Unidentified service'}
+                  </span>
+                  <span className="text-[10px] text-slate-600 font-mono">
+                    {v.kind} · {v.chain}
+                  </span>
+                  <span className="ml-auto text-[10px] text-slate-500 font-mono">
+                    {v.assets_handled.join(' ')}
+                  </span>
+                </div>
+                <p className="text-[10px] text-slate-500 leading-relaxed mt-0.5">
+                  {v.note}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          <p className="text-[10px] text-slate-600 leading-relaxed mt-2">
+            {conversions.caveat}
+          </p>
+        </section>
+      )}
 
       {/* ------------------------------------------------------- caveat */}
       <section className="border-t border-edge pt-3">

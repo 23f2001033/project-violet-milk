@@ -20,6 +20,7 @@ import {
   getDilution,
   getAnomaly,
   getAssets,
+  getConversions,
   getGraph,
   getRisk,
   getTimeline,
@@ -263,7 +264,7 @@ export default function App() {
       await runTrace(caseId, { seed: kase.seed_wallet, max_depth: 3 })
 
       const [graph, dilution, timeline, audit, evidence, anomaly,
-             verification, assets] = await Promise.all([
+             verification, assets, conversions] = await Promise.all([
         getGraph(caseId),
         getDilution(caseId),
         getTimeline(caseId),
@@ -273,10 +274,11 @@ export default function App() {
         getAnomaly(caseId).catch(() => null),
         verifyAudit(caseId).catch(() => null),
         getAssets(caseId).catch(() => null),
+        getConversions(caseId).catch(() => null),
       ])
       setData((d) => ({
         ...d, running: false, started: true, graph, dilution, timeline,
-        audit, evidence, anomaly, verification, assets,
+        audit, evidence, anomaly, verification, assets, conversions,
       }))
       setOrgan('command')
     } catch (e) {
@@ -396,7 +398,8 @@ export default function App() {
     ),
     assets: (
       <AssetLedger
-        assets={data.assets} selected={selected} nodesById={nodesById}
+        assets={data.assets} conversions={data.conversions}
+        selected={selected} nodesById={nodesById}
       />
     ),
     timeline: <Timeline timeline={timeline} selected={selected} onSelect={setSelected} />,

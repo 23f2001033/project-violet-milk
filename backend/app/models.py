@@ -624,3 +624,65 @@ class NoticeResponse(BaseModel):
     sha256: str
     download_url: str
     fields: dict[str, Any]
+
+
+# ---------------------------------------------------------------------------
+# Conversion trail  ·  Phase 9 (additive)
+#
+# "Which platform did the money go to, and what did it become?" is the first
+# question an officer asks after seeing the graph, and the graph alone does not
+# answer it. These shapes name the points where value changed FORM (one
+# currency into another) and the points where it changed HANDS (a service that
+# holds customer records), which are the two things a production order has to
+# recite.
+# ---------------------------------------------------------------------------
+
+class ConversionPoint(BaseModel):
+    """An entity where the asset going in is not the asset coming out."""
+    node_id: str
+    label: str | None = None
+    node_type: NodeType
+    chain: Chain
+    from_asset: Asset
+    to_asset: Asset
+    amount_in: float
+    amount_out: float
+    implied_rate: str | None = Field(
+        None,
+        description="Rate implied by the two legs, not a sourced market price",
+    )
+    at: str = Field(..., description="Timestamp of the outbound leg, IST")
+    basis: Literal["CONFIRMED", "INFERRED"] = Field(
+        ..., description="The weaker of the two legs, never the stronger",
+    )
+
+
+class VenueUse(BaseModel):
+    """A service the money passed through, and whether it can be named."""
+    node_id: str
+    label: str | None = None
+    kind: NodeType
+    chain: Chain
+    assets_handled: list[Asset]
+    transfers: int
+    identified: bool = Field(
+        ..., description="False when no curated label backs the address",
+    )
+    can_be_compelled: bool = Field(
+        ...,
+        description="True for services that hold customer records - an "
+                    "exchange or a bank. False for a mixer or a bridge, which "
+                    "hold nothing to produce.",
+    )
+    note: str
+
+
+class ConversionTrail(BaseModel):
+    case_id: str
+    computed_at: str
+    rails_used: list[str] = Field(
+        ..., description="Networks the value travelled on, in order of first use",
+    )
+    conversions: list[ConversionPoint]
+    venues: list[VenueUse]
+    caveat: str
