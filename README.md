@@ -104,7 +104,21 @@ as NOT ANCHORED. Setup takes ~20 minutes and costs nothing — see the header of
 .venv\Scripts\python.exe -m pytest backend\tests -q
 ```
 
-### 5. Demo day
+### 5. Reset before demonstrating
+
+Rehearsing appends to the custody log and leaves PDFs on disk - after a day of
+practice the demo case had 434 custody entries and a twenty-one page dossier,
+most of it a record of rehearsal. Clear it so a judge sees an investigation
+rather than a practice session:
+
+```powershell
+.venv\Scripts\python.exe backend	oolseset_demo.py
+```
+
+Keeps `.env`, the live chain cache, the AI cache and anchor receipts. The next
+start re-seeds four officers, four cases and six custody entries.
+
+### 6. Demo day
 
 Run these in order **while you still have working internet**, then leave the
 server up. Every command spells out `.venv\Scripts\python.exe` on purpose: a

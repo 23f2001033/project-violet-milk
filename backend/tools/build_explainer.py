@@ -118,7 +118,7 @@ def cover(canvas, doc):
     canvas.rect(0, h - 92 * mm, w, 92 * mm, stroke=0, fill=1)
     canvas.setFillColor(VIOLET)
     canvas.setFont("Helvetica-Bold", 9)
-    canvas.drawString(18 * mm, h - 34 * mm, "CHANDIGARH POLICE CYBER CRIME UNIT")
+    canvas.drawString(18 * mm, h - 34 * mm, "CHANDIGARH POLICE HACKATHON")
     canvas.setFillColor(INK)
     canvas.setFont("Helvetica-Bold", 31)
     canvas.drawString(18 * mm, h - 48 * mm, "Project Violet Milk")
@@ -149,10 +149,12 @@ def story():
     # ------------------------------------------------------------- cover
     s.append(Spacer(1, 84 * mm))
     s.append(_table([
-        [_cell("Case demonstrated"), mono("CP-CYBER-2026-001")],
-        [_cell("Reported loss"), mono("INR 4,70,000")],
+        [_cell("Cases demonstrated"), Paragraph("Four - one per officer, "
+                                       "scoring CRITICAL, HIGH, HIGH and LOW", S_BODY)],
+        [_cell("Reported loss"), Paragraph("INR 4,70,000 on the case shown; "
+                                  "INR 27,15,000 across the set", S_BODY)],
         [_cell("Chains traced"), Paragraph("Ethereum, Tron (TRC-20)", S_BODY)],
-        [_cell("Automated tests"), mono("224 passing")],
+        [_cell("Automated tests"), mono("252 passing")],
         [_cell("API surface"), mono("23 paths")],
         [_cell("Licence"), Paragraph("MIT - free for any force to use", S_BODY)],
         [_cell("Cost per district"), Paragraph("Nil. No licence, no cloud "

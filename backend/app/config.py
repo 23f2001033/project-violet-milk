@@ -44,7 +44,21 @@ LLM_TIMEOUT_SECONDS = _int("LLM_TIMEOUT_SECONDS", 20)
 
 # --- Application -----------------------------------------------------------
 DATA_MODE = os.getenv("DATA_MODE", "synthetic").strip()
-DB_PATH = ROOT / os.getenv("DB_PATH", "./violet.db").lstrip("./")
+def _db_path() -> Path:
+    """Resolve DB_PATH, honouring an absolute path.
+
+    This used to be `ROOT / os.getenv(...).lstrip("./")`, and lstrip strips
+    every leading "." and "/" CHARACTER rather than a "./" prefix - so an
+    absolute path like /var/data/violet.db silently became
+    <repo>/var/data/violet.db. Harmless with the default, and exactly wrong
+    the first time someone points the database at a mounted disk.
+    """
+    raw = os.getenv("DB_PATH", "violet.db").strip()
+    candidate = Path(raw)
+    return candidate if candidate.is_absolute() else ROOT / raw.lstrip("./")
+
+
+DB_PATH = _db_path()
 DEFAULT_IO_NAME = os.getenv("DEFAULT_IO_NAME", "IO_SHARMA").strip()
 
 # --- Trace bounds (SPEC 07) ------------------------------------------------

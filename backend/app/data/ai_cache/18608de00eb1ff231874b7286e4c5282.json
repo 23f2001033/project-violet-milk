@@ -1,0 +1,6 @@
+{
+  "content": "The investigation traced 25 entities and 28 transfers originating from the seed wallet T3sPV66vTp1oNfCHVQPNEmy87qEF3NJ31, with a maximum transaction depth of three hops. Of the 28 movements, 26 were confirmed and two were inferred correlations. The seed wallet carries a risk score of 75\u202f/\u202f100 (CRITICAL), reflecting proximity to a known scam cluster (+20), rapid automated dispersal within two minutes (+15), interaction with a mixer contract (+15), exposure to a cross\u2011chain bridge within two downstream hops (+15), and fan\u2011out to eight distinct downstream addresses (+10). Nineteen transfers met or exceeded the 30\u202f% reporting threshold, while nine were below it. The highest\u2011scoring downstream entity is T6jAmwBh8pHLwUi8sqdX84MsN4ADNdjvs with a score of 35\u202f/\u202f100 (MEDIUM), followed by TN9CkNnrYgykxqJ3Aa6Fy1c21mL1S8qnK at the same level. The reported loss amounts to INR\u202f9,43,000.",
+  "meta": {
+    "model": "openai/gpt-oss-120b"
+  }
+}
