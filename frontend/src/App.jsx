@@ -207,6 +207,19 @@ export default function App() {
   const [live, setLive] = useState({ on: false, addr: '', busy: false,
                                      graph: null, error: null })
   const [inspectorTab, setInspectorTab] = useState('risk')
+  // The organ rail collapses to an icon strip. On a projector the graph is the
+  // thing the room is looking at, and 190px of navigation it has already read
+  // is 190px the canvas does not get. The choice is remembered so a rehearsed
+  // demo opens the way it was left.
+  const [railOpen, setRailOpen] = useState(() => {
+    try { return localStorage.getItem('vm.rail') !== 'closed' } catch { return true }
+  })
+  useEffect(() => {
+    try { localStorage.setItem('vm.rail', railOpen ? 'open' : 'closed') } catch {}
+  }, [railOpen])
+  // The chronology strip under the graph, likewise. It is useful while reading
+  // the trace and in the way while presenting it.
+  const [chronOpen, setChronOpen] = useState(true)
   const [data, setData] = useState({ loading: true })
   // null = not signed in, undefined = still checking a stored token
   const [session, setSession] = useState(getToken() ? undefined : null)
@@ -387,12 +400,25 @@ export default function App() {
           assets={data.assets} risk={riskCache[selected]}
         />
         <div className="border-t border-edge max-h-[210px] overflow-hidden">
-          <div className="label px-4 py-2 border-b border-edge">
+          <button
+            onClick={() => setChronOpen((v) => !v)}
+            aria-expanded={chronOpen}
+            className="w-full label px-4 py-2 border-b border-edge flex items-center
+                       gap-2 hover:text-slate-200 transition-colors"
+          >
+            <span className="font-mono text-[10px] leading-none">
+              {chronOpen ? '▾' : '▸'}
+            </span>
             Synchronised chronology · {timeline.length} events
-          </div>
-          <div className="max-h-[160px] overflow-y-auto">
-            <Timeline timeline={timeline} selected={selected} onSelect={setSelected} />
-          </div>
+            <span className="ml-auto normal-case tracking-normal text-slate-600">
+              {chronOpen ? 'hide' : 'show'}
+            </span>
+          </button>
+          {chronOpen && (
+            <div className="max-h-[160px] overflow-y-auto">
+              <Timeline timeline={timeline} selected={selected} onSelect={setSelected} />
+            </div>
+          )}
         </div>
       </div>
     ),
@@ -589,36 +615,80 @@ export default function App() {
         ))}
       </nav>
 
-      <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-[190px_1fr]
-                      xl:grid-cols-[190px_1fr_320px]">
+      <div
+        className={`flex-1 min-h-0 grid grid-cols-1 ${
+          railOpen
+            ? 'lg:grid-cols-[190px_1fr] xl:grid-cols-[190px_1fr_320px]'
+            : 'lg:grid-cols-[44px_1fr] xl:grid-cols-[44px_1fr_320px]'
+        }`}
+      >
         {/* -------------------------------------------------- organ rail */}
         <nav className="hidden lg:flex flex-col border-r border-edge bg-panel
-                        overflow-y-auto">
-          <div className="label px-3 py-2.5 border-b border-edge">
-            Investigation organs
-          </div>
+                        overflow-y-auto overflow-x-hidden">
+          <button
+            onClick={() => setRailOpen((v) => !v)}
+            title={railOpen ? 'Collapse the organ rail' : 'Expand the organ rail'}
+            aria-label={railOpen ? 'Collapse the organ rail' : 'Expand the organ rail'}
+            aria-expanded={railOpen}
+            className={`shrink-0 flex items-center border-b border-edge py-2.5
+              text-slate-500 hover:text-slate-100 hover:bg-panel2 transition-colors ${
+                railOpen ? 'px-3 gap-2 justify-between' : 'px-0 justify-center'
+              }`}
+          >
+            {railOpen && <span className="label">Investigation organs</span>}
+            <span className="font-mono text-[11px] leading-none">
+              {railOpen ? '«' : '»'}
+            </span>
+          </button>
           {ORGANS.map((o) => (
             <button
               key={o.id}
               onClick={() => setOrgan(o.id)}
-              className={`flex items-center gap-2.5 px-3 py-2 text-[11px] text-left
+              title={o.label}
+              className={`flex items-center py-2 text-[11px] text-left
                 border-l-2 transition-colors ${
+                  railOpen ? 'gap-2.5 px-3' : 'justify-center px-0'
+                } ${
                   organ === o.id
                     ? 'border-violet bg-violet/10 text-slate-100'
                     : 'border-transparent text-slate-500 hover:text-slate-200 hover:bg-panel2'
                 }`}
             >
-              <span className="text-violet/70 w-3">{o.icon}</span>
-              {o.label}
+              <span className="text-violet/70 w-3 text-center shrink-0">{o.icon}</span>
+              {railOpen && <span className="truncate">{o.label}</span>}
             </button>
           ))}
           {/* Derived from the real evidence register: a file is "verified"
               only when the browser hash and the server hash actually agree.
               This previously read "SHA-256 chain valid" unconditionally - a
               false integrity claim in a forensics tool. */}
-          <div className="mt-auto p-3 border-t border-edge">
-            <div className="label mb-1">Evidence integrity</div>
-            {evidence.length === 0 ? (
+          <div className={`mt-auto border-t border-edge ${railOpen ? 'p-3' : 'py-2 px-0 text-center'}`}>
+            {railOpen ? (
+              <div className="label mb-1">Evidence integrity</div>
+            ) : (
+              /* Collapsed, the integrity state survives as a single mark. It is
+                 the one thing on this rail that is a claim about the evidence
+                 rather than a way to navigate, so it does not get hidden. */
+              <div
+                title={
+                  evidence.length === 0
+                    ? 'No files ingested'
+                    : verified === evidence.length
+                      ? `${verified}/${evidence.length} hash-verified`
+                      : `${evidence.length - verified} of ${evidence.length} failed verification`
+                }
+                className={`font-mono text-[11px] ${
+                  evidence.length === 0
+                    ? 'text-slate-600'
+                    : verified === evidence.length
+                      ? 'text-risk-low'
+                      : 'text-risk-critical'
+                }`}
+              >
+                {evidence.length === 0 ? '–' : verified === evidence.length ? '✓' : '✗'}
+              </div>
+            )}
+            {railOpen && (evidence.length === 0 ? (
               <div className="font-mono text-[10px] text-slate-600">
                 no files ingested
               </div>
@@ -630,7 +700,7 @@ export default function App() {
               <div className="font-mono text-[10px] text-risk-critical">
                 ✗ {evidence.length - verified} of {evidence.length} failed
               </div>
-            )}
+            ))}
           </div>
         </nav>
 

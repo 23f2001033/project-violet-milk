@@ -577,6 +577,13 @@ export default function GraphVisualiser({ graph, selected, onSelect, assets, ris
   const [minRisk, setMinRisk] = useState(0)
   const [showCard, setShowCard] = useState(true)
   const [legendOpen, setLegendOpen] = useState(true)
+  // Full-canvas mode. The graph normally shares its column with the organ rail,
+  // the inspector and the chronology strip, which on a projector leaves the one
+  // thing the room is actually looking at occupying about a third of the
+  // screen. Expanding lifts the same canvas - same cytoscape instance, so the
+  // hover strip, the entity card, path-following and the risk filter all keep
+  // working - to the full viewport.
+  const [expanded, setExpanded] = useState(false)
 
   /* The legend used to span the full width at the bottom, so an open entity
      card ran underneath it and its last rows - chain, layer, attribution -
@@ -753,11 +760,37 @@ export default function GraphVisualiser({ graph, selected, onSelect, assets, ris
     if (!path) setFollowing(false)
   }, [path])
 
+  // Escape leaves full-canvas mode. Anyone who has ever been stuck in a
+  // presenter's full-screen view reaches for this key first.
+  useEffect(() => {
+    if (!expanded) return
+    const onKey = (e) => { if (e.key === 'Escape') setExpanded(false) }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [expanded])
+
+  // Cytoscape reads its container size on resize, and the ResizeObserver above
+  // is already watching the canvas element - so lifting it to the viewport
+  // refits by itself. The extra pass covers the transition frame.
+  useEffect(() => {
+    const t = setTimeout(() => {
+      cyRef.current?.resize()
+      cyRef.current?.fit(undefined, 30)
+    }, 60)
+    return () => clearTimeout(t)
+  }, [expanded])
+
   const node = selected ? nodesById[selected] : null
   const hovered = hover ? nodesById[hover] : null
 
   return (
-    <div className="relative h-full min-h-[340px]">
+    <div
+      className={
+        expanded
+          ? 'fixed inset-0 z-40 bg-ground'
+          : 'relative h-full min-h-[340px]'
+      }
+    >
       <div
         ref={boxRef}
         className="absolute inset-0"
@@ -821,6 +854,18 @@ export default function GraphVisualiser({ graph, selected, onSelect, assets, ris
               CARD
             </button>
           )}
+          <button
+            onClick={() => setExpanded((v) => !v)}
+            title={expanded ? 'Leave full canvas (Esc)' : 'Open the graph full screen'}
+            className={`px-2 py-1 text-[10px] font-mono rounded border bg-panel/90
+              transition-colors ${
+                expanded
+                  ? 'border-violet/60 text-violet-200 hover:text-slate-100'
+                  : 'border-edge text-slate-400 hover:text-slate-100'
+              }`}
+          >
+            {expanded ? '✕ EXIT' : '⛶ FULL'}
+          </button>
           <button
             onClick={() => cyRef.current?.fit(undefined, 30)}
             className="px-2 py-1 text-[10px] font-mono rounded border border-edge
