@@ -82,6 +82,8 @@ npm run dev
 ```
 
 App → https://violet-milk.onrender.com/
+usermame-IO_SHARMA
+password-violet-demo-2026
 
 `src/api.js` runs against the live backend (`USE_MOCKS = false`). Set it back
 to `true` to develop any organ with the backend switched off - the fixtures in
@@ -143,7 +145,7 @@ cd frontend; npm run build; cd ..
 .venv\Scripts\python.exe -m uvicorn backend.app.main:app --port 8000
 ```
 
-Everything is then served from <http://127.0.0.1:8000> - one process, one port,
+Everything is then served from (https://violet-milk.onrender.com) - one process, one port,
 no separate frontend server.
 
 `pretest_live.py` is slow the first time and that is expected: it is populating
