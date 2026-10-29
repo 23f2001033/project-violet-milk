@@ -81,7 +81,7 @@ npm install
 npm run dev
 ```
 
-App → <http://localhost:5173>
+App → https://violet-milk.onrender.com/
 
 `src/api.js` runs against the live backend (`USE_MOCKS = false`). Set it back
 to `true` to develop any organ with the backend switched off - the fixtures in
@@ -112,7 +112,8 @@ most of it a record of rehearsal. Clear it so a judge sees an investigation
 rather than a practice session:
 
 ```powershell
-.venv\Scripts\python.exe backend	oolseset_demo.py
+.venv\Scripts\python.exe backend	ools
+eset_demo.py
 ```
 
 Keeps `.env`, the live chain cache, the AI cache and anchor receipts. The next
